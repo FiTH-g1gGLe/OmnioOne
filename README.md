@@ -1,3 +1,15 @@
+# Omnio One
+
+All your people. One app. Omnio One is an all-in-one contacts, phone and messages app for Android.
+
+**Install a test build:** open the [Latest test build](../../releases/tag/latest-test) page on your phone and tap the `.apk` file.
+
+Omnio One is built on [Fossify Phone](https://github.com/FossifyOrg/Phone), [Fossify Messages](https://github.com/FossifyOrg/Messages) and [Fossify Contacts](https://github.com/FossifyOrg/Contacts), and like them is licensed under the GPL-3.0.
+
+---
+
+## About the original Fossify Phone
+
 # Fossify Phone
 <img alt="Logo" src="graphics/icon.webp" width="120" />
 

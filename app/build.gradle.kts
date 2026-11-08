@@ -24,14 +24,14 @@ fun hasSigningVars(): Boolean {
 
 base {
     val versionCode = project.property("VERSION_CODE").toString().toInt()
-    archivesName = "phone-$versionCode"
+    archivesName = "omnioone-$versionCode"
 }
 
 android {
     compileSdk = project.libs.versions.app.build.compileSDKVersion.get().toInt()
 
     defaultConfig {
-        applicationId = project.property("APP_ID").toString()
+        applicationId = project.property("OMNIO_APP_ID").toString()
         minSdk = project.libs.versions.app.build.minimumSDK.get().toInt()
         targetSdk = project.libs.versions.app.build.targetSDK.get().toInt()
         versionName = project.property("VERSION_NAME").toString()
@@ -39,6 +39,14 @@ android {
     }
 
     signingConfigs {
+        // Omnio One test key: keeps every test build signed the same way,
+        // so each new APK installs over the last one. Not for public releases.
+        register("omnioTest") {
+            storeFile = rootProject.file("keystore/omnio-test.jks")
+            storePassword = "omnio-test"
+            keyAlias = "omnio-test"
+            keyPassword = "omnio-test"
+        }
         if (keystorePropertiesFile.exists()) {
             register("release") {
                 keyAlias = keystoreProperties.getProperty("keyAlias")
@@ -66,6 +74,7 @@ android {
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
+            signingConfig = signingConfigs.getByName("omnioTest")
         }
         release {
             isMinifyEnabled = true
