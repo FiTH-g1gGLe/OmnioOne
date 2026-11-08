@@ -1,0 +1,217 @@
+package org.fossify.phone.helpers
+
+import android.content.ContentProviderOperation
+import android.content.Context
+import android.provider.ContactsContract
+import android.provider.ContactsContract.CommonDataKinds.Website
+
+/**
+ * Omnio One: chat apps and social profiles on a contact page.
+ *
+ * - Chat apps (WhatsApp, Telegram, Signal, Viber, Google Meet) add their own entries to the
+ *   phone's contacts, so they're found automatically.
+ * - Social profiles (Instagram, Snapchat, Facebook, ...) are saved by the user as a profile
+ *   link on the contact, so they sync with the contact and work in other apps too.
+ */
+object OmnioSocials {
+
+    /** An action a chat app offers (e.g. WhatsApp chat or WhatsApp video). */
+    data class ChatAction(val kind: Kind, val mimeType: String)
+
+    enum class Kind { CHAT, VOICE, VIDEO }
+
+    data class ChatApp(val name: String, val pkg: String, val color: Int, val actions: List<ChatAction>)
+
+    /** A social network the user can add by username. */
+    data class Network(
+        val key: String,
+        val name: String,
+        val pkg: String,
+        val color: Int,
+        private val urlTemplate: String,
+        private val domains: List<String>,
+        /** Path prefix before the handle in the link, e.g. "@" for TikTok or "in/" for LinkedIn. */
+        private val pathPrefix: String = ""
+    ) {
+        fun urlFor(handle: String) = urlTemplate.replace("{h}", handle)
+
+        fun matches(url: String): Boolean {
+            val host = hostOf(url)
+            return domains.any { host == it || host.endsWith(".$it") }
+        }
+
+        /** The username shown under the network name. */
+        fun handleFrom(url: String): String {
+            val path = url.substringAfter("://", url).substringAfter("/", "").substringBefore("?").trim('/')
+            val handle = path.removePrefix(pathPrefix).substringBefore("/").removePrefix("@")
+            return if (handle.isEmpty()) url else "@$handle"
+        }
+    }
+
+    private fun hostOf(url: String): String {
+        var host = url.substringAfter("://", url).substringBefore("/").substringBefore("?").lowercase().removePrefix("www.")
+        // drop mobile sub-domains (m.facebook.com) but keep short domains like m.me
+        listOf("m.", "mobile.").forEach { prefix ->
+            if (host.startsWith(prefix) && host.count { it == '.' } >= 2) host = host.removePrefix(prefix)
+        }
+        return host
+    }
+
+    private const val ITEM = "vnd.android.cursor.item/"
+
+    val chatApps = listOf(
+        ChatApp(
+            "WhatsApp", "com.whatsapp", 0xFF25D366.toInt(), listOf(
+                ChatAction(Kind.CHAT, "${ITEM}vnd.com.whatsapp.profile"),
+                ChatAction(Kind.VIDEO, "${ITEM}vnd.com.whatsapp.video.call"),
+                ChatAction(Kind.VOICE, "${ITEM}vnd.com.whatsapp.voip.call"),
+            )
+        ),
+        ChatApp(
+            "WhatsApp Business", "com.whatsapp.w4b", 0xFF25D366.toInt(), listOf(
+                ChatAction(Kind.CHAT, "${ITEM}vnd.com.whatsapp.w4b.profile"),
+                ChatAction(Kind.VIDEO, "${ITEM}vnd.com.whatsapp.w4b.video.call"),
+                ChatAction(Kind.VOICE, "${ITEM}vnd.com.whatsapp.w4b.voip.call"),
+            )
+        ),
+        ChatApp(
+            "Telegram", "org.telegram.messenger", 0xFF2AABEE.toInt(), listOf(
+                ChatAction(Kind.CHAT, "${ITEM}vnd.org.telegram.messenger.android.profile"),
+                ChatAction(Kind.VOICE, "${ITEM}vnd.org.telegram.messenger.android.call"),
+                ChatAction(Kind.VIDEO, "${ITEM}vnd.org.telegram.messenger.android.call.video"),
+            )
+        ),
+        ChatApp(
+            "Signal", "org.thoughtcrime.securesms", 0xFF3A76F0.toInt(), listOf(
+                ChatAction(Kind.CHAT, "${ITEM}vnd.org.thoughtcrime.securesms.contact"),
+                ChatAction(Kind.VOICE, "${ITEM}vnd.org.thoughtcrime.securesms.call"),
+            )
+        ),
+        ChatApp(
+            "Viber", "com.viber.voip", 0xFF7360F2.toInt(), listOf(
+                ChatAction(Kind.CHAT, "${ITEM}vnd.com.viber.voip.viber_number_message"),
+                ChatAction(Kind.VOICE, "${ITEM}vnd.com.viber.voip.viber_number_call"),
+            )
+        ),
+        ChatApp(
+            "Google Meet", "com.google.android.apps.tachyon", 0xFF00AC47.toInt(), listOf(
+                ChatAction(Kind.VIDEO, "${ITEM}com.google.android.apps.tachyon.phone"),
+            )
+        ),
+    )
+
+    val networks = listOf(
+        Network("instagram", "Instagram", "com.instagram.android", 0xFFE1306C.toInt(), "https://instagram.com/{h}", listOf("instagram.com", "instagr.am")),
+        Network("snapchat", "Snapchat", "com.snapchat.android", 0xFFFFFC00.toInt(), "https://snapchat.com/add/{h}", listOf("snapchat.com"), "add/"),
+        Network("facebook", "Facebook", "com.facebook.katana", 0xFF1877F2.toInt(), "https://facebook.com/{h}", listOf("facebook.com", "fb.com")),
+        Network("messenger", "Messenger", "com.facebook.orca", 0xFF0084FF.toInt(), "https://m.me/{h}", listOf("m.me", "messenger.com"), "t/"),
+        Network("tiktok", "TikTok", "com.zhiliaoapp.musically", 0xFFFE2C55.toInt(), "https://tiktok.com/@{h}", listOf("tiktok.com")),
+        Network("x", "X", "com.twitter.android", 0xFFE7E9EA.toInt(), "https://x.com/{h}", listOf("x.com", "twitter.com")),
+        Network("threads", "Threads", "com.instagram.barcelona", 0xFFE7E9EA.toInt(), "https://threads.net/@{h}", listOf("threads.net", "threads.com")),
+        Network("linkedin", "LinkedIn", "com.linkedin.android", 0xFF0A66C2.toInt(), "https://linkedin.com/in/{h}", listOf("linkedin.com"), "in/"),
+        Network("discord", "Discord", "com.discord", 0xFF5865F2.toInt(), "https://discord.com/users/{h}", listOf("discord.com", "discordapp.com"), "users/"),
+        Network("youtube", "YouTube", "com.google.android.youtube", 0xFFFF0000.toInt(), "https://youtube.com/@{h}", listOf("youtube.com", "youtu.be")),
+        Network("twitch", "Twitch", "tv.twitch.android.app", 0xFF9146FF.toInt(), "https://twitch.tv/{h}", listOf("twitch.tv")),
+        Network("kick", "Kick", "com.kick.mobile", 0xFF53FC18.toInt(), "https://kick.com/{h}", listOf("kick.com")),
+    )
+
+    /** A chat-app entry found on the contact: which app, which action, and the data row that opens it. */
+    data class FoundChat(val app: ChatApp, val action: ChatAction, val dataId: Long)
+
+    /** A saved social profile link on the contact. */
+    data class FoundSocial(val network: Network, val url: String, val dataId: Long)
+
+    fun findChats(context: Context, contactId: Int): List<FoundChat> {
+        val byMime = chatApps.flatMap { app -> app.actions.map { it.mimeType to (app to it) } }.toMap()
+        val found = ArrayList<FoundChat>()
+        try {
+            val selection = "${ContactsContract.Data.CONTACT_ID} = ? AND ${ContactsContract.Data.MIMETYPE} IN (${byMime.keys.joinToString { "?" }})"
+            context.contentResolver.query(
+                ContactsContract.Data.CONTENT_URI,
+                arrayOf(ContactsContract.Data._ID, ContactsContract.Data.MIMETYPE),
+                selection,
+                arrayOf(contactId.toString()) + byMime.keys.toTypedArray(),
+                null
+            )?.use { cursor ->
+                while (cursor.moveToNext()) {
+                    val (app, action) = byMime[cursor.getString(1)] ?: continue
+                    if (found.none { it.action.mimeType == action.mimeType }) {
+                        found.add(FoundChat(app, action, cursor.getLong(0)))
+                    }
+                }
+            }
+        } catch (ignored: Exception) {
+        }
+        return found
+    }
+
+    fun findSocials(context: Context, contactId: Int): List<FoundSocial> {
+        val found = ArrayList<FoundSocial>()
+        try {
+            context.contentResolver.query(
+                ContactsContract.Data.CONTENT_URI,
+                arrayOf(ContactsContract.Data._ID, Website.URL),
+                "${ContactsContract.Data.CONTACT_ID} = ? AND ${ContactsContract.Data.MIMETYPE} = ?",
+                arrayOf(contactId.toString(), Website.CONTENT_ITEM_TYPE),
+                null
+            )?.use { cursor ->
+                while (cursor.moveToNext()) {
+                    val url = cursor.getString(1)?.trim() ?: continue
+                    val network = networks.firstOrNull { it.matches(url) } ?: continue
+                    if (found.none { it.url.equals(url, true) }) {
+                        found.add(FoundSocial(network, url, cursor.getLong(0)))
+                    }
+                }
+            }
+        } catch (ignored: Exception) {
+        }
+        return found.sortedBy { networks.indexOf(it.network) }
+    }
+
+    /** Turns whatever the user typed (username, @username or a pasted link) into a profile link. */
+    fun buildUrl(network: Network, input: String): String? {
+        val text = input.trim()
+        if (text.isEmpty()) return null
+        if (text.contains("://") || network.matches(text)) {
+            return if (text.contains("://")) text else "https://$text"
+        }
+        val handle = text.removePrefix("@").trim().replace(" ", "")
+        return if (handle.isEmpty()) null else network.urlFor(handle)
+    }
+
+    /** Saves a profile link on the contact. Returns true when it worked. */
+    fun addSocial(context: Context, contactId: Int, url: String): Boolean {
+        return try {
+            val rawId = context.contentResolver.query(
+                ContactsContract.RawContacts.CONTENT_URI,
+                arrayOf(ContactsContract.RawContacts._ID),
+                "${ContactsContract.RawContacts.CONTACT_ID} = ? AND ${ContactsContract.RawContacts.DELETED} = 0",
+                arrayOf(contactId.toString()),
+                null
+            )?.use { if (it.moveToFirst()) it.getLong(0) else null } ?: return false
+
+            val operation = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                .withValue(ContactsContract.Data.RAW_CONTACT_ID, rawId)
+                .withValue(ContactsContract.Data.MIMETYPE, Website.CONTENT_ITEM_TYPE)
+                .withValue(Website.URL, url)
+                .withValue(Website.TYPE, Website.TYPE_PROFILE)
+                .build()
+            context.contentResolver.applyBatch(ContactsContract.AUTHORITY, arrayListOf(operation))
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    fun removeSocial(context: Context, dataId: Long): Boolean {
+        return try {
+            val operation = ContentProviderOperation.newDelete(
+                android.content.ContentUris.withAppendedId(ContactsContract.Data.CONTENT_URI, dataId)
+            ).build()
+            context.contentResolver.applyBatch(ContactsContract.AUTHORITY, arrayListOf(operation))
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+}

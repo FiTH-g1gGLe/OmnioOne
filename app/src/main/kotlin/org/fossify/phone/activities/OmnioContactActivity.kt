@@ -36,6 +36,10 @@ import org.fossify.phone.extensions.getAvailableSIMCardLabels
 import org.fossify.phone.extensions.openContactInSystemApp
 import org.fossify.phone.extensions.startCallWithConfirmationCheck
 import org.fossify.phone.helpers.RecentsHelper
+import org.fossify.commons.extensions.beVisibleIf
+import org.fossify.commons.extensions.setupDialogStuff
+import org.fossify.commons.extensions.getAlertDialogBuilder
+import org.fossify.phone.helpers.OmnioSocials
 import org.fossify.commons.extensions.beVisible
 import org.fossify.commons.extensions.getFormattedDuration
 
@@ -91,7 +95,9 @@ class OmnioContactActivity : SimpleActivity() {
         binding.contactFavourite.applyColorFilter(0xFFFFC85A.toInt())
         binding.contactCall.compoundDrawablesRelative[1]?.mutate()?.setTint(0xFF0F1115.toInt())
         binding.contactText.compoundDrawablesRelative[1]?.mutate()?.setTint(0xFF0F1115.toInt())
-        binding.contactEdit.compoundDrawablesRelative[1]?.mutate()?.setTint(0xFFECEFF4.toInt())
+        binding.contactEdit.applyColorFilter(textColor)
+        binding.contactAppsLabel.setTextColor(textColor)
+        binding.contactVideo.compoundDrawablesRelative[1]?.mutate()?.setTint(0xFF5DD39E.toInt())
     }
 
     private fun showContact(contact: Contact) {
@@ -156,7 +162,7 @@ class OmnioContactActivity : SimpleActivity() {
             binding.contactDetailsHolder.beGone()
         }
 
-        loadAppButtons(contact)
+        loadApps(contact)
         loadRecentCalls(contact)
     }
 
@@ -206,93 +212,239 @@ class OmnioContactActivity : SimpleActivity() {
         return "$typeLabel · " + getString(R.string.omnio_always_sim, sim.label)
     }
 
-    private data class AppAction(val label: Int, val icon: Int, val tint: Int, val background: Int, val dataId: Long, val mimeType: String, val pkg: String)
+    // ---- Omnio One: chat apps + social profiles card ----
 
-    /** Shows WhatsApp, WhatsApp video, Telegram and Signal buttons for contacts that use them. */
-    private fun loadAppButtons(contact: Contact) {
+    private fun loadApps(contact: Contact) {
         ensureBackgroundThread {
-            val wanted = mapOf(
-                "vnd.android.cursor.item/vnd.com.whatsapp.profile" to Triple(R.string.omnio_whatsapp, R.drawable.ic_omnio_chat, "com.whatsapp"),
-                "vnd.android.cursor.item/vnd.com.whatsapp.video.call" to Triple(R.string.omnio_whatsapp_video, R.drawable.ic_omnio_video, "com.whatsapp"),
-                "vnd.android.cursor.item/vnd.org.telegram.messenger.android.profile" to Triple(R.string.omnio_telegram, R.drawable.ic_omnio_chat, "org.telegram.messenger"),
-                "vnd.android.cursor.item/vnd.org.thoughtcrime.securesms.contact" to Triple(R.string.omnio_signal, R.drawable.ic_omnio_chat, "org.thoughtcrime.securesms")
-            )
-            val found = LinkedHashMap<String, AppAction>()
-            try {
-                val selection = "${ContactsContract.Data.CONTACT_ID} = ? AND ${ContactsContract.Data.MIMETYPE} IN (${wanted.keys.joinToString { "?" }})"
-                val args = arrayOf(contact.contactId.toString()) + wanted.keys.toTypedArray()
-                contentResolver.query(
-                    ContactsContract.Data.CONTENT_URI,
-                    arrayOf(ContactsContract.Data._ID, ContactsContract.Data.MIMETYPE),
-                    selection, args, null
-                )?.use { cursor ->
-                    while (cursor.moveToNext()) {
-                        val id = cursor.getLong(0)
-                        val mime = cursor.getString(1)
-                        if (found.containsKey(mime)) continue
-                        val (label, icon, pkg) = wanted[mime] ?: continue
-                        val isWhatsApp = pkg == "com.whatsapp"
-                        val tint = if (isWhatsApp) 0xFF5DD39E.toInt() else 0xFF6CBCF2.toInt()
-                        val bg = if (isWhatsApp) 0xFF163028.toInt() else 0xFF15283A.toInt()
-                        found[mime] = AppAction(label, icon, tint, bg, id, mime, pkg)
-                    }
-                }
-            } catch (ignored: Exception) {
-            }
-            val ordered = wanted.keys.mapNotNull { found[it] }
-            runOnUiThread { showAppButtons(ordered) }
+            val chats = OmnioSocials.findChats(this, contact.contactId)
+            val socials = OmnioSocials.findSocials(this, contact.contactId)
+            runOnUiThread { showApps(contact, chats, socials) }
         }
     }
 
-    private fun showAppButtons(actions: List<AppAction>) {
+    private fun showApps(contact: Contact, chats: List<OmnioSocials.FoundChat>, socials: List<OmnioSocials.FoundSocial>) {
+        // Big Video button: WhatsApp video first, then the other apps that can video call
+        val video = listOf("com.whatsapp", "com.whatsapp.w4b", "org.telegram.messenger", "com.google.android.apps.tachyon")
+            .firstNotNullOfOrNull { pkg -> chats.firstOrNull { it.app.pkg == pkg && it.action.kind == OmnioSocials.Kind.VIDEO } }
+        binding.contactVideo.apply {
+            beVisibleIf(video != null)
+            setOnClickListener { video?.let { openChat(it) } }
+        }
+
         val holder = binding.contactAppsHolder
         holder.removeAllViews()
-        if (actions.isEmpty()) {
-            holder.beGone()
-            return
-        }
-        holder.beVisible()
-        val stacked = actions.size >= 3
-        actions.forEachIndexed { index, action ->
-            holder.addView(TextView(this).apply {
-                text = getString(action.label)
-                setTextColor(action.tint)
-                gravity = Gravity.CENTER
-                setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
-                setTypeface(typeface, android.graphics.Typeface.BOLD)
-                val icon = getDrawable(action.icon)?.mutate()
-                icon?.setTint(action.tint)
-                if (stacked) {
-                    setCompoundDrawablesRelativeWithIntrinsicBounds(null, icon, null, null)
-                    compoundDrawablePadding = dp(2)
-                    setPadding(dp(6), dp(8), dp(6), dp(8))
-                } else {
-                    setCompoundDrawablesRelativeWithIntrinsicBounds(icon, null, null, null)
-                    compoundDrawablePadding = dp(6)
-                    setPadding(dp(10), 0, dp(10), 0)
-                }
-                maxLines = 1
-                ellipsize = android.text.TextUtils.TruncateAt.END
-                background = getDrawable(R.drawable.omnio_round_bg)
-                backgroundTintList = ColorStateList.valueOf(action.background)
-                layoutParams = LinearLayout.LayoutParams(0, dp(if (stacked) 64 else 48), 1f).apply {
-                    if (index > 0) marginStart = dp(8)
-                }
-                setOnClickListener {
-                    try {
-                        startActivity(Intent(Intent.ACTION_VIEW).apply {
-                            setDataAndType(Uri.parse("content://com.android.contacts/data/${action.dataId}"), action.mimeType)
-                            setPackage(action.pkg)
-                        })
-                    } catch (e: Exception) {
-                        toast(org.fossify.commons.R.string.no_app_found)
+        var rows = 0
+        chats.groupBy { it.app }.forEach { (app, found) ->
+            val actions = found.sortedBy { it.action.kind.ordinal }
+            val primary = actions.first()
+            addAppRow(
+                holder = holder,
+                showDivider = rows++ > 0,
+                icon = appIcon(app.pkg, app.name, app.color),
+                title = app.name,
+                subtitle = null,
+                color = app.color,
+                onClick = { openChat(primary) },
+                onLongClick = null,
+                actions = actions.map { chat ->
+                    val iconRes = when (chat.action.kind) {
+                        OmnioSocials.Kind.CHAT -> R.drawable.ic_omnio_chat
+                        OmnioSocials.Kind.VOICE -> org.fossify.commons.R.drawable.ic_phone_vector
+                        OmnioSocials.Kind.VIDEO -> R.drawable.ic_omnio_video
                     }
+                    iconRes to { openChat(chat) }
                 }
-            })
+            )
+        }
+        socials.forEach { social ->
+            val network = social.network
+            addAppRow(
+                holder = holder,
+                showDivider = rows++ > 0,
+                icon = appIcon(network.pkg, network.name, network.color),
+                title = network.name,
+                subtitle = network.handleFrom(social.url),
+                color = network.color,
+                onClick = { openSocial(social) },
+                onLongClick = { confirmRemoveSocial(contact, social) },
+                actions = listOf(org.fossify.commons.R.drawable.ic_arrow_right_vector to { openSocial(social) })
+            )
+        }
+        // "+ Add social" row
+        addAppRow(
+            holder = holder,
+            showDivider = rows > 0,
+            icon = getDrawable(org.fossify.commons.R.drawable.ic_plus_vector)?.mutate()?.apply { setTint(0xFFFF8A3D.toInt()) },
+            title = getString(R.string.omnio_add_social),
+            subtitle = null,
+            color = 0xFFFF8A3D.toInt(),
+            onClick = { pickNetworkToAdd(contact) },
+            onLongClick = null,
+            actions = emptyList()
+        )
+    }
+
+    /** The app's real icon from the phone, or a coloured letter if it isn't installed. */
+    private fun appIcon(pkg: String, name: String, color: Int): android.graphics.drawable.Drawable? {
+        return try {
+            packageManager.getApplicationIcon(pkg)
+        } catch (e: Exception) {
+            val size = dp(36)
+            val bitmap = android.graphics.Bitmap.createBitmap(size, size, android.graphics.Bitmap.Config.ARGB_8888)
+            val canvas = android.graphics.Canvas(bitmap)
+            canvas.drawCircle(size / 2f, size / 2f, size / 2f, android.graphics.Paint().apply { isAntiAlias = true; this.color = color })
+            val paint = android.graphics.Paint().apply {
+                isAntiAlias = true
+                this.color = if (androidx.core.graphics.ColorUtils.calculateLuminance(color) > 0.6) 0xFF0F1115.toInt() else 0xFFFFFFFF.toInt()
+                textSize = size * 0.48f
+                textAlign = android.graphics.Paint.Align.CENTER
+                typeface = android.graphics.Typeface.DEFAULT_BOLD
+            }
+            canvas.drawText(name.take(1), size / 2f, size / 2f - (paint.descent() + paint.ascent()) / 2f, paint)
+            android.graphics.drawable.BitmapDrawable(resources, bitmap)
         }
     }
 
-    /** Last few calls with this contact, newest first. */
+    private fun addAppRow(
+        holder: LinearLayout,
+        showDivider: Boolean,
+        icon: android.graphics.drawable.Drawable?,
+        title: String,
+        subtitle: String?,
+        color: Int,
+        onClick: () -> Unit,
+        onLongClick: (() -> Unit)?,
+        actions: List<Pair<Int, () -> Unit>>
+    ) {
+        val textColor = getProperTextColor()
+        if (showDivider) {
+            holder.addView(View(this).apply {
+                setBackgroundColor(0x22FFFFFF)
+                layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(1))
+            })
+        }
+        val row = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            minimumHeight = dp(60)
+            setPadding(0, dp(8), 0, dp(8))
+            setOnClickListener { onClick() }
+            if (onLongClick != null) setOnLongClickListener { onLongClick(); true }
+        }
+        row.addView(ImageView(this).apply {
+            setImageDrawable(icon)
+            layoutParams = LinearLayout.LayoutParams(dp(36), dp(36)).apply { marginEnd = dp(14) }
+        })
+        row.addView(LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            addView(TextView(this@OmnioContactActivity).apply {
+                text = title
+                setTextColor(textColor)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
+            })
+            if (!subtitle.isNullOrEmpty()) {
+                addView(TextView(this@OmnioContactActivity).apply {
+                    text = subtitle
+                    setTextColor(textColor)
+                    alpha = 0.65f
+                    maxLines = 1
+                    ellipsize = android.text.TextUtils.TruncateAt.END
+                    setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
+                })
+            }
+        })
+        // light colours (Snapchat yellow, X white) are fine on the dark card; very dark ones get lifted
+        val actionColor = if (androidx.core.graphics.ColorUtils.calculateLuminance(color) < 0.08) 0xFFECEFF4.toInt() else color
+        actions.forEach { (iconRes, action) ->
+            row.addView(ImageView(this).apply {
+                setImageResource(iconRes)
+                imageTintList = ColorStateList.valueOf(actionColor)
+                setPadding(dp(12), dp(12), dp(12), dp(12))
+                layoutParams = LinearLayout.LayoutParams(dp(48), dp(48))
+                background = getDrawable(android.R.drawable.list_selector_background)
+                setOnClickListener { action() }
+            })
+        }
+        holder.addView(row)
+    }
+
+    private fun openChat(chat: OmnioSocials.FoundChat) {
+        try {
+            startActivity(Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(Uri.parse("content://com.android.contacts/data/${chat.dataId}"), chat.action.mimeType)
+                setPackage(chat.app.pkg)
+            })
+        } catch (e: Exception) {
+            toast(org.fossify.commons.R.string.no_app_found)
+        }
+    }
+
+    private fun openSocial(social: OmnioSocials.FoundSocial) {
+        val uri = Uri.parse(if (social.url.contains("://")) social.url else "https://${social.url}")
+        // the app if it's installed, otherwise the browser
+        val inApp = Intent(Intent.ACTION_VIEW, uri).setPackage(social.network.pkg)
+        try {
+            startActivity(inApp)
+        } catch (e: Exception) {
+            try {
+                startActivity(Intent(Intent.ACTION_VIEW, uri))
+            } catch (e2: Exception) {
+                toast(org.fossify.commons.R.string.no_app_found)
+            }
+        }
+    }
+
+    private fun pickNetworkToAdd(contact: Contact) {
+        val items = ArrayList(OmnioSocials.networks.mapIndexed { index, network -> org.fossify.commons.models.RadioItem(index, network.name) })
+        org.fossify.commons.dialogs.RadioGroupDialog(this, items, titleId = R.string.omnio_add_social) { picked ->
+            val network = OmnioSocials.networks.getOrNull(picked as Int) ?: return@RadioGroupDialog
+            askUsername(contact, network)
+        }
+    }
+
+    private fun askUsername(contact: Contact, network: OmnioSocials.Network) {
+        val input = android.widget.EditText(this).apply {
+            hint = getString(if (network.key == "discord") R.string.omnio_discord_hint else R.string.omnio_username_hint)
+            setSingleLine()
+            inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_URI
+            setTextColor(getProperTextColor())
+        }
+        val wrapper = android.widget.FrameLayout(this).apply {
+            setPadding(dp(24), dp(8), dp(24), 0)
+            addView(input)
+        }
+        getAlertDialogBuilder()
+            .setPositiveButton(org.fossify.commons.R.string.ok) { _, _ ->
+                val url = OmnioSocials.buildUrl(network, input.text.toString()) ?: return@setPositiveButton
+                ensureBackgroundThread {
+                    val ok = OmnioSocials.addSocial(this, contact.contactId, url)
+                    runOnUiThread {
+                        if (ok) loadApps(contact) else toast(org.fossify.commons.R.string.unknown_error_occurred)
+                    }
+                }
+            }
+            .setNegativeButton(org.fossify.commons.R.string.cancel, null)
+            .apply {
+                setupDialogStuff(wrapper, this, titleText = network.name) { dialog ->
+                    input.requestFocus()
+                    dialog.window?.setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
+                }
+            }
+    }
+
+    private fun confirmRemoveSocial(contact: Contact, social: OmnioSocials.FoundSocial) {
+        org.fossify.commons.dialogs.ConfirmationDialog(
+            this,
+            message = getString(R.string.omnio_remove_social, social.network.name)
+        ) {
+            ensureBackgroundThread {
+                OmnioSocials.removeSocial(this, social.dataId)
+                runOnUiThread { loadApps(contact) }
+            }
+        }
+    }
+
     /** One line in the contact's Recent list: a call or a text. */
     private data class ActivityItem(
         val time: Long,
@@ -351,7 +503,8 @@ class OmnioContactActivity : SimpleActivity() {
                 while (cursor.moveToNext() && found.size < MAX_RECENT && scanned++ < 1500) {
                     val address = cursor.getString(0) ?: continue
                     if (numbers.none { PhoneNumberUtils.compare(it, address) }) continue
-                    val body = (cursor.getString(1) ?: "").replace(Regex("\\s+"), " ").trim()
+                    val rawBody = (cursor.getString(1) ?: "").replace(Regex("\\s+"), " ").trim()
+                    val body = org.fossify.messages.helpers.OmnioReactions.describe(rawBody) ?: rawBody
                     val date = cursor.getLong(2)
                     val received = cursor.getInt(3) == android.provider.Telephony.Sms.MESSAGE_TYPE_INBOX
                     val whenText = DateUtils.getRelativeTimeSpanString(date, now, DateUtils.MINUTE_IN_MILLIS).toString()

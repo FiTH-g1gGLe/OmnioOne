@@ -50,6 +50,12 @@ object OmnioReactions {
         return null
     }
 
+    /** A short "👍 to “…”" version of a reaction text, or null if it isn't one. */
+    fun describe(body: String): String? {
+        val parsed = parse(body) ?: return null
+        return if (parsed.removed) "Removed ${parsed.emoji} from “${parsed.quoted}”" else "${parsed.emoji} to “${parsed.quoted}”"
+    }
+
     /** True when the text has no letters or digits, i.e. it's an emoji (or emoji sequence). */
     private fun isEmoji(text: String) = text.isNotBlank() && text.length <= 16 && text.none { it.isLetterOrDigit() }
 

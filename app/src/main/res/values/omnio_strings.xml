@@ -56,4 +56,9 @@
     <string name="omnio_messages_tab">Messages</string>
     <string name="omnio_text_received">Text received</string>
     <string name="omnio_text_sent">Text sent</string>
+    <string name="omnio_apps">Apps</string>
+    <string name="omnio_add_social">Add social</string>
+    <string name="omnio_username_hint">Username or profile link</string>
+    <string name="omnio_discord_hint">Discord user ID or profile link</string>
+    <string name="omnio_remove_social">Remove %s from this contact?</string>
 </resources>
