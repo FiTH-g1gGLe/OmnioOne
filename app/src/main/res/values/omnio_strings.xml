@@ -61,4 +61,12 @@
     <string name="omnio_username_hint">Username or profile link</string>
     <string name="omnio_discord_hint">Discord user ID or profile link</string>
     <string name="omnio_remove_social">Remove %s from this contact?</string>
+    <string name="omnio_find_on">Find on %s</string>
+    <string name="omnio_find_instructions">Find %s, open their profile, then tap ⋯ → Copy link (or Share → Omnio One) and come back.</string>
+    <string name="omnio_add_link_question">Add this %1$s profile to %2$s?\n\n%3$s</string>
+    <string name="omnio_add_messenger_too">Add Messenger for %s too, using the same Facebook profile?</string>
+    <string name="omnio_profile_linked">Profile linked</string>
+    <string name="omnio_share_label">Link to contact</string>
+    <string name="omnio_share_not_profile">That isn\'t a profile link Omnio One knows</string>
+    <string name="omnio_share_no_contact">Open a contact in Omnio One, tap Add social → Find on…, then share their profile</string>
 </resources>

@@ -52,6 +52,7 @@ class OmnioContactActivity : SimpleActivity() {
 
     companion object {
         const val EXTRA_CONTACT_ID = "omnio_contact_id"
+        const val EXTRA_SHARED_LINK = "omnio_shared_link"
         private const val CALLS_BLUE = 0xFF4F7CFF.toInt()
         private const val MESSAGES_GREEN = 0xFF22C55E.toInt()
         private const val MAX_RECENT = 10
@@ -164,6 +165,16 @@ class OmnioContactActivity : SimpleActivity() {
 
         loadApps(contact)
         loadRecentCalls(contact)
+
+        // opened from a link shared to Omnio One, or back from "Find on …" after being closed
+        val shared = intent.getStringExtra(EXTRA_SHARED_LINK)
+        val sharedNetwork = shared?.let { OmnioSocials.networkFor(it) }
+        if (shared != null && sharedNetwork != null) {
+            intent.removeExtra(EXTRA_SHARED_LINK)
+            offerLink(contact, sharedNetwork, shared)
+        } else {
+            binding.root.post { checkCopiedLink() }
+        }
     }
 
     private var firstResume = true
@@ -263,7 +274,7 @@ class OmnioContactActivity : SimpleActivity() {
                 showDivider = rows++ > 0,
                 icon = appIcon(network.pkg, network.name, network.color),
                 title = network.name,
-                subtitle = network.handleFrom(social.url),
+                subtitle = network.handleFrom(social.url).ifEmpty { getString(R.string.omnio_profile_linked) },
                 color = network.color,
                 onClick = { openSocial(social) },
                 onLongClick = { confirmRemoveSocial(contact, social) },
@@ -425,12 +436,116 @@ class OmnioContactActivity : SimpleActivity() {
                 }
             }
             .setNegativeButton(org.fossify.commons.R.string.cancel, null)
+            .setNeutralButton(getString(R.string.omnio_find_on, network.name)) { _, _ -> startFinding(contact, network) }
             .apply {
                 setupDialogStuff(wrapper, this, titleText = network.name) { dialog ->
                     input.requestFocus()
                     dialog.window?.setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
                 }
             }
+    }
+
+    /** Opens the network's people search for this contact; the profile link is caught when they come back. */
+    private fun startFinding(contact: Contact, network: OmnioSocials.Network) {
+        val name = contact.getNameToDisplay()
+        OmnioSocials.setPendingLink(this, OmnioSocials.PendingLink(contact.contactId, contact.rawId, name, network.key))
+        val search = network.searchUrl(name)
+        val opened = search != null && tryStart(Intent(Intent.ACTION_VIEW, Uri.parse(search)).setPackage(network.pkg)) ||
+            tryStart(packageManager.getLaunchIntentForPackage(network.pkg)) ||
+            search != null && tryStart(Intent(Intent.ACTION_VIEW, Uri.parse(search)))
+        if (opened) {
+            toast(getString(R.string.omnio_find_instructions, name), android.widget.Toast.LENGTH_LONG)
+        } else {
+            OmnioSocials.clearPendingLink(this)
+            toast(org.fossify.commons.R.string.no_app_found)
+        }
+    }
+
+    private fun tryStart(intent: Intent?): Boolean {
+        if (intent == null) return false
+        return try {
+            startActivity(intent)
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    private var linkDialogShowing = false
+
+    /** Back from "Find on …": if a profile link was copied, offer to add it. */
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) checkCopiedLink()
+    }
+
+    private fun checkCopiedLink() {
+        if (linkDialogShowing || !hasWindowFocus()) return
+        val current = contact ?: return
+        val pending = OmnioSocials.getPendingLink(this) ?: return
+        if (pending.contactId != current.contactId) return
+        val clip = try {
+            (getSystemService(CLIPBOARD_SERVICE) as android.content.ClipboardManager).primaryClip?.getItemAt(0)?.coerceToText(this)
+        } catch (e: Exception) {
+            null
+        }
+        val url = OmnioSocials.firstUrl(clip) ?: return
+        val network = OmnioSocials.networkFor(url) ?: return
+        offerLink(current, network, url)
+    }
+
+    /** Called with a link that was copied or shared to Omnio One. */
+    fun offerLink(contact: Contact, network: OmnioSocials.Network, url: String) {
+        linkDialogShowing = true
+        OmnioSocials.clearPendingLink(this)
+        org.fossify.commons.dialogs.ConfirmationDialog(
+            this,
+            message = getString(R.string.omnio_add_link_question, network.name, contact.getNameToDisplay(), url),
+            positive = org.fossify.commons.R.string.ok,
+            negative = org.fossify.commons.R.string.cancel
+        ) {
+            ensureBackgroundThread {
+                val existing = OmnioSocials.findSocials(this, contact.contactId)
+                val ok = existing.any { it.url.equals(url, true) } || OmnioSocials.addSocial(this, contact.contactId, url)
+                val messengerHandle = if (network.key == "facebook") network.usernameFrom(url) else ""
+                val hasMessenger = existing.any { it.network.key == "messenger" }
+                runOnUiThread {
+                    linkDialogShowing = false
+                    if (!ok) {
+                        toast(org.fossify.commons.R.string.unknown_error_occurred)
+                        return@runOnUiThread
+                    }
+                    loadApps(contact)
+                    if (messengerHandle.isNotEmpty() && !hasMessenger) offerMessenger(contact, messengerHandle)
+                }
+            }
+        }
+        // if the dialog is cancelled, let a later copy be offered again
+        binding.root.postDelayed({ linkDialogShowing = false }, 1500)
+    }
+
+    private fun offerMessenger(contact: Contact, handle: String) {
+        val messenger = OmnioSocials.networks.first { it.key == "messenger" }
+        org.fossify.commons.dialogs.ConfirmationDialog(
+            this,
+            message = getString(R.string.omnio_add_messenger_too, contact.getNameToDisplay()),
+            positive = org.fossify.commons.R.string.yes,
+            negative = org.fossify.commons.R.string.no
+        ) {
+            ensureBackgroundThread {
+                OmnioSocials.addSocial(this, contact.contactId, messenger.urlFor(handle))
+                runOnUiThread { loadApps(contact) }
+            }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        // a link shared to Omnio One while finding this contact
+        val url = intent.getStringExtra(EXTRA_SHARED_LINK) ?: return
+        val current = contact ?: return
+        val network = OmnioSocials.networkFor(url) ?: return
+        offerLink(current, network, url)
     }
 
     private fun confirmRemoveSocial(contact: Contact, social: OmnioSocials.FoundSocial) {

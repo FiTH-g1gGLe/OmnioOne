@@ -31,8 +31,12 @@ object OmnioSocials {
         private val urlTemplate: String,
         private val domains: List<String>,
         /** Path prefix before the handle in the link, e.g. "@" for TikTok or "in/" for LinkedIn. */
-        private val pathPrefix: String = ""
+        private val pathPrefix: String = "",
+        /** People search link with {q} for the name, or null when the app has no search link. */
+        private val searchTemplate: String? = null
     ) {
+        fun searchUrl(name: String): String? = searchTemplate?.replace("{q}", android.net.Uri.encode(name))
+
         fun urlFor(handle: String) = urlTemplate.replace("{h}", handle)
 
         fun matches(url: String): Boolean {
@@ -42,10 +46,18 @@ object OmnioSocials {
 
         /** The username shown under the network name. */
         fun handleFrom(url: String): String {
-            val path = url.substringAfter("://", url).substringAfter("/", "").substringBefore("?").trim('/')
+            val afterHost = url.substringAfter("://", url).substringAfter("/", "")
+            // facebook.com/profile.php?id=123
+            Regex("[?&]id=(\\d+)").find(afterHost)?.let { return it.groupValues[1] }
+            val path = afterHost.substringBefore("?").trim('/')
+            // opaque share links (facebook.com/share/abc) have no username in them
+            if (path.startsWith("share/") || path.isEmpty()) return ""
             val handle = path.removePrefix(pathPrefix).substringBefore("/").removePrefix("@")
-            return if (handle.isEmpty()) url else "@$handle"
+            return if (handle.isEmpty()) "" else "@$handle"
         }
+
+        /** The bare username/id, for building a Messenger link from a Facebook one. */
+        fun usernameFrom(url: String) = handleFrom(url).removePrefix("@")
     }
 
     private fun hostOf(url: String): String {
@@ -101,19 +113,53 @@ object OmnioSocials {
     )
 
     val networks = listOf(
-        Network("instagram", "Instagram", "com.instagram.android", 0xFFE1306C.toInt(), "https://instagram.com/{h}", listOf("instagram.com", "instagr.am")),
+        Network("instagram", "Instagram", "com.instagram.android", 0xFFE1306C.toInt(), "https://instagram.com/{h}", listOf("instagram.com", "instagr.am"), searchTemplate = "https://www.instagram.com/explore/search/keyword/?q={q}"),
         Network("snapchat", "Snapchat", "com.snapchat.android", 0xFFFFFC00.toInt(), "https://snapchat.com/add/{h}", listOf("snapchat.com"), "add/"),
-        Network("facebook", "Facebook", "com.facebook.katana", 0xFF1877F2.toInt(), "https://facebook.com/{h}", listOf("facebook.com", "fb.com")),
-        Network("messenger", "Messenger", "com.facebook.orca", 0xFF0084FF.toInt(), "https://m.me/{h}", listOf("m.me", "messenger.com"), "t/"),
-        Network("tiktok", "TikTok", "com.zhiliaoapp.musically", 0xFFFE2C55.toInt(), "https://tiktok.com/@{h}", listOf("tiktok.com")),
-        Network("x", "X", "com.twitter.android", 0xFFE7E9EA.toInt(), "https://x.com/{h}", listOf("x.com", "twitter.com")),
-        Network("threads", "Threads", "com.instagram.barcelona", 0xFFE7E9EA.toInt(), "https://threads.net/@{h}", listOf("threads.net", "threads.com")),
-        Network("linkedin", "LinkedIn", "com.linkedin.android", 0xFF0A66C2.toInt(), "https://linkedin.com/in/{h}", listOf("linkedin.com"), "in/"),
+        Network("facebook", "Facebook", "com.facebook.katana", 0xFF1877F2.toInt(), "https://facebook.com/{h}", listOf("facebook.com", "fb.com"), searchTemplate = "https://www.facebook.com/search/people/?q={q}"),
+        Network("messenger", "Messenger", "com.facebook.orca", 0xFF0084FF.toInt(), "https://m.me/{h}", listOf("m.me", "messenger.com"), "t/", searchTemplate = "https://www.facebook.com/search/people/?q={q}"),
+        Network("tiktok", "TikTok", "com.zhiliaoapp.musically", 0xFFFE2C55.toInt(), "https://tiktok.com/@{h}", listOf("tiktok.com"), searchTemplate = "https://www.tiktok.com/search/user?q={q}"),
+        Network("x", "X", "com.twitter.android", 0xFFE7E9EA.toInt(), "https://x.com/{h}", listOf("x.com", "twitter.com"), searchTemplate = "https://x.com/search?q={q}&f=user"),
+        Network("threads", "Threads", "com.instagram.barcelona", 0xFFE7E9EA.toInt(), "https://threads.net/@{h}", listOf("threads.net", "threads.com"), searchTemplate = "https://www.threads.net/search?q={q}"),
+        Network("linkedin", "LinkedIn", "com.linkedin.android", 0xFF0A66C2.toInt(), "https://linkedin.com/in/{h}", listOf("linkedin.com"), "in/", searchTemplate = "https://www.linkedin.com/search/results/people/?keywords={q}"),
         Network("discord", "Discord", "com.discord", 0xFF5865F2.toInt(), "https://discord.com/users/{h}", listOf("discord.com", "discordapp.com"), "users/"),
-        Network("youtube", "YouTube", "com.google.android.youtube", 0xFFFF0000.toInt(), "https://youtube.com/@{h}", listOf("youtube.com", "youtu.be")),
-        Network("twitch", "Twitch", "tv.twitch.android.app", 0xFF9146FF.toInt(), "https://twitch.tv/{h}", listOf("twitch.tv")),
-        Network("kick", "Kick", "com.kick.mobile", 0xFF53FC18.toInt(), "https://kick.com/{h}", listOf("kick.com")),
+        Network("youtube", "YouTube", "com.google.android.youtube", 0xFFFF0000.toInt(), "https://youtube.com/@{h}", listOf("youtube.com", "youtu.be"), searchTemplate = "https://www.youtube.com/results?search_query={q}"),
+        Network("twitch", "Twitch", "tv.twitch.android.app", 0xFF9146FF.toInt(), "https://twitch.tv/{h}", listOf("twitch.tv"), searchTemplate = "https://www.twitch.tv/search?term={q}"),
+        Network("kick", "Kick", "com.kick.mobile", 0xFF53FC18.toInt(), "https://kick.com/{h}", listOf("kick.com"), searchTemplate = "https://kick.com/search?query={q}"),
     )
+
+    // ---- "Find on Facebook" linking: remember which contact we're finding, then catch the link ----
+
+    data class PendingLink(val contactId: Int, val rawId: Int, val contactName: String, val networkKey: String)
+
+    private const val LINK_TIMEOUT_MS = 15 * 60 * 1000L
+
+    private fun prefs(context: Context) = context.getSharedPreferences("omnio", Context.MODE_PRIVATE)
+
+    fun setPendingLink(context: Context, link: PendingLink) {
+        prefs(context).edit()
+            .putInt("link_contact", link.contactId)
+            .putInt("link_raw", link.rawId)
+            .putString("link_name", link.contactName)
+            .putString("link_network", link.networkKey)
+            .putLong("link_time", System.currentTimeMillis())
+            .apply()
+    }
+
+    fun getPendingLink(context: Context): PendingLink? {
+        val p = prefs(context)
+        if (System.currentTimeMillis() - p.getLong("link_time", 0) > LINK_TIMEOUT_MS) return null
+        val contactId = p.getInt("link_contact", -1)
+        if (contactId < 0) return null
+        return PendingLink(contactId, p.getInt("link_raw", 0), p.getString("link_name", "") ?: "", p.getString("link_network", "") ?: "")
+    }
+
+    fun clearPendingLink(context: Context) = prefs(context).edit().remove("link_time").remove("link_contact").apply()
+
+    /** First web link in a piece of text (a share or the clipboard). */
+    fun firstUrl(text: CharSequence?): String? =
+        text?.let { Regex("https?://[^\\s\"'<>]+").find(it)?.value?.trimEnd('.', ',', ')') }
+
+    fun networkFor(url: String) = networks.firstOrNull { it.matches(url) }
 
     /** A chat-app entry found on the contact: which app, which action, and the data row that opens it. */
     data class FoundChat(val app: ChatApp, val action: ChatAction, val dataId: Long)

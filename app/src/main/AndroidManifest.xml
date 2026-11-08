@@ -82,6 +82,21 @@
             android:configChanges="orientation|screenSize"
             android:exported="false" />
 
+        <!-- Omnio One: share a profile link from Facebook, Instagram, TikTok... to the contact you're finding -->
+        <activity
+            android:name=".activities.OmnioShareLinkActivity"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:label="@string/omnio_share_label"
+            android:noHistory="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+        </activity>
+
         <activity
             android:name=".activities.MainActivity"
             android:configChanges="orientation|screenSize"
