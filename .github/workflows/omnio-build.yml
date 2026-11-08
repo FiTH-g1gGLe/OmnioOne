@@ -30,7 +30,26 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Build the test APK
-        run: ./gradlew assembleFossDebug --no-daemon --stacktrace
+        shell: bash
+        run: |
+          set -o pipefail
+          ./gradlew assembleFossDebug --no-daemon --stacktrace 2>&1 | tee build.log
+
+      - name: Save the error log if the build failed
+        if: failure()
+        shell: bash
+        run: |
+          { echo "Build ${{ github.run_number }} failed. Last part of the log:"; echo '```'; grep -E "^e: |error:|FAILURE|What went wrong" -A3 build.log | head -80; echo; tail -60 build.log; echo '```'; } > failure.md
+
+      - name: Post the error log
+        if: failure()
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-log
+          name: Last failed build log
+          prerelease: true
+          make_latest: false
+          body_path: failure.md
 
       - name: Name the APK
         run: |

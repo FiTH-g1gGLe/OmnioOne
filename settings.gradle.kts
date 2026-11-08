@@ -1,4 +1,4 @@
-rootProject.name = "Phone"
+rootProject.name = "OmnioOne"
 pluginManagement {
     repositories {
         gradlePluginPortal()
@@ -16,3 +16,5 @@ dependencyResolutionManagement {
     }
 }
 include(":app")
+// Fossify Commons, brought into the project so Omnio One can change it
+include(":commons")
