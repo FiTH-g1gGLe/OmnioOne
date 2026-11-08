@@ -112,11 +112,8 @@ class OmnioContactActivity : SimpleActivity() {
         binding.contactName.text = name
         SimpleContactsHelper(this).loadContactImage(contact.photoUri, binding.contactPhoto, name)
 
-        binding.contactSubtitle.text = when {
-            contact.organization.company.isNotEmpty() -> contact.organization.company
-            contact.phoneNumbers.size > 1 -> getString(R.string.omnio_number_count, contact.phoneNumbers.size)
-            else -> contact.phoneNumbers.firstOrNull()?.value ?: ""
-        }
+        binding.contactSubtitle.text = contact.organization.company
+        binding.contactSubtitle.beVisibleIf(contact.organization.company.isNotEmpty())
 
         binding.contactFavourite.setImageResource(
             if (contact.starred == 1) org.fossify.commons.R.drawable.ic_star_vector
@@ -130,58 +127,10 @@ class OmnioContactActivity : SimpleActivity() {
         binding.contactText.setOnClickListener { primary?.let { launchSendSMSIntent(it.value) } }
         binding.contactEdit.setOnClickListener { openContactInSystemApp(contact) }
 
-        // Omnio One: numbers then emails in one card, each with Copy and Share (the heading isn't needed)
+        // Omnio One: numbers and emails live under the name (no separate card)
         binding.contactNumbersLabel.beGone()
-        binding.contactNumbersHolder.removeAllViews()
-        var infoRows = 0
-        val copyIcon = org.fossify.commons.R.drawable.ic_copy_vector
-        val shareIcon = org.fossify.commons.R.drawable.ic_share_vector
-        val infoColor = 0xFFB8C0CC.toInt()
-        contact.phoneNumbers.forEach { number ->
-            addRow(
-                holder = binding.contactNumbersHolder,
-                title = number.value,
-                subtitle = getNumberSubtitle(number.value, number.type, number.label),
-                showDivider = infoRows++ > 0,
-                actionIcon = copyIcon,
-                actionColor = infoColor,
-                onAction = { copyToClipboard(number.value) },
-                secondIcon = shareIcon,
-                secondColor = infoColor,
-                onSecond = { shareText(number.value) },
-                onRowClick = { startCallWithConfirmationCheck(number.value, name) }
-            )
-        }
-        contact.emails.forEach { email ->
-            addRow(
-                holder = binding.contactNumbersHolder,
-                title = email.value,
-                subtitle = getString(R.string.omnio_email),
-                showDivider = infoRows++ > 0,
-                actionIcon = copyIcon,
-                actionColor = infoColor,
-                onAction = { copyToClipboard(email.value) },
-                secondIcon = shareIcon,
-                secondColor = infoColor,
-                onSecond = { shareText(email.value) },
-                onRowClick = { sendEmailIntent(email.value) }
-            )
-        }
-        if (contact.emails.isEmpty()) {
-            addRow(
-                holder = binding.contactNumbersHolder,
-                title = getString(R.string.omnio_add_email),
-                subtitle = getString(R.string.omnio_email),
-                showDivider = infoRows++ > 0,
-                actionIcon = org.fossify.commons.R.drawable.ic_plus_vector,
-                actionColor = 0xFFFF8A3D.toInt(),
-                onAction = { askEmail(contact) },
-                secondIcon = null,
-                secondColor = 0,
-                onSecond = null,
-                onRowClick = { askEmail(contact) }
-            )
-        }
+        binding.contactNumbersHolder.beGone()
+        showContactInfo(contact, name)
 
         binding.contactDetailsHolder.removeAllViews()
         var detailRows = 0
@@ -917,6 +866,63 @@ class OmnioContactActivity : SimpleActivity() {
         items.forEachIndexed { index, item ->
             addRow(holder, item.title, item.subtitle, index > 0, item.icon, item.color, item.onClick, null, 0, null)
         }
+    }
+
+    /** Number(s) then email(s) under the name: tap to call / email, small Copy and Share buttons. */
+    private fun showContactInfo(contact: Contact, name: String) {
+        val holder = binding.contactInfoHolder
+        holder.removeAllViews()
+        val showTypes = contact.phoneNumbers.size > 1
+        contact.phoneNumbers.forEach { number ->
+            val label = if (showTypes) "${number.value}  ·  ${getPhoneTypeLabel(number.type, number.label)}" else number.value
+            addInfoLine(holder, label, number.value) { startCallWithConfirmationCheck(number.value, name) }
+        }
+        contact.emails.forEach { email ->
+            addInfoLine(holder, email.value, email.value) { sendEmailIntent(email.value) }
+        }
+        if (contact.emails.isEmpty()) {
+            holder.addView(TextView(this).apply {
+                text = "+ " + getString(R.string.omnio_add_email)
+                setTextColor(0xFFFF8A3D.toInt())
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+                setPadding(dp(12), dp(6), dp(12), dp(6))
+                background = getDrawable(android.R.drawable.list_selector_background)
+                setOnClickListener { askEmail(contact) }
+            })
+        }
+    }
+
+    private fun addInfoLine(holder: LinearLayout, label: String, value: String, onClick: () -> Unit) {
+        val textColor = getProperTextColor()
+        val iconColor = 0xFF9AA3AF.toInt()
+        holder.addView(LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+            addView(TextView(this@OmnioContactActivity).apply {
+                text = label
+                setTextColor(textColor)
+                alpha = 0.8f
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
+                maxLines = 1
+                ellipsize = android.text.TextUtils.TruncateAt.END
+                setPadding(dp(4), dp(4), dp(6), dp(4))
+                setOnClickListener { onClick() }
+            })
+            listOf(
+                org.fossify.commons.R.drawable.ic_copy_vector to { copyToClipboard(value) },
+                org.fossify.commons.R.drawable.ic_share_vector to { shareText(value) }
+            ).forEach { (icon, action) ->
+                addView(ImageView(this@OmnioContactActivity).apply {
+                    setImageResource(icon)
+                    imageTintList = ColorStateList.valueOf(iconColor)
+                    setPadding(dp(8), dp(8), dp(8), dp(8))
+                    layoutParams = LinearLayout.LayoutParams(dp(36), dp(36))
+                    background = getDrawable(android.R.drawable.list_selector_background)
+                    setOnClickListener { action() }
+                })
+            }
+        })
     }
 
     private fun shareText(text: String) {
