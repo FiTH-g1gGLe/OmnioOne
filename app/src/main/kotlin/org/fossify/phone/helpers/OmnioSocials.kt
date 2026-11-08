@@ -158,6 +158,29 @@ object OmnioSocials {
         return PendingLink(contactId, p.getInt("link_raw", 0), p.getString("link_name", "") ?: "", p.getString("link_network", "") ?: "")
     }
 
+    // ---- one-tap Messenger calls: open the chat, then Link helper taps the call button ----
+
+    enum class AutoTap { VOICE, VIDEO }
+
+    fun setAutoTap(context: Context, pkg: String, tap: AutoTap) {
+        prefs(context).edit().putString("autotap_pkg", pkg).putString("autotap_kind", tap.name)
+            .putLong("autotap_time", System.currentTimeMillis()).apply()
+    }
+
+    /** The call button waiting to be tapped in [pkg], if asked for in the last 25 seconds. */
+    fun getAutoTap(context: Context, pkg: String): AutoTap? {
+        val p = prefs(context)
+        if (p.getString("autotap_pkg", null) != pkg) return null
+        if (System.currentTimeMillis() - p.getLong("autotap_time", 0) > 25_000) return null
+        return try {
+            AutoTap.valueOf(p.getString("autotap_kind", "") ?: "")
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    fun clearAutoTap(context: Context) = prefs(context).edit().remove("autotap_time").apply()
+
     fun clearPendingLink(context: Context) = prefs(context).edit().remove("link_time").remove("link_contact").apply()
 
     /** First web link in a piece of text (a share or the clipboard). */

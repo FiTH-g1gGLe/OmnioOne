@@ -76,7 +76,7 @@
     <string name="omnio_facebook_username_help">Facebook hides it in copied links. On %s\'s profile tap ⋯ and look under \"profile link\": type the part after facebook.com/ to set up Facebook and Messenger.</string>
     <string name="omnio_not_now">Not now</string>
     <string name="omnio_link_helper_name">Omnio One Link helper</string>
-    <string name="omnio_link_helper_description">Only while you\'re linking a contact to Facebook, Instagram, TikTok and similar apps, Omnio One reads the profile address shown on screen (like facebook.com/name) so you don\'t have to copy or type it. It never reads anything else, never runs at other times, and nothing leaves your phone.</string>
+    <string name="omnio_link_helper_description">Only while you\'re linking a contact to Facebook, Instagram, TikTok and similar apps, Omnio One reads the profile address shown on screen (like facebook.com/name) so you don\'t have to copy or type it. When you tap Call or Video for a Messenger contact, it also taps Messenger\'s call button for you. It never reads anything else, never runs at other times, and nothing leaves your phone.</string>
     <string name="omnio_link_helper_title">Turn on Link helper?</string>
     <string name="omnio_link_helper_explain">Facebook hides profile addresses when you copy them. With Link helper on, just open %1$s\'s profile and tap ⋯, and Omnio picks up the address by itself.\n\nIt only reads social apps, only while you\'re linking someone, and nothing leaves your phone.\n\nIn the next screen tap Omnio One Link helper and switch it on. (If it\'s greyed out: App info → ⋮ → Allow restricted settings.)</string>
     <string name="omnio_turn_on">Turn on</string>
@@ -85,4 +85,5 @@
     <string name="omnio_find_instructions_helper">Open %s\'s profile and tap ⋯. Omnio will pick up the address.</string>
     <string name="omnio_reading_screenshot">Reading the screenshot…</string>
     <string name="omnio_screenshot_no_link">Couldn\'t spot a profile address in that screenshot. On Facebook, screenshot the ⋯ page that shows facebook.com/…</string>
+    <string name="omnio_messenger_call_manual">Tap the call button at the top of the chat. Turn on Link helper and Omnio will tap it for you.</string>
 </resources>

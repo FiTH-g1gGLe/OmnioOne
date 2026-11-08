@@ -287,7 +287,16 @@ class OmnioContactActivity : SimpleActivity() {
                 color = network.color,
                 onClick = { openSocial(social) },
                 onLongClick = { confirmRemoveSocial(contact, social) },
-                actions = listOf(org.fossify.commons.R.drawable.ic_arrow_right_vector to { openSocial(social) })
+                actions = if (network.key == "messenger") {
+                    // like WhatsApp: message, voice call, video call
+                    listOf(
+                        R.drawable.ic_omnio_chat to { openSocial(social) },
+                        org.fossify.commons.R.drawable.ic_phone_vector to { messengerCall(social, OmnioSocials.AutoTap.VOICE) },
+                        R.drawable.ic_omnio_video to { messengerCall(social, OmnioSocials.AutoTap.VIDEO) },
+                    )
+                } else {
+                    listOf(org.fossify.commons.R.drawable.ic_arrow_right_vector to { openSocial(social) })
+                }
             )
         }
         // "+ Add social" row
@@ -413,6 +422,17 @@ class OmnioContactActivity : SimpleActivity() {
                 toast(org.fossify.commons.R.string.no_app_found)
             }
         }
+    }
+
+    /** Opens the Messenger chat; with Link helper on, it then taps Messenger's call / video button. */
+    private fun messengerCall(social: OmnioSocials.FoundSocial, tap: OmnioSocials.AutoTap) {
+        val helperOn = org.fossify.phone.services.OmnioLinkHelperService.isEnabled(this)
+        if (helperOn) {
+            OmnioSocials.setAutoTap(this, social.network.pkg, tap)
+        } else {
+            toast(R.string.omnio_messenger_call_manual, android.widget.Toast.LENGTH_LONG)
+        }
+        openSocial(social)
     }
 
     private fun pickNetworkToAdd(contact: Contact) {

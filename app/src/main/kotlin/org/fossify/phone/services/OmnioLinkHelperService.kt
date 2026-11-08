@@ -22,6 +22,8 @@ class OmnioLinkHelperService : AccessibilityService() {
     private var lastHandedOver: String? = null
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
+        val pkg = event?.packageName?.toString()
+        if (pkg != null && tapCallButtonIfAsked(pkg)) return
         val pending = OmnioSocials.getPendingLink(this) ?: return
         val root = try {
             rootInActiveWindow
@@ -47,6 +49,44 @@ class OmnioLinkHelperService : AccessibilityService() {
             putExtra(OmnioContactActivity.EXTRA_SHARED_LINK, url)
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
         })
+    }
+
+    /**
+     * Messenger has no "start a call" link, so Omnio opens the chat and taps the call button for you.
+     * Only runs for a few seconds after you tap Call / Video on a contact page.
+     */
+    private fun tapCallButtonIfAsked(pkg: String): Boolean {
+        val tap = OmnioSocials.getAutoTap(this, pkg) ?: return false
+        val root = try {
+            rootInActiveWindow
+        } catch (e: Exception) {
+            null
+        } ?: return true
+        val wanted = when (tap) {
+            OmnioSocials.AutoTap.VOICE -> Regex("(audio|voice|phone) call|start (a )?(voice|audio) call|^call$", RegexOption.IGNORE_CASE)
+            OmnioSocials.AutoTap.VIDEO -> Regex("video (call|chat)|start (a )?video", RegexOption.IGNORE_CASE)
+        }
+        val button = findNode(root, 0) { node ->
+            // header buttons are icons with a description; skip message bubbles like "Missed audio call"
+            val label = node.contentDescription?.toString()?.trim().orEmpty()
+            label.isNotEmpty() && label.length <= 30 && !label.contains("missed", true) && wanted.containsMatchIn(label)
+        } ?: return true
+
+        var target: AccessibilityNodeInfo? = button
+        while (target != null && !target.isClickable) target = target.parent
+        if (target?.performAction(AccessibilityNodeInfo.ACTION_CLICK) == true) {
+            OmnioSocials.clearAutoTap(this)
+        }
+        return true
+    }
+
+    private fun findNode(node: AccessibilityNodeInfo?, depth: Int, test: (AccessibilityNodeInfo) -> Boolean): AccessibilityNodeInfo? {
+        if (node == null || depth > 40) return null
+        if (test(node)) return node
+        for (i in 0 until node.childCount) {
+            findNode(node.getChild(i), depth + 1, test)?.let { return it }
+        }
+        return null
     }
 
     private fun profileUrlIn(text: String): String? = if (text.length > 400) null else OmnioSocials.profileUrlIn(text)
