@@ -171,4 +171,7 @@
         <item quantity="one">%d item</item>
         <item quantity="other">%d items</item>
     </plurals>
+    <!-- Omnio One -->
+    <string name="favorites_tab">Favourites</string>
+    <string name="call_history_tab">Recents</string>
 </resources>

@@ -52,6 +52,11 @@
             android:theme="@style/SplashTheme" />
 
         <activity
+            android:name=".activities.OmnioContactActivity"
+            android:configChanges="orientation|screenSize"
+            android:exported="false" />
+
+        <activity
             android:name=".activities.MainActivity"
             android:configChanges="orientation|screenSize"
             android:exported="true">

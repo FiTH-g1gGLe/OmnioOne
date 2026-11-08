@@ -33,7 +33,16 @@ fun SimpleActivity.launchCreateNewContactIntent() {
 }
 
 // handle private contacts differently, only Simple Contacts Pro can open them
+/** Omnio One: contacts now open in our own contact page. */
 fun Activity.startContactDetailsIntent(contact: Contact) {
+    Intent(this, org.fossify.phone.activities.OmnioContactActivity::class.java).apply {
+        putExtra(org.fossify.phone.activities.OmnioContactActivity.EXTRA_CONTACT_ID, contact.rawId)
+        startActivity(this)
+    }
+}
+
+/** Opens the contact in the phone's contacts app, used by the Edit button. */
+fun Activity.openContactInSystemApp(contact: Contact) {
     val simpleContacts = "org.fossify.contacts"
     val simpleContactsDebug = "org.fossify.contacts.debug"
     val isPrivateContact = contact.rawId > FIRST_CONTACT_ID

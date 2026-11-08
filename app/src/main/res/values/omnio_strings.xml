@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Omnio One strings -->
+    <string name="omnio_text">Text</string>
+    <string name="omnio_numbers">Numbers</string>
+    <string name="omnio_details">Details</string>
+    <string name="omnio_birthday">Birthday</string>
+    <string name="omnio_email">Email</string>
+    <string name="omnio_number_count">%d numbers</string>
+</resources>

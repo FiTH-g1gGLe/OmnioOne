@@ -60,6 +60,7 @@ class MainActivity : SimpleActivity() {
     var cachedContacts = ArrayList<Contact>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        applyOmnioThemeOnce()
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         appLaunched(BuildConfig.APPLICATION_ID)
@@ -315,9 +316,43 @@ class MainActivity : SimpleActivity() {
             .build()
     }
 
+    /** Omnio One: switch to the Omnio dark theme the first time this version runs. */
+    private fun applyOmnioThemeOnce() {
+        val omnioPrefs = getSharedPreferences("omnio", MODE_PRIVATE)
+        if (omnioPrefs.getBoolean("omnio_theme_v1", false)) return
+        val text = 0xFFECEFF4.toInt()
+        val background = 0xFF0F1115.toInt()
+        val primary = 0xFF4F7CFF.toInt()
+        config.isSystemThemeEnabled = false
+        config.isGlobalThemeEnabled = false
+        config.textColor = text
+        config.backgroundColor = background
+        config.primaryColor = primary
+        config.accentColor = primary
+        config.customTextColor = text
+        config.customBackgroundColor = background
+        config.customPrimaryColor = primary
+        config.customAccentColor = primary
+        omnioPrefs.edit().putBoolean("omnio_theme_v1", true).apply()
+    }
+
+    /** Omnio One: each tab lights up in its own brand colour. */
+    private fun tintOmnioTab(view: android.view.View?, position: Int) {
+        val visibleTabs = tabsList.filter { config.showTabs and it != 0 }
+        val color = when (visibleTabs.getOrNull(position)) {
+            TAB_CONTACTS -> 0xFFFF8A3D.toInt()
+            TAB_FAVORITES -> 0xFFFFC85A.toInt()
+            TAB_CALL_HISTORY -> 0xFF4F7CFF.toInt()
+            else -> return
+        }
+        view?.findViewById<ImageView>(R.id.tab_item_icon)?.applyColorFilter(color)
+        view?.findViewById<TextView>(R.id.tab_item_label)?.setTextColor(color)
+    }
+
     private fun setupTabColors() {
         val activeView = binding.mainTabsHolder.getTabAt(binding.viewPager.currentItem)?.customView
         updateBottomTabItemColors(activeView, true, getSelectedTabDrawableIds()[binding.viewPager.currentItem])
+        tintOmnioTab(activeView, binding.viewPager.currentItem)
 
         getInactiveTabIndexes(binding.viewPager.currentItem).forEach { index ->
             val inactiveView = binding.mainTabsHolder.getTabAt(index)?.customView
@@ -435,6 +470,7 @@ class MainActivity : SimpleActivity() {
                 getCurrentFragment()?.onSearchQueryChanged(binding.mainMenu.getCurrentQuery())
                 binding.viewPager.currentItem = it.position
                 updateBottomTabItemColors(it.customView, true, getSelectedTabDrawableIds()[it.position])
+                tintOmnioTab(it.customView, it.position)
 
                 val lastPosition = binding.mainTabsHolder.tabCount - 1
                 if (it.position == lastPosition && config.showTabs and TAB_CALL_HISTORY > 0) {
