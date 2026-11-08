@@ -65,5 +65,26 @@
             android:textSize="@dimen/normal_text_size"
             tools:drawableEndCompat="@drawable/scheduled_message_icon"
             tools:text="Message content" />
+
+        <!-- Omnio One: reaction badge (👍 ❤️ 😂 …) tucked under the bubble -->
+        <TextView
+            android:id="@+id/thread_message_reactions"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/thread_message_body"
+            android:layout_alignEnd="@+id/thread_message_body"
+            android:layout_marginTop="-10dp"
+            android:layout_marginEnd="6dp"
+            android:layout_marginStart="6dp"
+            android:background="@drawable/msg_reaction_badge"
+            android:elevation="2dp"
+            android:paddingStart="7dp"
+            android:paddingTop="2dp"
+            android:paddingEnd="7dp"
+            android:paddingBottom="2dp"
+            android:textSize="14sp"
+            android:visibility="gone"
+            tools:text="👍"
+            tools:visibility="visible" />
     </RelativeLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

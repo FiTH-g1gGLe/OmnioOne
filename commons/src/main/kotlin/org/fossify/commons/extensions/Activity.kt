@@ -55,6 +55,7 @@ import org.fossify.commons.dialogs.WhatsNewDialog
 import org.fossify.commons.dialogs.WritePermissionDialog
 import org.fossify.commons.dialogs.WritePermissionDialog.WritePermissionDialogMode
 import org.fossify.commons.helpers.CREATE_DOCUMENT_SDK_30
+import org.fossify.commons.helpers.isOurPackage
 import org.fossify.commons.helpers.EXTRA_SHOW_ADVANCED
 import org.fossify.commons.helpers.IS_FROM_GALLERY
 import org.fossify.commons.helpers.MINUTE_SECONDS
@@ -651,6 +652,8 @@ fun BaseSimpleActivity.launchCallIntent(recipient: String, handle: PhoneAccountH
 fun Activity.launchSendSMSIntent(recipient: String) {
     Intent(Intent.ACTION_SENDTO).apply {
         data = Uri.fromParts("smsto", recipient, null)
+        // Omnio One: texts open in Omnio One's own Messages
+        if (isOurPackage(packageName)) setPackage(packageName)
         launchActivityIntent(this)
     }
 }

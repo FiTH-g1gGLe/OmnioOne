@@ -402,9 +402,19 @@ class MainActivity : SimpleActivity() {
         }
     }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        val omnioTab = intent.getIntExtra(org.fossify.messages.helpers.OmnioTabBar.EXTRA_OPEN_TAB, -1)
+        if (omnioTab in 0 until pageTabCount) {
+            binding.mainTabsHolder.getTabAt(omnioTab)?.select()
+        }
+    }
+
+    @Suppress("DEPRECATION")
     private fun openMessages() {
         try {
             startActivity(Intent(this, org.fossify.messages.activities.MainActivity::class.java))
+            overridePendingTransition(0, 0)
         } catch (e: Exception) {
             showErrorToast(e)
         }
@@ -480,6 +490,13 @@ class MainActivity : SimpleActivity() {
                 // open the Recents tab if we got here by clicking a missed call notification
                 if (intent.action == Intent.ACTION_VIEW && config.showTabs and TAB_CALL_HISTORY > 0) {
                     wantedTab = pageTabCount - 1
+                }
+
+                // Omnio One: coming back from the Messages screen's tab bar
+                val omnioTab = intent.getIntExtra(org.fossify.messages.helpers.OmnioTabBar.EXTRA_OPEN_TAB, -1)
+                if (omnioTab in 0 until pageTabCount) {
+                    wantedTab = omnioTab
+                    intent.removeExtra(org.fossify.messages.helpers.OmnioTabBar.EXTRA_OPEN_TAB)
                 }
 
                 binding.mainTabsHolder.getTabAt(wantedTab)?.select()

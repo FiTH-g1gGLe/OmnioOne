@@ -207,6 +207,8 @@ class ThreadActivity : SimpleActivity() {
     private var isActivityVisible = false
     private var refreshedSinceSent = false
     private var threadItems: List<ThreadItem> = emptyList()
+    @Volatile
+    private var omnioReactions: Map<Long, List<String>> = emptyMap()
     private var bus: EventBus? = null
     private var conversation: Conversation? = null
     private var participants = ArrayList<SimpleContact>()
@@ -616,6 +618,7 @@ class ThreadActivity : SimpleActivity() {
                 val shouldScrollToBottom =
                     currentList.lastOrNull() != latestThreadItems.lastOrNull() &&
                             lastPosition - lastVisiblePosition == 1
+                reactions = omnioReactions
                 updateMessages(latestThreadItems, if (shouldScrollToBottom) lastPosition else -1)
             }
         }
@@ -1344,12 +1347,28 @@ class ThreadActivity : SimpleActivity() {
             subscriptionIdToSimId[subscriptionInfo.subscriptionId] = "${index + 1}"
         }
 
+        // Omnio One: turn "Liked …" / "👍 to …" texts into reaction badges
+        val (hiddenReactionIds, reactions) = try {
+            org.fossify.messages.helpers.OmnioReactions.process(messageSnapshot)
+        } catch (e: Exception) {
+            emptySet<Long>() to emptyMap()
+        }
+        omnioReactions = reactions
+
         var prevDateTime = 0
         var prevSIMId = -2
         var hadUnreadItems = false
         val cnt = messageSnapshot.size
         for (i in 0 until cnt) {
             val message = messageSnapshot.getOrNull(i) ?: continue
+            if (message.id in hiddenReactionIds) {
+                if (!message.read) {
+                    hadUnreadItems = true
+                    markMessageRead(message.id, message.isMMS)
+                    conversationsDB.markRead(threadId)
+                }
+                continue
+            }
             // do not show the date/time above every message, only if the difference between the 2 messages is at least MIN_DATE_TIME_DIFF_SECS,
             // or if the message is sent from a different SIM
             if (shouldShowThreadDateTime(message, prevDateTime, prevSIMId)) {

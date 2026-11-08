@@ -101,6 +101,16 @@ class ThreadAdapter(
 ) : MyRecyclerViewListAdapter<ThreadItem>(activity, recyclerView, ThreadItemDiffCallback(), itemClick) {
     private var fontSize = activity.getTextSize()
 
+    /** Omnio One: message id -> reaction emojis shown as a badge under the bubble. */
+    @SuppressLint("NotifyDataSetChanged")
+    var reactions: Map<Long, List<String>> = emptyMap()
+        set(value) {
+            if (field != value) {
+                field = value
+                notifyDataSetChanged()
+            }
+        }
+
     @SuppressLint("MissingPermission")
     private val hasMultipleSIMCards = (activity.subscriptionManagerCompat().activeSubscriptionInfoList?.size ?: 0) > 1
     private val maxChatBubbleWidth = (activity.usableScreenSize.x * 0.8f).toInt()
@@ -389,6 +399,17 @@ class ThreadAdapter(
                 setupSentMessageView(messageBinding = this, message = message)
             }
 
+            threadMessageReactions.apply {
+                val emojis = reactions[message.id]
+                beVisibleIf(!emojis.isNullOrEmpty())
+                text = emojis?.joinToString(" ").orEmpty()
+                updateLayoutParams<RelativeLayout.LayoutParams> {
+                    removeRule(RelativeLayout.ALIGN_END)
+                    removeRule(RelativeLayout.ALIGN_START)
+                    addRule(if (message.isReceivedMessage()) RelativeLayout.ALIGN_END else RelativeLayout.ALIGN_START, R.id.thread_message_body)
+                }
+            }
+
             threadMessageAttachmentsHolder.removeAllViews()
             if (message.attachment?.attachments?.isNotEmpty() == true) {
                 threadMessageAttachmentsHolder.beVisible()
@@ -464,8 +485,9 @@ class ThreadAdapter(
                 applyTo(threadMessageHolder)
             }
 
-            val primaryColor = activity.getProperPrimaryColor()
-            val contrastColor = primaryColor.getContrastColor()
+            // Omnio One: sent texts are Messages green
+            val primaryColor = 0xFF22C55E.toInt()
+            val contrastColor = 0xFF0F1115.toInt()
 
             threadMessageBody.apply {
                 updateLayoutParams<RelativeLayout.LayoutParams> {

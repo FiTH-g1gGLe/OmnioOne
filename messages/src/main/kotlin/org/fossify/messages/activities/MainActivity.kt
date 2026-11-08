@@ -13,6 +13,7 @@ import android.text.TextUtils
 import androidx.appcompat.content.res.AppCompatResources
 import org.fossify.commons.dialogs.PermissionRequiredDialog
 import org.fossify.commons.extensions.adjustAlpha
+import org.fossify.commons.extensions.getBottomNavigationBackgroundColor
 import org.fossify.commons.extensions.appLaunched
 import org.fossify.commons.extensions.appLockManager
 import org.fossify.commons.extensions.applyColorFilter
@@ -93,7 +94,8 @@ class MainActivity : SimpleActivity() {
         setupOptionsMenu()
         refreshMenuItems()
 
-        setupEdgeToEdge(padBottomImeAndSystem = listOf(binding.conversationsList))
+        setupEdgeToEdge(padBottomSystem = listOf(binding.omnioTabs))
+        setupOmnioTabs()
 
         checkAndDeleteOldRecycleBinMessages()
         clearAllMessagesIfNeeded {
@@ -105,8 +107,26 @@ class MainActivity : SimpleActivity() {
         }
     }
 
+    // Omnio One: bottom tabs + green Messages accents
+    private fun setupOmnioTabs() {
+        org.fossify.messages.helpers.OmnioTabBar.attach(this, binding.omnioTabs)
+        binding.omnioTabs.post {
+            val barHeight = binding.omnioTabs.height
+            binding.conversationsList.setPadding(
+                binding.conversationsList.paddingLeft,
+                binding.conversationsList.paddingTop,
+                binding.conversationsList.paddingRight,
+                barHeight + (barHeight / 2)
+            )
+            binding.conversationsFab.translationY = -barHeight.toFloat()
+        }
+    }
+
     override fun onResume() {
         super.onResume()
+        binding.omnioTabs.setBackgroundColor(getBottomNavigationBackgroundColor())
+        binding.conversationsFab.backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF22C55E.toInt())
+        binding.conversationsFab.imageTintList = android.content.res.ColorStateList.valueOf(0xFF0F1115.toInt())
         updateMenuColors()
         refreshMenuItems()
 

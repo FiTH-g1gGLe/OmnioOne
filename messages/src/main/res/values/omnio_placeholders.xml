@@ -7,4 +7,5 @@
     <string name="faq_2_text" translatable="false">Omnio One</string>
     <string name="faq_3_title" translatable="false">Omnio One</string>
     <string name="faq_3_text" translatable="false">Omnio One</string>
+    <string name="omnio_messages_label">Messages</string>
 </resources>

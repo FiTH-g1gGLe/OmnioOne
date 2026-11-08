@@ -143,6 +143,18 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/activity_margin"
         android:src="@drawable/ic_plus_vector"
-        app:applyWindowInsets="true" />
+        app:applyWindowInsets="false" />
+
+    <!-- Omnio One: shared bottom tab bar -->
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/omnio_tabs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        app:tabGravity="fill"
+        app:tabIndicator="@null"
+        app:tabMinWidth="72dp"
+        app:tabMode="fixed"
+        app:tabRippleColor="@null" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
