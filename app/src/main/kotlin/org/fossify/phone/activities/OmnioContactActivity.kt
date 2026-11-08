@@ -21,6 +21,7 @@ import org.fossify.commons.extensions.getProperBackgroundColor
 import org.fossify.commons.extensions.getProperTextColor
 import org.fossify.commons.extensions.launchSendSMSIntent
 import org.fossify.commons.extensions.sendEmailIntent
+import org.fossify.commons.extensions.showErrorToast
 import org.fossify.commons.extensions.toast
 import org.fossify.commons.extensions.viewBinding
 import org.fossify.commons.helpers.ContactsHelper
@@ -52,6 +53,7 @@ class OmnioContactActivity : SimpleActivity() {
 
     private val binding by viewBinding(ActivityOmnioContactBinding::inflate)
     private var contact: Contact? = null
+    private val favouriteWriter = java.util.concurrent.Executors.newSingleThreadExecutor()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -169,15 +171,24 @@ class OmnioContactActivity : SimpleActivity() {
 
     private fun toggleFavourite() {
         val current = contact ?: return
-        val helper = ContactsHelper(this)
-        if (current.starred == 1) {
-            helper.removeFavorites(arrayListOf(current))
-            current.starred = 0
-            toast(R.string.omnio_removed_favourite)
-        } else {
-            helper.addFavorites(arrayListOf(current))
-            current.starred = 1
-            toast(R.string.omnio_added_favourite)
+        val makeFavourite = current.starred != 1
+        current.starred = if (makeFavourite) 1 else 0
+        toast(if (makeFavourite) R.string.omnio_added_favourite else R.string.omnio_removed_favourite)
+        // One write at a time, in order, so quick add/remove/add taps can't land out of order
+        favouriteWriter.execute {
+            try {
+                if (current.isPrivate()) {
+                    org.fossify.commons.helpers.LocalContactsHelper(this).toggleFavorites(arrayOf(current.id), makeFavourite)
+                } else {
+                    val values = android.content.ContentValues().apply {
+                        put(ContactsContract.Contacts.STARRED, if (makeFavourite) 1 else 0)
+                    }
+                    val uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI, current.contactId.toString())
+                    contentResolver.update(uri, values, null, null)
+                }
+            } catch (e: Exception) {
+                runOnUiThread { showErrorToast(e) }
+            }
         }
         binding.contactFavourite.setImageResource(
             if (current.starred == 1) org.fossify.commons.R.drawable.ic_star_vector
@@ -239,6 +250,7 @@ class OmnioContactActivity : SimpleActivity() {
             return
         }
         holder.beVisible()
+        val stacked = actions.size >= 3
         actions.forEachIndexed { index, action ->
             holder.addView(TextView(this).apply {
                 text = getString(action.label)
@@ -248,12 +260,20 @@ class OmnioContactActivity : SimpleActivity() {
                 setTypeface(typeface, android.graphics.Typeface.BOLD)
                 val icon = getDrawable(action.icon)?.mutate()
                 icon?.setTint(action.tint)
-                setCompoundDrawablesRelativeWithIntrinsicBounds(icon, null, null, null)
-                compoundDrawablePadding = dp(6)
-                setPadding(dp(10), 0, dp(10), 0)
+                if (stacked) {
+                    setCompoundDrawablesRelativeWithIntrinsicBounds(null, icon, null, null)
+                    compoundDrawablePadding = dp(2)
+                    setPadding(dp(6), dp(8), dp(6), dp(8))
+                } else {
+                    setCompoundDrawablesRelativeWithIntrinsicBounds(icon, null, null, null)
+                    compoundDrawablePadding = dp(6)
+                    setPadding(dp(10), 0, dp(10), 0)
+                }
+                maxLines = 1
+                ellipsize = android.text.TextUtils.TruncateAt.END
                 background = getDrawable(R.drawable.omnio_round_bg)
                 backgroundTintList = ColorStateList.valueOf(action.background)
-                layoutParams = LinearLayout.LayoutParams(0, dp(48), 1f).apply {
+                layoutParams = LinearLayout.LayoutParams(0, dp(if (stacked) 64 else 48), 1f).apply {
                     if (index > 0) marginStart = dp(8)
                 }
                 setOnClickListener {

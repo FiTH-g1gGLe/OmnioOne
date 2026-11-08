@@ -133,6 +133,57 @@ class ContactsFragment(context: Context, attributeSet: AttributeSet) : MyViewPag
         }
     }
 
+    /** Omnio One: keep the favourites row in step when a contact is starred or unstarred anywhere. */
+    private val starObserver = object : android.database.ContentObserver(android.os.Handler(android.os.Looper.getMainLooper())) {
+        override fun onChange(selfChange: Boolean) {
+            removeCallbacks(refreshStarsRunnable)
+            postDelayed(refreshStarsRunnable, 400)
+        }
+    }
+
+    private val refreshStarsRunnable = Runnable { refreshStars() }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        try {
+            context.contentResolver.registerContentObserver(android.provider.ContactsContract.Contacts.CONTENT_URI, true, starObserver)
+        } catch (ignored: Exception) {
+        }
+    }
+
+    override fun onDetachedFromWindow() {
+        try {
+            context.contentResolver.unregisterContentObserver(starObserver)
+        } catch (ignored: Exception) {
+        }
+        removeCallbacks(refreshStarsRunnable)
+        super.onDetachedFromWindow()
+    }
+
+    private fun refreshStars() {
+        val ctx = context ?: return
+        ensureBackgroundThread {
+            val starredIds = HashSet<Int>()
+            try {
+                ctx.contentResolver.query(
+                    android.provider.ContactsContract.Contacts.CONTENT_URI,
+                    arrayOf(android.provider.ContactsContract.Contacts._ID),
+                    "${android.provider.ContactsContract.Contacts.STARRED} = 1",
+                    null,
+                    null
+                )?.use { cursor ->
+                    while (cursor.moveToNext()) starredIds.add(cursor.getInt(0))
+                }
+            } catch (ignored: Exception) {
+                return@ensureBackgroundThread
+            }
+            activity?.runOnUiThread {
+                allContacts.filter { !it.isPrivate() }.forEach { it.starred = if (it.contactId in starredIds) 1 else 0 }
+                showFavouritesStrip()
+            }
+        }
+    }
+
     private fun loadAppTags() {
         val ctx = context ?: return
         ensureBackgroundThread {
