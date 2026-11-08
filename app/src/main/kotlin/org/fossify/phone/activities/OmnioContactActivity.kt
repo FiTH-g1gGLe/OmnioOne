@@ -622,6 +622,57 @@ class OmnioContactActivity : SimpleActivity() {
         null
     }
 
+    /** A copied or shared link: work out what it's for and offer it once. */
+    private fun handleIncomingLink(contact: Contact, wantedKey: String?, url: String) {
+        val network = OmnioSocials.networkFor(url) ?: return
+        if (wantedKey == "messenger" && network.key == "facebook") {
+            OmnioSocials.clearPendingLink(this)
+            offerMessengerFromFacebook(contact, url, null)
+            return
+        }
+        // already on this contact: nothing to ask
+        if (currentSocials.any { it.url.equals(url, true) }) {
+            OmnioSocials.clearPendingLink(this)
+            return
+        }
+        offerLink(contact, network, url)
+    }
+
+    private fun offerMessengerFromFacebook(contact: Contact, facebookUrl: String, onFail: (() -> Unit)?) {
+        toast(R.string.omnio_checking_profile)
+        ensureBackgroundThread {
+            val resolved = OmnioSocials.resolveFacebook(facebookUrl)
+            val messengerUrl = resolved?.let { OmnioSocials.messengerFromFacebook(it) }
+            runOnUiThread {
+                if (messengerUrl == null) {
+                    // Facebook hid the address: ask for the username shown under "profile link"
+                    askFacebookUsername(contact, facebookUrl)
+                    return@runOnUiThread
+                }
+                if (currentSocials.any { it.url.equals(messengerUrl, true) }) return@runOnUiThread
+                org.fossify.commons.dialogs.ConfirmationDialog(
+                    this,
+                    message = getString(R.string.omnio_add_messenger_too, contact.getNameToDisplay()) + "\n\n" + messengerUrl,
+                    positive = org.fossify.commons.R.string.yes,
+                    negative = org.fossify.commons.R.string.no
+                ) {
+                    ensureBackgroundThread {
+                        OmnioSocials.addSocial(this, contact.contactId, messengerUrl)
+                        // swap an opaque facebook.com/share link for the real profile address
+                        val oldFacebook = currentSocials.firstOrNull { it.url.equals(facebookUrl, true) && it.network.key == "facebook" }
+                        if (oldFacebook != null && resolved != null && resolved != facebookUrl &&
+                            OmnioSocials.network("facebook").usernameFrom(facebookUrl).isEmpty()
+                        ) {
+                            OmnioSocials.addSocial(this, contact.contactId, resolved)
+                            OmnioSocials.removeSocial(this, oldFacebook.dataId)
+                        }
+                        runOnUiThread { loadApps(contact) }
+                    }
+                }
+            }
+        }
+    }
+
     /** Saves a Discord ID (replacing any older Discord link on the contact). */
     private fun saveDiscord(contact: Contact, input: String, ask: Boolean) {
         val existing = currentSocials.filter { it.network.key == "discord" }
