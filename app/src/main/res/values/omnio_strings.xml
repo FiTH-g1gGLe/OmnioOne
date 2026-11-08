@@ -59,7 +59,7 @@
     <string name="omnio_apps">Apps</string>
     <string name="omnio_add_social">Add social</string>
     <string name="omnio_username_hint">Username or profile link</string>
-    <string name="omnio_discord_hint">Username or user ID (⋯ → Copy ID)</string>
+    <string name="omnio_discord_hint">Discord ID (⋯ → Copy ID), not username</string>
     <string name="omnio_remove_social">Remove %s from this contact?</string>
     <string name="omnio_find_on">Find on %s</string>
     <string name="omnio_find_instructions">Find %s, open their profile, then tap ⋯ → Copy link, or screenshot it and share to Omnio One.</string>
@@ -88,7 +88,8 @@
     <string name="omnio_messenger_call_manual">Tap the call button at the top of the chat. Turn on Link helper and Omnio will tap it for you.</string>
     <string name="omnio_add_email">Add email</string>
     <string name="omnio_invalid_email">That doesn\'t look like an email address</string>
-    <string name="omnio_discord_username_only">Username copied. Paste it into Discord\'s search. Add their ID (⋯ → Copy ID) to open their profile directly.</string>
-    <string name="omnio_discord_need_id">Saved. Also tap Copy ID in Discord so Omnio can open their profile directly.</string>
-    <string name="omnio_discord_bad_input">That isn\'t a Discord username, ID or profile link</string>
+    <string name="omnio_discord_need_id">Discord needs their ID: on their profile tap ⋯ → Copy ID, then add it again.</string>
+    <string name="omnio_discord_bad_input">That isn\'t a Discord ID. On their profile tap ⋯ → Copy ID (a long number). Usernames don\'t work.</string>
+    <string name="omnio_find_instructions_discord">Find %s, open their profile, tap ⋯ → Copy ID (not username), then come back.</string>
+    <string name="omnio_add_discord_question">Add this Discord ID to %1$s?\n\n%2$s</string>
 </resources>

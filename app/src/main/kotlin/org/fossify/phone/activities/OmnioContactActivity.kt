@@ -441,9 +441,8 @@ class OmnioContactActivity : SimpleActivity() {
 
     private fun openSocial(social: OmnioSocials.FoundSocial) {
         if (social.network.key == "discord" && OmnioSocials.discordId(social.url) == null) {
-            // Discord can't open a profile from a username: copy it and open Discord to search
-            OmnioSocials.discordName(social.url)?.let { copyToClipboard(it) }
-            toast(R.string.omnio_discord_username_only, android.widget.Toast.LENGTH_LONG)
+            // an old username-only link: Discord can't open those
+            toast(R.string.omnio_discord_need_id, android.widget.Toast.LENGTH_LONG)
             tryStart(packageManager.getLaunchIntentForPackage(social.network.pkg))
             return
         }
@@ -498,7 +497,7 @@ class OmnioContactActivity : SimpleActivity() {
             val url = OmnioSocials.firstUrl(clip)
             when {
                 url != null && network.matches(url) -> input.setText(url)
-                network.key == "discord" && OmnioSocials.discordUrl(null, clip) != null && clip.length <= 40 -> input.setText(clip)
+                network.key == "discord" && OmnioSocials.discordUrl(clip) != null -> input.setText(clip)
             }
         }
         val wrapper = android.widget.FrameLayout(this).apply {
@@ -522,7 +521,7 @@ class OmnioContactActivity : SimpleActivity() {
             .setNegativeButton(org.fossify.commons.R.string.cancel, null)
             .setNeutralButton(getString(R.string.omnio_find_on, network.name)) { _, _ -> startFinding(contact, network) }
             .apply {
-                setupDialogStuff(wrapper, this, titleText = network.name) { dialog ->
+                setupDialogStuff(wrapper, this, titleText = if (network.key == "discord") "Discord ID" else network.name) { dialog ->
                     input.requestFocus()
                     dialog.window?.setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
                 }
@@ -565,7 +564,12 @@ class OmnioContactActivity : SimpleActivity() {
             search != null && tryStart(Intent(Intent.ACTION_VIEW, Uri.parse(search)))
         if (opened) {
             val helperOn = org.fossify.phone.services.OmnioLinkHelperService.isEnabled(this)
-            toast(getString(if (helperOn) R.string.omnio_find_instructions_helper else R.string.omnio_find_instructions, name), android.widget.Toast.LENGTH_LONG)
+            val tip = when {
+                network.key == "discord" -> R.string.omnio_find_instructions_discord
+                helperOn -> R.string.omnio_find_instructions_helper
+                else -> R.string.omnio_find_instructions
+            }
+            toast(getString(tip, name), android.widget.Toast.LENGTH_LONG)
         } else {
             OmnioSocials.clearPendingLink(this)
             toast(org.fossify.commons.R.string.no_app_found)
@@ -604,7 +608,7 @@ class OmnioContactActivity : SimpleActivity() {
         if (url == null) {
             // Discord's "Copy ID" / "Copy username" copy plain text, not a link
             val text = clip?.toString()?.trim().orEmpty()
-            if (pending.networkKey == "discord" && text.length <= 40 && OmnioSocials.discordUrl(null, text) != null) {
+            if (pending.networkKey == "discord" && OmnioSocials.discordUrl(text) != null) {
                 saveDiscord(current, text, ask = true)
             }
             return
@@ -618,24 +622,23 @@ class OmnioContactActivity : SimpleActivity() {
         null
     }
 
-    /** Saves a Discord ID or username, merged with what's already on the contact. */
+    /** Saves a Discord ID (replacing any older Discord link on the contact). */
     private fun saveDiscord(contact: Contact, input: String, ask: Boolean) {
         val existing = currentSocials.filter { it.network.key == "discord" }
-        val url = OmnioSocials.discordUrl(existing.firstOrNull()?.url, input) ?: run {
-            toast(R.string.omnio_discord_bad_input)
+        val url = OmnioSocials.discordUrl(input) ?: run {
+            toast(R.string.omnio_discord_bad_input, android.widget.Toast.LENGTH_LONG)
             return
         }
-        // keep listening for a while: people often copy the username and then the ID
-        if (existing.any { it.url.equals(url, true) }) return
+        if (existing.any { it.url.equals(url, true) }) {
+            OmnioSocials.clearPendingLink(this)
+            return
+        }
         val save = {
+            OmnioSocials.clearPendingLink(this)
             ensureBackgroundThread {
                 val ok = OmnioSocials.addSocial(this, contact.contactId, url)
                 if (ok) existing.forEach { OmnioSocials.removeSocial(this, it.dataId) }
-                runOnUiThread {
-                    if (ok) loadApps(contact) else toast(org.fossify.commons.R.string.unknown_error_occurred)
-                    // only a username so far: the ID is what opens their profile
-                    if (ok && OmnioSocials.discordId(url) == null) toast(R.string.omnio_discord_need_id, android.widget.Toast.LENGTH_LONG)
-                }
+                runOnUiThread { if (ok) loadApps(contact) else toast(org.fossify.commons.R.string.unknown_error_occurred) }
             }
         }
         if (!ask) {
@@ -643,68 +646,16 @@ class OmnioContactActivity : SimpleActivity() {
             return
         }
         linkDialogShowing = true
-        val shown = OmnioSocials.discordName(url)?.let { "@$it" } ?: getString(R.string.omnio_profile_linked)
         org.fossify.commons.dialogs.ConfirmationDialog(
             this,
-            message = getString(R.string.omnio_add_link_question, "Discord", contact.getNameToDisplay(), shown),
-            positive = org.fossify.commons.R.string.ok,
+            message = getString(R.string.omnio_add_discord_question, contact.getNameToDisplay(), OmnioSocials.discordId(url) ?: "")
+        , positive = org.fossify.commons.R.string.ok,
             negative = org.fossify.commons.R.string.cancel
         ) {
             linkDialogShowing = false
             save()
         }
         binding.root.postDelayed({ linkDialogShowing = false }, 1500)
-    }
-
-    /** A copied or shared link: work out what it's for and offer it once. */
-    private fun handleIncomingLink(contact: Contact, wantedKey: String?, url: String) {
-        val network = OmnioSocials.networkFor(url) ?: return
-        if (wantedKey == "messenger" && network.key == "facebook") {
-            OmnioSocials.clearPendingLink(this)
-            offerMessengerFromFacebook(contact, url, null)
-            return
-        }
-        // already on this contact: nothing to ask
-        if (currentSocials.any { it.url.equals(url, true) }) {
-            OmnioSocials.clearPendingLink(this)
-            return
-        }
-        offerLink(contact, network, url)
-    }
-
-    private fun offerMessengerFromFacebook(contact: Contact, facebookUrl: String, onFail: (() -> Unit)?) {
-        toast(R.string.omnio_checking_profile)
-        ensureBackgroundThread {
-            val resolved = OmnioSocials.resolveFacebook(facebookUrl)
-            val messengerUrl = resolved?.let { OmnioSocials.messengerFromFacebook(it) }
-            runOnUiThread {
-                if (messengerUrl == null) {
-                    // Facebook hid the address: ask for the username shown under "profile link"
-                    askFacebookUsername(contact, facebookUrl)
-                    return@runOnUiThread
-                }
-                if (currentSocials.any { it.url.equals(messengerUrl, true) }) return@runOnUiThread
-                org.fossify.commons.dialogs.ConfirmationDialog(
-                    this,
-                    message = getString(R.string.omnio_add_messenger_too, contact.getNameToDisplay()) + "\n\n" + messengerUrl,
-                    positive = org.fossify.commons.R.string.yes,
-                    negative = org.fossify.commons.R.string.no
-                ) {
-                    ensureBackgroundThread {
-                        OmnioSocials.addSocial(this, contact.contactId, messengerUrl)
-                        // swap an opaque facebook.com/share link for the real profile address
-                        val oldFacebook = currentSocials.firstOrNull { it.url.equals(facebookUrl, true) && it.network.key == "facebook" }
-                        if (oldFacebook != null && resolved != null && resolved != facebookUrl &&
-                            OmnioSocials.network("facebook").usernameFrom(facebookUrl).isEmpty()
-                        ) {
-                            OmnioSocials.addSocial(this, contact.contactId, resolved)
-                            OmnioSocials.removeSocial(this, oldFacebook.dataId)
-                        }
-                        runOnUiThread { loadApps(contact) }
-                    }
-                }
-            }
-        }
     }
 
     /** Called with a link that was copied or shared to Omnio One. */

@@ -58,7 +58,6 @@ object OmnioSocials {
 
         /** What to show under the network name: @username, or "" for links with only a number in them. */
         fun displayHandle(url: String): String {
-            Regex("[?&]u=([^&#]+)").find(url)?.let { return "@" + android.net.Uri.decode(it.groupValues[1]) }
             val handle = handleFrom(url)
             return if (key == "discord" && handle.removePrefix("@").all { it.isDigit() }) "" else handle
         }
@@ -346,34 +345,18 @@ object OmnioSocials {
         return found.sortedBy { networks.indexOf(it.network) }
     }
 
-    /**
-     * Discord can only open a profile from its number ID, but people know usernames. Keep both:
-     * discord.com/users/<id>?u=<username> (opens the profile, shows the name).
-     * [existingUrl] is the Discord link already on the contact, so a username and an ID copied
-     * one after the other end up together.
-     */
-    fun discordUrl(existingUrl: String?, input: String): String? {
-        val text = input.trim().removePrefix("@")
-        var id = existingUrl?.let { Regex("users/(\\d+)").find(it)?.groupValues?.get(1) }
-        var name = existingUrl?.let { Regex("[?&]u=([^&#]+)").find(it)?.groupValues?.get(1) }
-        when {
-            text.contains("discord", true) && text.contains("users/") ->
-                id = Regex("users/(\\d+)").find(text)?.groupValues?.get(1) ?: return null
-            text.matches(Regex("\\d{15,21}")) -> id = text
-            text.matches(Regex("[A-Za-z0-9_.]{2,32}")) -> name = text.lowercase()
-            else -> return null
-        }
-        return when {
-            id != null && name != null -> "https://discord.com/users/$id?u=$name"
-            id != null -> "https://discord.com/users/$id"
-            name != null -> "https://discord.com/?u=$name"
+    /** Discord opens a profile only from its number ID: accept the ID or a discord.com/users/<id> link. */
+    fun discordUrl(input: String): String? {
+        val text = input.trim()
+        val id = when {
+            text.matches(Regex("\\d{15,21}")) -> text
+            text.contains("discord", true) -> Regex("users/(\\d{15,21})").find(text)?.groupValues?.get(1)
             else -> null
-        }
+        } ?: return null
+        return "https://discord.com/users/$id"
     }
 
     fun discordId(url: String) = Regex("users/(\\d+)").find(url)?.groupValues?.get(1)
-
-    fun discordName(url: String) = Regex("[?&]u=([^&#]+)").find(url)?.groupValues?.get(1)
 
     /** Turns whatever the user typed (username, @username or a pasted link) into a profile link. */
     fun buildUrl(network: Network, input: String): String? {
