@@ -53,6 +53,8 @@ import com.google.gson.reflect.TypeToken
 import org.fossify.commons.dialogs.ConfirmationDialog
 import org.fossify.commons.dialogs.PermissionRequiredDialog
 import org.fossify.commons.dialogs.RadioGroupDialog
+import org.fossify.commons.extensions.getAlertDialogBuilder
+import org.fossify.commons.extensions.setupDialogStuff
 import org.fossify.commons.extensions.addBlockedNumber
 import org.fossify.commons.extensions.applyColorFilter
 import org.fossify.commons.extensions.beGone
@@ -591,6 +593,7 @@ class ThreadActivity : SimpleActivity() {
                 recyclerView = binding.threadMessagesList,
                 itemClick = { handleItemClick(it) },
                 isRecycleBin = isRecycleBin,
+                onReact = { showOmnioReactionPicker(it) },
                 deleteMessages = { messages, toRecycleBin, fromRecycleBin ->
                     deleteMessages(
                         messages,
@@ -1712,6 +1715,70 @@ class ThreadActivity : SimpleActivity() {
             showErrorToast(
                 e.localizedMessage ?: getString(org.fossify.commons.R.string.unknown_error_occurred)
             )
+        }
+    }
+
+    /** Omnio One: pick an emoji and send it as a reaction other phones understand. */
+    private fun showOmnioReactionPicker(message: Message) {
+        val emojis = listOf("👍", "❤️", "😂", "😮", "😢", "🙏", "‼️", "❓", "👎")
+        val density = resources.displayMetrics.density
+        var dialog: androidx.appcompat.app.AlertDialog? = null
+        val row = android.widget.GridLayout(this).apply {
+            columnCount = 5
+            setPadding((16 * density).toInt(), (8 * density).toInt(), (16 * density).toInt(), (8 * density).toInt())
+        }
+        emojis.forEach { emoji ->
+            row.addView(android.widget.TextView(this).apply {
+                text = emoji
+                textSize = 30f
+                gravity = android.view.Gravity.CENTER
+                val size = (56 * density).toInt()
+                layoutParams = android.widget.GridLayout.LayoutParams().apply {
+                    width = size
+                    height = size
+                }
+                background = androidx.core.content.ContextCompat.getDrawable(this@ThreadActivity, org.fossify.commons.R.drawable.ripple_all_corners)
+                setOnClickListener {
+                    dialog?.dismiss()
+                    sendOmnioReaction(emoji, message)
+                }
+            })
+        }
+        getAlertDialogBuilder()
+            .setNegativeButton(org.fossify.commons.R.string.cancel, null)
+            .apply {
+                setupDialogStuff(row, this, R.string.omnio_react) { dialog = it }
+            }
+    }
+
+    private fun sendOmnioReaction(emoji: String, message: Message) {
+        val quoted = message.body.trim().replace(Regex("\\s+"), " ").let {
+            if (it.length > 100) it.take(100).trimEnd() + "…" else it
+        }
+        // iPhone and Google Messages both turn these classic words into reactions
+        val word = when (emoji) {
+            "👍" -> "Liked"
+            "❤️" -> "Loved"
+            "😂" -> "Laughed at"
+            "‼️" -> "Emphasized"
+            "❓" -> "Questioned"
+            "👎" -> "Disliked"
+            else -> null
+        }
+        val text = if (word != null) "$word “$quoted”" else "Reacted $emoji to “$quoted”"
+        val subscriptionId = availableSIMCards.getOrNull(currentSIMCardIndex)?.subscriptionId
+            ?: SmsManager.getDefaultSmsSubscriptionId()
+        try {
+            refreshedSinceSent = false
+            sendMessageCompat(text, participants.getAddresses(), subscriptionId, emptyList(), null)
+            ensureBackgroundThread {
+                val existingMessages = messages.toSortedMessages()
+                getMessages(threadId, limit = 1)
+                    .filterNotInByKey(existingMessages) { it.getStableId() }
+                    .forEach { insertOrUpdateMessage(it) }
+            }
+        } catch (e: Exception) {
+            showErrorToast(e)
         }
     }
 

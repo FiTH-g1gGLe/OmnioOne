@@ -4,6 +4,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:ignore="AppCompatResource,AlwaysShowAction">
     <item
+        android:id="@+id/cab_react"
+        android:icon="@drawable/msg_ic_react"
+        android:showAsAction="always"
+        android:title="@string/omnio_react"
+        app:showAsAction="always" />
+    <item
         android:id="@+id/cab_copy_to_clipboard"
         android:icon="@drawable/ic_copy_vector"
         android:showAsAction="always"

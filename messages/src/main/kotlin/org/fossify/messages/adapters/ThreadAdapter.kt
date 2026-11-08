@@ -97,7 +97,9 @@ class ThreadAdapter(
     recyclerView: MyRecyclerView,
     itemClick: (Any) -> Unit,
     val isRecycleBin: Boolean,
-    val deleteMessages: (messages: List<Message>, toRecycleBin: Boolean, fromRecycleBin: Boolean) -> Unit
+    val deleteMessages: (messages: List<Message>, toRecycleBin: Boolean, fromRecycleBin: Boolean) -> Unit,
+    /** Omnio One: send a reaction to a message */
+    val onReact: ((Message) -> Unit)? = null
 ) : MyRecyclerViewListAdapter<ThreadItem>(activity, recyclerView, ThreadItemDiffCallback(), itemClick) {
     private var fontSize = activity.getTextSize()
 
@@ -145,6 +147,7 @@ class ThreadAdapter(
             findItem(R.id.cab_select_text).isVisible = isOneItemSelected && hasText
             findItem(R.id.cab_properties).isVisible = isOneItemSelected
             findItem(R.id.cab_restore).isVisible = isRecycleBin
+            findItem(R.id.cab_react).isVisible = isOneItemSelected && hasText && !isRecycleBin && onReact != null
         }
     }
 
@@ -163,6 +166,11 @@ class ThreadAdapter(
             R.id.cab_restore -> askConfirmRestore()
             R.id.cab_select_all -> selectAll()
             R.id.cab_properties -> showMessageDetails()
+            R.id.cab_react -> {
+                val message = getSelectedItems().filterIsInstance<Message>().firstOrNull() ?: return
+                finishActMode()
+                onReact?.invoke(message)
+            }
         }
     }
 
