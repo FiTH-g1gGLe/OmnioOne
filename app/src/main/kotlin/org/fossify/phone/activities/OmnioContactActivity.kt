@@ -85,6 +85,11 @@ class OmnioContactActivity : SimpleActivity() {
 
     override fun onResume() {
         super.onResume()
+        // back from the accessibility settings: carry on to the search
+        findAfterSettings?.let { network ->
+            findAfterSettings = null
+            contact?.let { current -> binding.root.postDelayed({ openFinding(current, network) }, 400) }
+        }
         val textColor = getProperTextColor()
         binding.root.setBackgroundColor(getProperBackgroundColor())
         binding.contactName.setTextColor(textColor)
@@ -457,6 +462,32 @@ class OmnioContactActivity : SimpleActivity() {
 
     /** Opens the network's people search for this contact; the profile link is caught when they come back. */
     private fun startFinding(contact: Contact, network: OmnioSocials.Network) {
+        val helperOn = org.fossify.phone.services.OmnioLinkHelperService.isEnabled(this)
+        val prefs = getSharedPreferences("omnio", MODE_PRIVATE)
+        if (!helperOn && !prefs.getBoolean("link_helper_dont_ask", false)) {
+            getAlertDialogBuilder()
+                .setMessage(getString(R.string.omnio_link_helper_explain, contact.getNameToDisplay()))
+                .setPositiveButton(R.string.omnio_turn_on) { _, _ ->
+                    OmnioSocials.setPendingLink(this, OmnioSocials.PendingLink(contact.contactId, contact.rawId, contact.getNameToDisplay(), network.key))
+                    findAfterSettings = network
+                    tryStart(Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                    toast(R.string.omnio_link_helper_name)
+                }
+                .setNegativeButton(R.string.omnio_skip) { _, _ -> openFinding(contact, network) }
+                .setNeutralButton(R.string.omnio_dont_ask) { _, _ ->
+                    prefs.edit().putBoolean("link_helper_dont_ask", true).apply()
+                    openFinding(contact, network)
+                }
+                .apply { setupDialogStuff(TextView(this@OmnioContactActivity), this, R.string.omnio_link_helper_title) }
+            return
+        }
+        openFinding(contact, network)
+    }
+
+    /** Network to search once they're back from switching Link helper on. */
+    private var findAfterSettings: OmnioSocials.Network? = null
+
+    private fun openFinding(contact: Contact, network: OmnioSocials.Network) {
         val name = contact.getNameToDisplay()
         OmnioSocials.setPendingLink(this, OmnioSocials.PendingLink(contact.contactId, contact.rawId, name, network.key))
         val search = network.searchUrl(name)
@@ -464,7 +495,8 @@ class OmnioContactActivity : SimpleActivity() {
             tryStart(packageManager.getLaunchIntentForPackage(network.pkg)) ||
             search != null && tryStart(Intent(Intent.ACTION_VIEW, Uri.parse(search)))
         if (opened) {
-            toast(getString(R.string.omnio_find_instructions, name), android.widget.Toast.LENGTH_LONG)
+            val helperOn = org.fossify.phone.services.OmnioLinkHelperService.isEnabled(this)
+            toast(getString(if (helperOn) R.string.omnio_find_instructions_helper else R.string.omnio_find_instructions, name), android.widget.Toast.LENGTH_LONG)
         } else {
             OmnioSocials.clearPendingLink(this)
             toast(org.fossify.commons.R.string.no_app_found)

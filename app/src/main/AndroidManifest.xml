@@ -84,6 +84,20 @@
             android:configChanges="orientation|screenSize"
             android:exported="false" />
 
+        <!-- Omnio One Link helper: reads a profile address on screen while you link a contact -->
+        <service
+            android:name=".services.OmnioLinkHelperService"
+            android:exported="false"
+            android:label="@string/omnio_link_helper_name"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/omnio_link_helper" />
+        </service>
+
         <!-- Omnio One: share a profile link from Facebook, Instagram, TikTok... to the contact you're finding -->
         <activity
             android:name=".activities.OmnioShareLinkActivity"
