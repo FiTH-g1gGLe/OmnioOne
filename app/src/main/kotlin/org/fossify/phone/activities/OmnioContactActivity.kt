@@ -22,6 +22,7 @@ import org.fossify.commons.extensions.getProperTextColor
 import org.fossify.commons.extensions.launchSendSMSIntent
 import org.fossify.commons.extensions.sendEmailIntent
 import org.fossify.commons.extensions.showErrorToast
+import org.fossify.commons.extensions.hasPermission
 import org.fossify.commons.extensions.toast
 import org.fossify.commons.extensions.viewBinding
 import org.fossify.commons.helpers.ContactsHelper
@@ -49,6 +50,7 @@ class OmnioContactActivity : SimpleActivity() {
         const val EXTRA_CONTACT_ID = "omnio_contact_id"
         private const val CALLS_BLUE = 0xFF4F7CFF.toInt()
         private const val MESSAGES_GREEN = 0xFF22C55E.toInt()
+        private const val MAX_RECENT = 6
     }
 
     private val binding by viewBinding(ActivityOmnioContactBinding::inflate)
@@ -291,37 +293,92 @@ class OmnioContactActivity : SimpleActivity() {
     }
 
     /** Last few calls with this contact, newest first. */
+    /** One line in the contact's Recent list: a call or a text. */
+    private data class ActivityItem(
+        val time: Long,
+        val title: String,
+        val subtitle: String,
+        val icon: Int,
+        val color: Int,
+        val onClick: (() -> Unit)?
+    )
+
+    /** Recent calls and texts with this contact, newest first. */
     private fun loadRecentCalls(contact: Contact) {
         val numbers = contact.phoneNumbers.map { it.normalizedNumber.ifEmpty { it.value } }
         if (numbers.isEmpty()) return
         RecentsHelper(this).getRecentCalls(queryLimit = 300) { calls ->
-            val mine = calls.filter { call ->
-                numbers.any { PhoneNumberUtils.compare(it, call.phoneNumber) }
-            }.sortedByDescending { it.startTS }.take(5)
-            runOnUiThread { showRecentCalls(mine) }
+            val now = System.currentTimeMillis()
+            val items = ArrayList<ActivityItem>()
+            calls.filter { call -> numbers.any { PhoneNumberUtils.compare(it, call.phoneNumber) } }
+                .sortedByDescending { it.startTS }
+                .take(MAX_RECENT)
+                .forEach { call ->
+                    val (title, icon, color) = when (call.type) {
+                        Calls.MISSED_TYPE -> Triple(R.string.omnio_missed_call, R.drawable.ic_call_missed_vector, 0xFFFF8A8A.toInt())
+                        Calls.REJECTED_TYPE, Calls.BLOCKED_TYPE -> Triple(R.string.omnio_declined_call, R.drawable.ic_call_missed_vector, 0xFFFF8A8A.toInt())
+                        Calls.OUTGOING_TYPE -> Triple(R.string.omnio_outgoing_call, R.drawable.ic_call_made_vector, CALLS_BLUE)
+                        else -> Triple(R.string.omnio_incoming_call, R.drawable.ic_call_received_vector, MESSAGES_GREEN)
+                    }
+                    val whenText = DateUtils.getRelativeTimeSpanString(call.startTS, now, DateUtils.MINUTE_IN_MILLIS).toString()
+                    val subtitle = if (call.duration > 0) "$whenText · ${call.duration.getFormattedDuration()}" else whenText
+                    items.add(ActivityItem(call.startTS, getString(title), subtitle, icon, color, null))
+                }
+            items.addAll(loadRecentTexts(numbers, now))
+            val newest = items.sortedByDescending { it.time }.take(MAX_RECENT)
+            runOnUiThread { showRecentActivity(newest) }
         }
     }
 
-    private fun showRecentCalls(calls: List<org.fossify.phone.models.RecentCall>) {
+    /** Last few SMS with any of these numbers (needs Omnio One to be allowed to read texts). */
+    private fun loadRecentTexts(numbers: List<String>, now: Long): List<ActivityItem> {
+        if (!hasPermission(org.fossify.commons.helpers.PERMISSION_READ_SMS)) return emptyList()
+        val found = ArrayList<ActivityItem>()
+        try {
+            contentResolver.query(
+                android.provider.Telephony.Sms.CONTENT_URI,
+                arrayOf(
+                    android.provider.Telephony.Sms.ADDRESS,
+                    android.provider.Telephony.Sms.BODY,
+                    android.provider.Telephony.Sms.DATE,
+                    android.provider.Telephony.Sms.TYPE
+                ),
+                null,
+                null,
+                "${android.provider.Telephony.Sms.DATE} DESC"
+            )?.use { cursor ->
+                var scanned = 0
+                while (cursor.moveToNext() && found.size < MAX_RECENT && scanned++ < 1500) {
+                    val address = cursor.getString(0) ?: continue
+                    if (numbers.none { PhoneNumberUtils.compare(it, address) }) continue
+                    val body = (cursor.getString(1) ?: "").replace(Regex("\\s+"), " ").trim()
+                    val date = cursor.getLong(2)
+                    val received = cursor.getInt(3) == android.provider.Telephony.Sms.MESSAGE_TYPE_INBOX
+                    val whenText = DateUtils.getRelativeTimeSpanString(date, now, DateUtils.MINUTE_IN_MILLIS).toString()
+                    val label = getString(if (received) R.string.omnio_text_received else R.string.omnio_text_sent)
+                    val snippet = if (body.length > 60) body.take(60).trimEnd() + "…" else body
+                    found.add(ActivityItem(date, snippet.ifEmpty { label }, "$label · $whenText", R.drawable.ic_omnio_chat, MESSAGES_GREEN) {
+                        launchSendSMSIntent(address)
+                    })
+                }
+            }
+        } catch (ignored: Exception) {
+        }
+        return found
+    }
+
+    private fun showRecentActivity(items: List<ActivityItem>) {
         val holder = binding.contactRecentHolder
         holder.removeAllViews()
-        if (calls.isEmpty()) {
+        if (items.isEmpty()) {
             holder.beGone()
             binding.contactRecentLabel.beGone()
             return
         }
         holder.beVisible()
         binding.contactRecentLabel.beVisible()
-        calls.forEachIndexed { index, call ->
-            val (title, icon, color) = when (call.type) {
-                Calls.MISSED_TYPE -> Triple(R.string.omnio_missed_call, R.drawable.ic_call_missed_vector, 0xFFFF8A8A.toInt())
-                Calls.REJECTED_TYPE, Calls.BLOCKED_TYPE -> Triple(R.string.omnio_declined_call, R.drawable.ic_call_missed_vector, 0xFFFF8A8A.toInt())
-                Calls.OUTGOING_TYPE -> Triple(R.string.omnio_outgoing_call, R.drawable.ic_call_made_vector, CALLS_BLUE)
-                else -> Triple(R.string.omnio_incoming_call, R.drawable.ic_call_received_vector, MESSAGES_GREEN)
-            }
-            val whenText = DateUtils.getRelativeTimeSpanString(call.startTS, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS).toString()
-            val subtitle = if (call.duration > 0) "$whenText · ${call.duration.getFormattedDuration()}" else whenText
-            addRow(holder, getString(title), subtitle, index > 0, icon, color, null, null, 0, null)
+        items.forEachIndexed { index, item ->
+            addRow(holder, item.title, item.subtitle, index > 0, item.icon, item.color, item.onClick, null, 0, null)
         }
     }
 

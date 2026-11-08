@@ -54,4 +54,6 @@
     <string name="omnio_names_surname">Surname first</string>
     <string name="omnio_names_first">First name only</string>
     <string name="omnio_messages_tab">Messages</string>
+    <string name="omnio_text_received">Text received</string>
+    <string name="omnio_text_sent">Text sent</string>
 </resources>
