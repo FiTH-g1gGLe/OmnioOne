@@ -1,7 +1,20 @@
 package org.fossify.phone.fragments
 
 import android.content.Context
+import android.content.res.ColorStateList
+import android.text.TextUtils
 import android.util.AttributeSet
+import android.util.TypedValue
+import android.view.Gravity
+import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.TextView
+import androidx.coordinatorlayout.widget.CoordinatorLayout
+import com.google.android.material.appbar.AppBarLayout
+import org.fossify.commons.helpers.SimpleContactsHelper
+import org.fossify.commons.helpers.ensureBackgroundThread
+import org.fossify.phone.helpers.OmnioAppTags
 import org.fossify.commons.adapters.MyRecyclerViewAdapter
 import org.fossify.commons.extensions.areSystemAnimationsEnabled
 import org.fossify.commons.extensions.baseConfig
@@ -34,12 +47,22 @@ import org.fossify.phone.interfaces.RefreshItemsListener
 class ContactsFragment(context: Context, attributeSet: AttributeSet) : MyViewPagerFragment<MyViewPagerFragment.LettersInnerBinding>(context, attributeSet),
     RefreshItemsListener {
     private lateinit var binding: FragmentLettersLayoutBinding
+    private lateinit var outerBinding: FragmentContactsBinding
     private var allContacts = ArrayList<Contact>()
+    private var appTags: Map<Int, CharSequence> = emptyMap()
+    private var omnioTextColor = 0xFFECEFF4.toInt()
 
     override fun onFinishInflate() {
         super.onFinishInflate()
-        binding = FragmentLettersLayoutBinding.bind(FragmentContactsBinding.bind(this).contactsFragment)
+        outerBinding = FragmentContactsBinding.bind(this)
+        binding = FragmentLettersLayoutBinding.bind(outerBinding.contactsFragment)
         innerBinding = LettersInnerBinding(binding)
+
+        // Omnio One: the list sits under the favourites row and pushes it away when scrolling
+        binding.fragmentWrapper.layoutParams = CoordinatorLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
+        ).apply { behavior = AppBarLayout.ScrollingViewBehavior() }
     }
 
     override fun setupFragment() {
@@ -74,6 +97,9 @@ class ContactsFragment(context: Context, attributeSet: AttributeSet) : MyViewPag
         binding.apply {
             (fragmentList.adapter as? MyRecyclerViewAdapter)?.updateTextColor(textColor)
             fragmentPlaceholder.setTextColor(textColor)
+            omnioTextColor = textColor
+            outerBinding.omnioFavouritesLabel.setTextColor(textColor)
+            showFavouritesStrip()
             fragmentPlaceholder2.setTextColor(properPrimaryColor)
 
             letterFastscroller.textColor = textColor.getColorStateList()
@@ -100,8 +126,73 @@ class ContactsFragment(context: Context, attributeSet: AttributeSet) : MyViewPag
 
             activity?.runOnUiThread {
                 gotContacts(contacts)
+                showFavouritesStrip()
                 callback?.invoke()
             }
+            loadAppTags()
+        }
+    }
+
+    private fun loadAppTags() {
+        val ctx = context ?: return
+        ensureBackgroundThread {
+            val tags = OmnioAppTags.load(ctx)
+            activity?.runOnUiThread {
+                appTags = tags
+                (binding.fragmentList.adapter as? ContactsAdapter)?.appTags = tags
+            }
+        }
+    }
+
+    private fun dp(value: Int) = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, value.toFloat(), resources.displayMetrics).toInt()
+
+    /** Omnio One: "New" button plus a scrolling row of favourite contacts above the list. */
+    private fun showFavouritesStrip() {
+        val holder = outerBinding.omnioFavouritesHolder
+        holder.removeAllViews()
+        val favourites = allContacts.filter { it.starred == 1 }.distinctBy { it.contactId }
+        outerBinding.omnioFavouritesLabel.beVisibleIf(favourites.isNotEmpty())
+
+        holder.addView(makeTile(context.getString(R.string.omnio_new), null) {
+            activity?.launchCreateNewContactIntent()
+        })
+        favourites.forEach { contact ->
+            holder.addView(makeTile(contact.getNameToDisplay().substringBefore(" "), contact) {
+                activity?.startContactDetailsIntent(contact)
+            })
+        }
+    }
+
+    private fun makeTile(label: String, contact: Contact?, onClick: () -> Unit): LinearLayout {
+        val size = dp(56)
+        return LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER_HORIZONTAL
+            layoutParams = LinearLayout.LayoutParams(dp(72), ViewGroup.LayoutParams.WRAP_CONTENT)
+            setOnClickListener { onClick() }
+
+            addView(ImageView(context).apply {
+                layoutParams = LinearLayout.LayoutParams(size, size)
+                if (contact == null) {
+                    setImageResource(org.fossify.commons.R.drawable.ic_plus_vector)
+                    imageTintList = ColorStateList.valueOf(0xFF0F1115.toInt())
+                    setPadding(dp(14), dp(14), dp(14), dp(14))
+                    background = context.getDrawable(R.drawable.omnio_circle_bg)
+                    backgroundTintList = ColorStateList.valueOf(0xFFFF8A3D.toInt())
+                } else {
+                    SimpleContactsHelper(context).loadContactImage(contact.photoUri, this, contact.getNameToDisplay())
+                }
+            })
+
+            addView(TextView(context).apply {
+                text = label
+                setTextColor(if (contact == null) 0xFFFF8A3D.toInt() else omnioTextColor)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
+                gravity = Gravity.CENTER
+                maxLines = 1
+                ellipsize = TextUtils.TruncateAt.END
+                setPadding(dp(4), dp(6), dp(4), 0)
+            })
         }
     }
 
@@ -132,8 +223,10 @@ class ContactsFragment(context: Context, attributeSet: AttributeSet) : MyViewPag
                     },
                     profileIconClick = {
                         activity?.startContactDetailsIntent(it as Contact)
-                    }
+                    },
+                    showLetterHeaders = true
                 ).apply {
+                    appTags = this@ContactsFragment.appTags
                     binding.fragmentList.adapter = this
                 }
 
@@ -151,12 +244,15 @@ class ContactsFragment(context: Context, attributeSet: AttributeSet) : MyViewPag
     }
 
     override fun onSearchClosed() {
+        outerBinding.omnioFavouritesStrip.beVisible()
         binding.fragmentPlaceholder.beVisibleIf(allContacts.isEmpty())
         (binding.fragmentList.adapter as? ContactsAdapter)?.updateItems(allContacts)
         setupLetterFastScroller(allContacts)
     }
 
     override fun onSearchQueryChanged(text: String) {
+        outerBinding.omnioFavouritesStrip.beVisibleIf(text.isBlank())
+        if (text.isNotBlank()) outerBinding.contactsAppbar.setExpanded(true, false)
         val fixedText = text.trim().replace("\\s+".toRegex(), " ")
         val shouldNormalize = fixedText.normalizeString() == fixedText
         val filtered = allContacts.filter { contact ->

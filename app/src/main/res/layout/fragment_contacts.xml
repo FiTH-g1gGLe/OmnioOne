@@ -1,9 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
 <org.fossify.phone.fragments.ContactsFragment xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/contacts_fragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <include layout="@layout/fragment_letters_layout" />
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:id="@+id/contacts_coordinator"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- Omnio One: favourites row that slides away as you scroll down the list -->
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/contacts_appbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:stateListAnimator="@null"
+            app:elevation="0dp">
+
+            <LinearLayout
+                android:id="@+id/omnio_favourites_strip"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingTop="8dp"
+                android:paddingBottom="4dp"
+                app:layout_scrollFlags="scroll|enterAlways|snap">
+
+                <TextView
+                    android:id="@+id/omnio_favourites_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="24dp"
+                    android:layout_marginBottom="8dp"
+                    android:alpha="0.7"
+                    android:text="@string/favorites_tab"
+                    android:textAllCaps="true"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <HorizontalScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:clipToPadding="false"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:scrollbars="none">
+
+                    <LinearLayout
+                        android:id="@+id/omnio_favourites_holder"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal" />
+                </HorizontalScrollView>
+            </LinearLayout>
+        </com.google.android.material.appbar.AppBarLayout>
+
+        <include layout="@layout/fragment_letters_layout" />
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
 </org.fossify.phone.fragments.ContactsFragment>

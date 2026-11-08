@@ -337,7 +337,7 @@ class MainActivity : SimpleActivity() {
     }
 
     /** Omnio One: each tab lights up in its own brand colour. */
-    private fun tintOmnioTab(view: android.view.View?, position: Int) {
+    private fun tintOmnioTab(view: android.view.View?, position: Int, selected: Boolean = true) {
         val visibleTabs = tabsList.filter { config.showTabs and it != 0 }
         val color = when (visibleTabs.getOrNull(position)) {
             TAB_CONTACTS -> 0xFFFF8A3D.toInt()
@@ -345,8 +345,11 @@ class MainActivity : SimpleActivity() {
             TAB_CALL_HISTORY -> 0xFF4F7CFF.toInt()
             else -> return
         }
-        view?.findViewById<ImageView>(R.id.tab_item_icon)?.applyColorFilter(color)
-        view?.findViewById<TextView>(R.id.tab_item_label)?.setTextColor(color)
+        view?.findViewById<ImageView>(R.id.tab_item_icon)?.apply {
+            applyColorFilter(color)
+            alpha = if (selected) 1f else 0.75f
+        }
+        if (selected) view?.findViewById<TextView>(R.id.tab_item_label)?.setTextColor(color)
     }
 
     private fun setupTabColors() {
@@ -357,6 +360,7 @@ class MainActivity : SimpleActivity() {
         getInactiveTabIndexes(binding.viewPager.currentItem).forEach { index ->
             val inactiveView = binding.mainTabsHolder.getTabAt(index)?.customView
             updateBottomTabItemColors(inactiveView, false, getDeselectedTabDrawableIds()[index])
+            tintOmnioTab(inactiveView, index, selected = false)
         }
 
         val bottomBarColor = getBottomNavigationBackgroundColor()
@@ -384,7 +388,11 @@ class MainActivity : SimpleActivity() {
         return icons
     }
 
-    private fun getDeselectedTabDrawableIds(): ArrayList<Int> {
+    // Omnio One: always use the flat, filled icons so the tab bar looks like a matching set
+    private fun getDeselectedTabDrawableIds(): ArrayList<Int> = ArrayList(getSelectedTabDrawableIds())
+
+    @Suppress("unused")
+    private fun getFossifyDeselectedTabDrawableIds(): ArrayList<Int> {
         val showTabs = config.showTabs
         val icons = ArrayList<Int>()
 
@@ -465,6 +473,7 @@ class MainActivity : SimpleActivity() {
         binding.mainTabsHolder.onTabSelectionChanged(
             tabUnselectedAction = {
                 updateBottomTabItemColors(it.customView, false, getDeselectedTabDrawableIds()[it.position])
+                tintOmnioTab(it.customView, it.position, selected = false)
             },
             tabSelectedAction = {
                 getCurrentFragment()?.onSearchQueryChanged(binding.mainMenu.getCurrentQuery())

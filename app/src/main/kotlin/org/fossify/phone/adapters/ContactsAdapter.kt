@@ -28,6 +28,7 @@ import org.fossify.commons.interfaces.StartReorderDragListener
 import org.fossify.commons.models.contacts.Contact
 import org.fossify.commons.views.MyRecyclerView
 import org.fossify.phone.R
+import org.fossify.phone.databinding.ItemOmnioContactBinding
 import org.fossify.phone.activities.SimpleActivity
 import org.fossify.phone.extensions.areMultipleSIMsAvailable
 import org.fossify.phone.extensions.callContactWithSim
@@ -47,7 +48,8 @@ class ContactsAdapter(
     private val enableDrag: Boolean = false,
     private val allowLongClick: Boolean = true,
     itemClick: (Any) -> Unit,
-    val profileIconClick: ((Any) -> Unit)? = null
+    val profileIconClick: ((Any) -> Unit)? = null,
+    private val showLetterHeaders: Boolean = false
 ) : MyRecyclerViewAdapter(activity, recyclerView, itemClick),
     ItemTouchHelperContract, MyRecyclerView.MyZoomListener {
 
@@ -57,6 +59,14 @@ class ContactsAdapter(
     private var startReorderDragListener: StartReorderDragListener? = null
     var onDragEndListener: (() -> Unit)? = null
     var onSpanCountListener: (Int) -> Unit = {}
+
+    /** Omnio One: chat apps each contact uses, keyed by contact id, shown as coloured tags under the name. */
+    var appTags: Map<Int, CharSequence> = emptyMap()
+        @SuppressLint("NotifyDataSetChanged")
+        set(value) {
+            field = value
+            notifyDataSetChanged()
+        }
 
 
     init {
@@ -352,6 +362,22 @@ class ContactsAdapter(
             root.setupViewBackground(activity)
             itemContactFrame.isSelected = selectedKeys.contains(contact.rawId)
 
+            itemContactHeader?.apply {
+                val position = holder.bindingAdapterPosition
+                val letter = contact.getFirstLetter()
+                val showHeader = showLetterHeaders && textToHighlight.isEmpty() && position >= 0 &&
+                    (position == 0 || contacts.getOrNull(position - 1)?.getFirstLetter() != letter)
+                text = letter
+                beVisibleIf(showHeader)
+            }
+
+            itemContactTags?.apply {
+                val tags = appTags[contact.contactId]
+                text = tags
+                setTextColor(textColor)
+                beVisibleIf(!tags.isNullOrEmpty())
+            }
+
             itemContactImage.apply {
                 if (profileIconClick != null && viewType != VIEW_TYPE_GRID) {
                     setBackgroundResource(R.drawable.selector_clickable_circle)
@@ -495,11 +521,11 @@ class ContactsAdapter(
 
         data object ItemContact : Binding {
             override fun inflate(layoutInflater: LayoutInflater, viewGroup: ViewGroup, attachToRoot: Boolean): ItemViewBinding {
-                return ItemContactBindingAdapter(ItemContactWithoutNumberBinding.inflate(layoutInflater, viewGroup, attachToRoot))
+                return ItemOmnioContactBindingAdapter(ItemOmnioContactBinding.inflate(layoutInflater, viewGroup, attachToRoot))
             }
 
             override fun bind(view: View): ItemViewBinding {
-                return ItemContactBindingAdapter(ItemContactWithoutNumberBinding.bind(view))
+                return ItemOmnioContactBindingAdapter(ItemOmnioContactBinding.bind(view))
             }
         }
     }
@@ -509,6 +535,8 @@ class ContactsAdapter(
         val itemContactImage: ImageView
         val itemContactFrame: ConstraintLayout
         val dragHandleIcon: ImageView
+        val itemContactHeader: TextView? get() = null
+        val itemContactTags: TextView? get() = null
     }
 
     private class ItemContactGridBindingAdapter(val binding: ItemContactWithoutNumberGridBinding) : ItemViewBinding {
@@ -516,6 +544,17 @@ class ContactsAdapter(
         override val itemContactImage = binding.itemContactImage
         override val itemContactFrame = binding.itemContactFrame
         override val dragHandleIcon = binding.dragHandleIcon
+
+        override fun getRoot(): View = binding.root
+    }
+
+    private class ItemOmnioContactBindingAdapter(val binding: ItemOmnioContactBinding) : ItemViewBinding {
+        override val itemContactName = binding.itemContactName
+        override val itemContactImage = binding.itemContactImage
+        override val itemContactFrame = binding.itemContactFrame
+        override val dragHandleIcon = binding.dragHandleIcon
+        override val itemContactHeader = binding.itemContactHeader
+        override val itemContactTags = binding.itemContactTags
 
         override fun getRoot(): View = binding.root
     }
