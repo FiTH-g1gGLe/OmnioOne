@@ -23,6 +23,7 @@ import org.fossify.commons.extensions.launchSendSMSIntent
 import org.fossify.commons.extensions.sendEmailIntent
 import org.fossify.commons.extensions.showErrorToast
 import org.fossify.commons.extensions.hasPermission
+import org.fossify.commons.extensions.copyToClipboard
 import org.fossify.commons.extensions.toast
 import org.fossify.commons.extensions.viewBinding
 import org.fossify.commons.helpers.ContactsHelper
@@ -129,32 +130,61 @@ class OmnioContactActivity : SimpleActivity() {
         binding.contactText.setOnClickListener { primary?.let { launchSendSMSIntent(it.value) } }
         binding.contactEdit.setOnClickListener { openContactInSystemApp(contact) }
 
+        // Omnio One: numbers then emails in one card, each with Copy and Share (the heading isn't needed)
+        binding.contactNumbersLabel.beGone()
         binding.contactNumbersHolder.removeAllViews()
-        contact.phoneNumbers.forEachIndexed { index, number ->
+        var infoRows = 0
+        val copyIcon = org.fossify.commons.R.drawable.ic_copy_vector
+        val shareIcon = org.fossify.commons.R.drawable.ic_share_vector
+        val infoColor = 0xFFB8C0CC.toInt()
+        contact.phoneNumbers.forEach { number ->
             addRow(
                 holder = binding.contactNumbersHolder,
                 title = number.value,
                 subtitle = getNumberSubtitle(number.value, number.type, number.label),
-                showDivider = index > 0,
-                actionIcon = org.fossify.commons.R.drawable.ic_phone_vector,
-                actionColor = CALLS_BLUE,
-                onAction = { startCallWithConfirmationCheck(number.value, name) },
-                secondIcon = org.fossify.commons.R.drawable.ic_sms_vector,
-                secondColor = MESSAGES_GREEN,
-                onSecond = { launchSendSMSIntent(number.value) }
+                showDivider = infoRows++ > 0,
+                actionIcon = copyIcon,
+                actionColor = infoColor,
+                onAction = { copyToClipboard(number.value) },
+                secondIcon = shareIcon,
+                secondColor = infoColor,
+                onSecond = { shareText(number.value) },
+                onRowClick = { startCallWithConfirmationCheck(number.value, name) }
             )
         }
-        if (contact.phoneNumbers.isEmpty()) {
-            binding.contactNumbersLabel.beGone()
-            binding.contactNumbersHolder.beGone()
+        contact.emails.forEach { email ->
+            addRow(
+                holder = binding.contactNumbersHolder,
+                title = email.value,
+                subtitle = getString(R.string.omnio_email),
+                showDivider = infoRows++ > 0,
+                actionIcon = copyIcon,
+                actionColor = infoColor,
+                onAction = { copyToClipboard(email.value) },
+                secondIcon = shareIcon,
+                secondColor = infoColor,
+                onSecond = { shareText(email.value) },
+                onRowClick = { sendEmailIntent(email.value) }
+            )
+        }
+        if (contact.emails.isEmpty()) {
+            addRow(
+                holder = binding.contactNumbersHolder,
+                title = getString(R.string.omnio_add_email),
+                subtitle = getString(R.string.omnio_email),
+                showDivider = infoRows++ > 0,
+                actionIcon = org.fossify.commons.R.drawable.ic_plus_vector,
+                actionColor = 0xFFFF8A3D.toInt(),
+                onAction = { askEmail(contact) },
+                secondIcon = null,
+                secondColor = 0,
+                onSecond = null,
+                onRowClick = { askEmail(contact) }
+            )
         }
 
         binding.contactDetailsHolder.removeAllViews()
         var detailRows = 0
-        contact.emails.forEach { email ->
-            addRow(binding.contactDetailsHolder, email.value, getString(R.string.omnio_email), detailRows > 0) { sendEmailIntent(email.value) }
-            detailRows++
-        }
         contact.birthdays.forEach { birthday ->
             addRow(binding.contactDetailsHolder, birthday, getString(R.string.omnio_birthday), detailRows > 0, null)
             detailRows++
@@ -283,7 +313,7 @@ class OmnioContactActivity : SimpleActivity() {
                 showDivider = rows++ > 0,
                 icon = appIcon(network.pkg, network.name, network.color),
                 title = network.name,
-                subtitle = network.handleFrom(social.url).ifEmpty { getString(R.string.omnio_profile_linked) },
+                subtitle = network.displayHandle(social.url).ifEmpty { getString(R.string.omnio_profile_linked) },
                 color = network.color,
                 onClick = { openSocial(social) },
                 onLongClick = { confirmRemoveSocial(contact, social) },
@@ -410,6 +440,13 @@ class OmnioContactActivity : SimpleActivity() {
     }
 
     private fun openSocial(social: OmnioSocials.FoundSocial) {
+        if (social.network.key == "discord" && OmnioSocials.discordId(social.url) == null) {
+            // Discord can't open a profile from a username: copy it and open Discord to search
+            OmnioSocials.discordName(social.url)?.let { copyToClipboard(it) }
+            toast(R.string.omnio_discord_username_only, android.widget.Toast.LENGTH_LONG)
+            tryStart(packageManager.getLaunchIntentForPackage(social.network.pkg))
+            return
+        }
         val uri = Uri.parse(if (social.url.contains("://")) social.url else "https://${social.url}")
         // the app if it's installed, otherwise the browser
         val inApp = Intent(Intent.ACTION_VIEW, uri).setPackage(social.network.pkg)
@@ -456,12 +493,24 @@ class OmnioContactActivity : SimpleActivity() {
             inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_URI
             setTextColor(getProperTextColor())
         }
+        // fill in something useful that's already been copied
+        clipboardText()?.trim()?.let { clip ->
+            val url = OmnioSocials.firstUrl(clip)
+            when {
+                url != null && network.matches(url) -> input.setText(url)
+                network.key == "discord" && OmnioSocials.discordUrl(null, clip) != null && clip.length <= 40 -> input.setText(clip)
+            }
+        }
         val wrapper = android.widget.FrameLayout(this).apply {
             setPadding(dp(24), dp(8), dp(24), 0)
             addView(input)
         }
         getAlertDialogBuilder()
             .setPositiveButton(org.fossify.commons.R.string.ok) { _, _ ->
+                if (network.key == "discord") {
+                    saveDiscord(contact, input.text.toString(), ask = false)
+                    return@setPositiveButton
+                }
                 val url = OmnioSocials.buildUrl(network, input.text.toString()) ?: return@setPositiveButton
                 ensureBackgroundThread {
                     val ok = OmnioSocials.addSocial(this, contact.contactId, url)
@@ -551,8 +600,60 @@ class OmnioContactActivity : SimpleActivity() {
         } catch (e: Exception) {
             null
         }
-        val url = OmnioSocials.firstUrl(clip) ?: return
+        val url = OmnioSocials.firstUrl(clip)
+        if (url == null) {
+            // Discord's "Copy ID" / "Copy username" copy plain text, not a link
+            val text = clip?.toString()?.trim().orEmpty()
+            if (pending.networkKey == "discord" && text.length <= 40 && OmnioSocials.discordUrl(null, text) != null) {
+                saveDiscord(current, text, ask = true)
+            }
+            return
+        }
         handleIncomingLink(current, pending.networkKey, url)
+    }
+
+    private fun clipboardText(): String? = try {
+        (getSystemService(CLIPBOARD_SERVICE) as android.content.ClipboardManager).primaryClip?.getItemAt(0)?.coerceToText(this)?.toString()
+    } catch (e: Exception) {
+        null
+    }
+
+    /** Saves a Discord ID or username, merged with what's already on the contact. */
+    private fun saveDiscord(contact: Contact, input: String, ask: Boolean) {
+        val existing = currentSocials.filter { it.network.key == "discord" }
+        val url = OmnioSocials.discordUrl(existing.firstOrNull()?.url, input) ?: run {
+            toast(R.string.omnio_discord_bad_input)
+            return
+        }
+        // keep listening for a while: people often copy the username and then the ID
+        if (existing.any { it.url.equals(url, true) }) return
+        val save = {
+            ensureBackgroundThread {
+                val ok = OmnioSocials.addSocial(this, contact.contactId, url)
+                if (ok) existing.forEach { OmnioSocials.removeSocial(this, it.dataId) }
+                runOnUiThread {
+                    if (ok) loadApps(contact) else toast(org.fossify.commons.R.string.unknown_error_occurred)
+                    // only a username so far: the ID is what opens their profile
+                    if (ok && OmnioSocials.discordId(url) == null) toast(R.string.omnio_discord_need_id, android.widget.Toast.LENGTH_LONG)
+                }
+            }
+        }
+        if (!ask) {
+            save()
+            return
+        }
+        linkDialogShowing = true
+        val shown = OmnioSocials.discordName(url)?.let { "@$it" } ?: getString(R.string.omnio_profile_linked)
+        org.fossify.commons.dialogs.ConfirmationDialog(
+            this,
+            message = getString(R.string.omnio_add_link_question, "Discord", contact.getNameToDisplay(), shown),
+            positive = org.fossify.commons.R.string.ok,
+            negative = org.fossify.commons.R.string.cancel
+        ) {
+            linkDialogShowing = false
+            save()
+        }
+        binding.root.postDelayed({ linkDialogShowing = false }, 1500)
     }
 
     /** A copied or shared link: work out what it's for and offer it once. */
@@ -816,6 +917,61 @@ class OmnioContactActivity : SimpleActivity() {
         }
     }
 
+    private fun shareText(text: String) {
+        try {
+            startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_TEXT, text)
+            }, getString(org.fossify.commons.R.string.share)))
+        } catch (e: Exception) {
+            toast(org.fossify.commons.R.string.no_app_found)
+        }
+    }
+
+    /** Adds an email address to the contact without leaving Omnio. */
+    private fun askEmail(contact: Contact) {
+        val input = android.widget.EditText(this).apply {
+            hint = getString(R.string.omnio_email)
+            setSingleLine()
+            inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
+            setTextColor(getProperTextColor())
+        }
+        val wrapper = android.widget.FrameLayout(this).apply {
+            setPadding(dp(24), dp(8), dp(24), 0)
+            addView(input)
+        }
+        getAlertDialogBuilder()
+            .setPositiveButton(org.fossify.commons.R.string.ok) { _, _ ->
+                val email = input.text.toString().trim()
+                if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                    toast(R.string.omnio_invalid_email)
+                    return@setPositiveButton
+                }
+                ensureBackgroundThread {
+                    val ok = OmnioSocials.addData(
+                        this, contact.contactId, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE,
+                        ContactsContract.CommonDataKinds.Email.ADDRESS to email,
+                        ContactsContract.CommonDataKinds.Email.TYPE to ContactsContract.CommonDataKinds.Email.TYPE_HOME
+                    )
+                    val reloaded = ContactsHelper(this).getContactWithId(contact.rawId, false)
+                    runOnUiThread {
+                        if (!ok) toast(org.fossify.commons.R.string.unknown_error_occurred)
+                        if (reloaded != null) {
+                            this.contact = reloaded
+                            showContact(reloaded)
+                        }
+                    }
+                }
+            }
+            .setNegativeButton(org.fossify.commons.R.string.cancel, null)
+            .apply {
+                setupDialogStuff(wrapper, this, R.string.omnio_add_email) { dialog ->
+                    input.requestFocus()
+                    dialog.window?.setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
+                }
+            }
+    }
+
     private fun getPhoneTypeLabel(type: Int, label: String): String {
         return if (type == Phone.TYPE_CUSTOM && label.isNotEmpty()) {
             label
@@ -844,7 +1000,8 @@ class OmnioContactActivity : SimpleActivity() {
         onAction: (() -> Unit)?,
         secondIcon: Int?,
         secondColor: Int,
-        onSecond: (() -> Unit)?
+        onSecond: (() -> Unit)?,
+        onRowClick: (() -> Unit)? = onAction
     ) {
         val textColor = getProperTextColor()
         if (showDivider) {
@@ -858,7 +1015,7 @@ class OmnioContactActivity : SimpleActivity() {
             gravity = Gravity.CENTER_VERTICAL
             minimumHeight = dp(64)
             setPadding(0, dp(10), 0, dp(10))
-            if (onAction != null) setOnClickListener { onAction() }
+            if (onRowClick != null) setOnClickListener { onRowClick() }
         }
         val texts = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL

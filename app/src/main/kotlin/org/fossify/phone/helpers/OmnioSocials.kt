@@ -56,6 +56,13 @@ object OmnioSocials {
             return if (handle.isEmpty()) "" else "@$handle"
         }
 
+        /** What to show under the network name: @username, or "" for links with only a number in them. */
+        fun displayHandle(url: String): String {
+            Regex("[?&]u=([^&#]+)").find(url)?.let { return "@" + android.net.Uri.decode(it.groupValues[1]) }
+            val handle = handleFrom(url)
+            return if (key == "discord" && handle.removePrefix("@").all { it.isDigit() }) "" else handle
+        }
+
         /** The bare username/id, for building a Messenger link from a Facebook one. */
         fun usernameFrom(url: String): String {
             val handle = handleFrom(url).removePrefix("@")
@@ -339,6 +346,35 @@ object OmnioSocials {
         return found.sortedBy { networks.indexOf(it.network) }
     }
 
+    /**
+     * Discord can only open a profile from its number ID, but people know usernames. Keep both:
+     * discord.com/users/<id>?u=<username> (opens the profile, shows the name).
+     * [existingUrl] is the Discord link already on the contact, so a username and an ID copied
+     * one after the other end up together.
+     */
+    fun discordUrl(existingUrl: String?, input: String): String? {
+        val text = input.trim().removePrefix("@")
+        var id = existingUrl?.let { Regex("users/(\\d+)").find(it)?.groupValues?.get(1) }
+        var name = existingUrl?.let { Regex("[?&]u=([^&#]+)").find(it)?.groupValues?.get(1) }
+        when {
+            text.contains("discord", true) && text.contains("users/") ->
+                id = Regex("users/(\\d+)").find(text)?.groupValues?.get(1) ?: return null
+            text.matches(Regex("\\d{15,21}")) -> id = text
+            text.matches(Regex("[A-Za-z0-9_.]{2,32}")) -> name = text.lowercase()
+            else -> return null
+        }
+        return when {
+            id != null && name != null -> "https://discord.com/users/$id?u=$name"
+            id != null -> "https://discord.com/users/$id"
+            name != null -> "https://discord.com/?u=$name"
+            else -> null
+        }
+    }
+
+    fun discordId(url: String) = Regex("users/(\\d+)").find(url)?.groupValues?.get(1)
+
+    fun discordName(url: String) = Regex("[?&]u=([^&#]+)").find(url)?.groupValues?.get(1)
+
     /** Turns whatever the user typed (username, @username or a pasted link) into a profile link. */
     fun buildUrl(network: Network, input: String): String? {
         val text = input.trim()
@@ -348,6 +384,27 @@ object OmnioSocials {
         }
         val handle = text.removePrefix("@").trim().replace(" ", "")
         return if (handle.isEmpty()) null else network.urlFor(handle)
+    }
+
+    /** Adds one data row (email, website, …) to the contact's first raw contact. */
+    fun addData(context: Context, contactId: Int, mimeType: String, vararg values: Pair<String, Any>): Boolean {
+        return try {
+            val rawId = context.contentResolver.query(
+                ContactsContract.RawContacts.CONTENT_URI,
+                arrayOf(ContactsContract.RawContacts._ID),
+                "${ContactsContract.RawContacts.CONTACT_ID} = ? AND ${ContactsContract.RawContacts.DELETED} = 0",
+                arrayOf(contactId.toString()),
+                null
+            )?.use { if (it.moveToFirst()) it.getLong(0) else null } ?: return false
+            val builder = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                .withValue(ContactsContract.Data.RAW_CONTACT_ID, rawId)
+                .withValue(ContactsContract.Data.MIMETYPE, mimeType)
+            values.forEach { (key, value) -> builder.withValue(key, value) }
+            context.contentResolver.applyBatch(ContactsContract.AUTHORITY, arrayListOf(builder.build()))
+            true
+        } catch (e: Exception) {
+            false
+        }
     }
 
     /** Saves a profile link on the contact. Returns true when it worked. */
