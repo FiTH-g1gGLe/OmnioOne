@@ -526,12 +526,8 @@ class OmnioContactActivity : SimpleActivity() {
             val messengerUrl = resolved?.let { OmnioSocials.messengerFromFacebook(it) }
             runOnUiThread {
                 if (messengerUrl == null) {
-                    if (onFail != null) {
-                        toast(R.string.omnio_messenger_failed_type, android.widget.Toast.LENGTH_LONG)
-                        onFail()
-                    } else {
-                        toast(R.string.omnio_messenger_failed, android.widget.Toast.LENGTH_LONG)
-                    }
+                    // Facebook hid the address: ask for the username shown under "profile link"
+                    askFacebookUsername(contact, facebookUrl)
                     return@runOnUiThread
                 }
                 if (currentSocials.any { it.url.equals(messengerUrl, true) }) return@runOnUiThread
@@ -582,12 +578,65 @@ class OmnioContactActivity : SimpleActivity() {
                         return@runOnUiThread
                     }
                     loadApps(contact)
-                    if (messengerHandle.isNotEmpty() && !hasMessenger) offerMessenger(contact, messengerHandle)
+                    if (!hasMessenger && network.key == "facebook") {
+                        if (messengerHandle.isNotEmpty()) offerMessenger(contact, messengerHandle) else askFacebookUsername(contact, saveUrl)
+                    }
                 }
             }
         }
         // if the dialog is cancelled, let a later copy be offered again
         binding.root.postDelayed({ linkDialogShowing = false }, 1500)
+    }
+
+    /**
+     * Facebook's "Copy link" gives facebook.com/share/…, so ask for the username it shows above the
+     * button (e.g. jones388). Sets up Messenger and swaps the share link for the real address.
+     */
+    private fun askFacebookUsername(contact: Contact, facebookUrl: String?) {
+        val name = contact.getNameToDisplay()
+        val input = android.widget.EditText(this).apply {
+            hint = "jones388"
+            setSingleLine()
+            inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_URI
+            setTextColor(getProperTextColor())
+        }
+        val explanation = TextView(this).apply {
+            text = getString(R.string.omnio_facebook_username_help, name)
+            setTextColor(getProperTextColor())
+            alpha = 0.8f
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+            setPadding(0, 0, 0, dp(8))
+        }
+        val wrapper = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(24), dp(8), dp(24), 0)
+            addView(explanation)
+            addView(input)
+        }
+        getAlertDialogBuilder()
+            .setPositiveButton(org.fossify.commons.R.string.ok) { _, _ ->
+                val facebook = OmnioSocials.network("facebook")
+                val typed = input.text.toString().trim()
+                val username = (if (facebook.matches(typed)) facebook.usernameFrom(typed) else typed.removePrefix("@")).replace(" ", "")
+                if (username.isEmpty()) return@setPositiveButton
+                ensureBackgroundThread {
+                    val existing = OmnioSocials.findSocials(this, contact.contactId)
+                    val messengerUrl = OmnioSocials.network("messenger").urlFor(username)
+                    if (existing.none { it.url.equals(messengerUrl, true) }) OmnioSocials.addSocial(this, contact.contactId, messengerUrl)
+                    val profileUrl = facebook.urlFor(username)
+                    if (existing.none { it.url.equals(profileUrl, true) }) {
+                        OmnioSocials.addSocial(this, contact.contactId, profileUrl)
+                        // drop the opaque share link now we have the real address
+                        existing.filter { it.network.key == "facebook" && facebook.usernameFrom(it.url).isEmpty() }
+                            .forEach { OmnioSocials.removeSocial(this, it.dataId) }
+                    }
+                    runOnUiThread { loadApps(contact) }
+                }
+            }
+            .setNegativeButton(R.string.omnio_not_now, null)
+            .apply {
+                setupDialogStuff(wrapper, this, titleText = getString(R.string.omnio_facebook_username_title, name))
+            }
     }
 
     private fun offerMessenger(contact: Contact, handle: String) {

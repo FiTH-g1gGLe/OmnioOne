@@ -72,4 +72,7 @@
     <string name="omnio_checking_profile">Checking the Facebook profile…</string>
     <string name="omnio_messenger_failed">Couldn\'t get a Messenger link from that profile. Open her chat in Messenger, tap her name → Share → Omnio One.</string>
     <string name="omnio_messenger_failed_type">Couldn\'t work out Messenger from Facebook, type the username instead</string>
+    <string name="omnio_facebook_username_title">%s\'s Facebook username</string>
+    <string name="omnio_facebook_username_help">Facebook hides it in copied links. On %s\'s profile tap ⋯ and look under \"profile link\": type the part after facebook.com/ to set up Facebook and Messenger.</string>
+    <string name="omnio_not_now">Not now</string>
 </resources>

@@ -176,30 +176,72 @@ object OmnioSocials {
     fun resolveFacebook(url: String): String? {
         val facebook = network("facebook")
         if (facebook.usernameFrom(url).isNotEmpty()) return url
+
+        fun profileFrom(candidate: String?): String? {
+            if (candidate.isNullOrEmpty()) return null
+            val decoded = android.net.Uri.decode(candidate).replace("\\/", "/").replace("&amp;", "&")
+            Regex("fb://profile/(\\d+)").find(decoded)?.let { return "https://facebook.com/profile.php?id=${it.groupValues[1]}" }
+            val next = Regex("[?&]next=([^&]+)").find(decoded)?.let { android.net.Uri.decode(it.groupValues[1]) } ?: decoded
+            if (!facebook.matches(next) || next.contains("/login") || next.contains("/share/")) return null
+            Regex("[?&]id=(\\d+)").find(next)?.let { return "https://facebook.com/profile.php?id=${it.groupValues[1]}" }
+            val handle = facebook.usernameFrom(next)
+            return if (handle.isEmpty()) null else facebook.urlFor(handle)
+        }
+
         var current = url
-        repeat(6) {
-            val next = try {
-                val connection = (java.net.URL(current).openConnection() as java.net.HttpURLConnection).apply {
+        repeat(8) {
+            val connection = try {
+                (java.net.URL(current).openConnection() as java.net.HttpURLConnection).apply {
                     instanceFollowRedirects = false
                     connectTimeout = 8000
                     readTimeout = 8000
-                    setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android 16) OmnioOne")
+                    setRequestProperty(
+                        "User-Agent",
+                        "Mozilla/5.0 (Linux; Android 16; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Mobile Safari/537.36"
+                    )
+                    setRequestProperty("Accept-Language", "en-GB,en;q=0.9")
                 }
-                val location = connection.getHeaderField("Location")
-                connection.disconnect()
-                location
             } catch (e: Exception) {
-                null
-            } ?: return null
-
-            val absolute = if (next.startsWith("/")) "https://www.facebook.com$next" else next
-            // a login wall still carries the profile in ?next=
-            val target = Regex("[?&]next=([^&]+)").find(absolute)?.let { android.net.Uri.decode(it.groupValues[1]) } ?: absolute
-            if (facebook.matches(target) && facebook.usernameFrom(target).isNotEmpty() && !target.contains("/login")) {
-                val id = Regex("[?&]id=(\\d+)").find(target)?.groupValues?.get(1)
-                return if (id != null) "https://facebook.com/profile.php?id=$id" else facebook.urlFor(facebook.usernameFrom(target))
+                return null
             }
-            current = target
+            try {
+                val code = connection.responseCode
+                val location = connection.getHeaderField("Location")
+                if (code in 300..399 && location != null) {
+                    val absolute = if (location.startsWith("/")) "https://www.facebook.com$location" else location
+                    profileFrom(absolute)?.let { return it }
+                    current = absolute
+                    return@repeat
+                }
+                // reached a page: look for the profile address in its tags
+                val html = connection.inputStream.use { stream ->
+                    val bytes = ByteArray(512 * 1024)
+                    var total = 0
+                    while (total < bytes.size) {
+                        val read = stream.read(bytes, total, bytes.size - total)
+                        if (read <= 0) break
+                        total += read
+                    }
+                    String(bytes, 0, total)
+                }
+                listOf(
+                    Regex("fb://profile/\\d+"),
+                    Regex("property=\"og:url\"\\s+content=\"([^\"]+)\""),
+                    Regex("content=\"([^\"]+)\"\\s+property=\"og:url\""),
+                    Regex("rel=\"canonical\"\\s+href=\"([^\"]+)\""),
+                    Regex("\"userID\":\"(\\d+)\""),
+                ).forEach { regex ->
+                    val match = regex.find(html) ?: return@forEach
+                    val value = match.groupValues.getOrNull(1)?.takeIf { it.isNotEmpty() } ?: match.value
+                    val found = if (value.all { it.isDigit() }) "https://facebook.com/profile.php?id=$value" else profileFrom(value)
+                    if (found != null) return found
+                }
+                return null
+            } catch (e: Exception) {
+                return null
+            } finally {
+                connection.disconnect()
+            }
         }
         return null
     }
