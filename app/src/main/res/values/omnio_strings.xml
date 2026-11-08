@@ -62,13 +62,13 @@
     <string name="omnio_discord_hint">Discord user ID or profile link</string>
     <string name="omnio_remove_social">Remove %s from this contact?</string>
     <string name="omnio_find_on">Find on %s</string>
-    <string name="omnio_find_instructions">Find %s, open their profile, then tap ⋯ → Copy link (or Share → Omnio One) and come back.</string>
+    <string name="omnio_find_instructions">Find %s, open their profile, then tap ⋯ → Copy link, or screenshot it and share to Omnio One.</string>
     <string name="omnio_add_link_question">Add this %1$s profile to %2$s?\n\n%3$s</string>
     <string name="omnio_add_messenger_too">Add Messenger for %s too, using the same Facebook profile?</string>
     <string name="omnio_profile_linked">Profile linked</string>
     <string name="omnio_share_label">Link to contact</string>
     <string name="omnio_share_not_profile">That isn\'t a profile link Omnio One knows</string>
-    <string name="omnio_share_no_contact">Open a contact in Omnio One, tap Add social → Find on…, then share their profile</string>
+    <string name="omnio_share_no_contact">Open a contact in Omnio One, tap Add social → Find on…, then share their profile or a screenshot of it</string>
     <string name="omnio_checking_profile">Checking the Facebook profile…</string>
     <string name="omnio_messenger_failed">Couldn\'t get a Messenger link from that profile. Open her chat in Messenger, tap her name → Share → Omnio One.</string>
     <string name="omnio_messenger_failed_type">Couldn\'t work out Messenger from Facebook, type the username instead</string>
@@ -83,4 +83,6 @@
     <string name="omnio_skip">Skip</string>
     <string name="omnio_dont_ask">Don\'t ask again</string>
     <string name="omnio_find_instructions_helper">Open %s\'s profile and tap ⋯. Omnio will pick up the address.</string>
+    <string name="omnio_reading_screenshot">Reading the screenshot…</string>
+    <string name="omnio_screenshot_no_link">Couldn\'t spot a profile address in that screenshot. On Facebook, screenshot the ⋯ page that shows facebook.com/…</string>
 </resources>

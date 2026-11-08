@@ -148,6 +148,8 @@ detekt {
 dependencies {
     implementation(project(":commons"))
     implementation(project(":messages"))
+    // Omnio One: reads profile addresses from screenshots, on the phone (no internet needed)
+    implementation("com.google.mlkit:text-recognition:16.0.1")
     implementation(libs.indicator.fast.scroll)
     implementation(libs.autofit.text.view)
     implementation(libs.kotlinx.serialization.json)

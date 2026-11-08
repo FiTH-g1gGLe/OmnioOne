@@ -49,16 +49,7 @@ class OmnioLinkHelperService : AccessibilityService() {
         })
     }
 
-    /** A real profile address in some on-screen text (not a share/login/search link). */
-    private fun profileUrlIn(text: String): String? {
-        if (text.length > 400) return null
-        val match = Regex("(?:https?://)?(?:www\\.|m\\.)?([a-z0-9.-]+\\.[a-z]{2,})/[^\\s\"'<>]+", RegexOption.IGNORE_CASE).find(text)
-            ?: return null
-        val url = match.value.let { if (it.startsWith("http")) it else "https://$it" }
-        val network = OmnioSocials.networkFor(url) ?: return null
-        val username = network.usernameFrom(url)
-        return if (username.isEmpty()) null else url.trimEnd('.', ',', ')')
-    }
+    private fun profileUrlIn(text: String): String? = if (text.length > 400) null else OmnioSocials.profileUrlIn(text)
 
     private fun collectTexts(node: AccessibilityNodeInfo?, out: MutableList<CharSequence>, depth: Int) {
         if (node == null || depth > 40 || out.size > 400) return

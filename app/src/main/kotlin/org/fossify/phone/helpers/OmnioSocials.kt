@@ -168,6 +168,17 @@ object OmnioSocials {
 
     fun network(key: String) = networks.first { it.key == key }
 
+    /** A real profile address somewhere in some text (screen text or a screenshot), not a share/login link. */
+    fun profileUrlIn(text: String, preferKey: String? = null): String? {
+        val pattern = Regex("(?:https?://)?(?:www\\.|m\\.)?([a-z0-9.-]+\\.[a-z]{2,})/[^\\s\"'<>]+", RegexOption.IGNORE_CASE)
+        val candidates = pattern.findAll(text).mapNotNull { match ->
+            val url = match.value.trimEnd('.', ',', ')').let { if (it.startsWith("http", true)) it else "https://$it" }
+            val network = networkFor(url) ?: return@mapNotNull null
+            if (network.usernameFrom(url).isEmpty()) null else network to url
+        }.toList()
+        return (candidates.firstOrNull { it.first.key == preferKey } ?: candidates.firstOrNull())?.second
+    }
+
     /**
      * Facebook "Copy link" gives facebook.com/share/abc, which hides the profile address.
      * Follow it like a browser would to get facebook.com/username or profile.php?id=123.
