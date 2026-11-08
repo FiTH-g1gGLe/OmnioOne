@@ -40,12 +40,70 @@ class RecentsFragment(
     private var recentsAdapter: RecentCallsAdapter? = null
 
     private var searchQuery: String? = null
+
+    // Omnio One: All / Missed / Unknown filter
+    private enum class Filter { ALL, MISSED, UNKNOWN }
+    private var filter = Filter.ALL
+    private var omnioTextColor = 0xFFECEFF4.toInt()
+
+    private fun matchesFilter(call: RecentCall) = when (filter) {
+        Filter.ALL -> true
+        Filter.MISSED -> call.type == android.provider.CallLog.Calls.MISSED_TYPE ||
+            call.groupedCalls?.any { it.type == android.provider.CallLog.Calls.MISSED_TYPE } == true
+        Filter.UNKNOWN -> call.isUnknownNumber || call.name == call.phoneNumber
+    }
+
+    /** The full call log, cut down to the chosen filter and regrouped under date headers. */
+    private fun filtered(items: List<CallLogItem>): List<CallLogItem> {
+        if (filter == Filter.ALL) return items
+        return groupCallsByDate(items.filterIsInstance<RecentCall>().filter { matchesFilter(it) })
+    }
+
+    private fun setupFilters() {
+        binding.recentsFilterAll.setOnClickListener { selectFilter(Filter.ALL) }
+        binding.recentsFilterMissed.setOnClickListener { selectFilter(Filter.MISSED) }
+        binding.recentsFilterUnknown.setOnClickListener { selectFilter(Filter.UNKNOWN) }
+        styleFilters()
+    }
+
+    private fun selectFilter(newFilter: Filter) {
+        if (filter == newFilter) return
+        filter = newFilter
+        styleFilters()
+        binding.recentsPlaceholder.text = context.getString(
+            when (filter) {
+                Filter.ALL -> R.string.no_previous_calls
+                Filter.MISSED -> R.string.omnio_no_missed_calls
+                Filter.UNKNOWN -> R.string.omnio_no_unknown_calls
+            }
+        )
+        if (searchQuery.isNullOrEmpty()) {
+            gotRecents(filtered(allRecentCalls))
+        } else {
+            updateSearchResult()
+        }
+        binding.recentsList.scrollToPosition(0)
+    }
+
+    private fun styleFilters() {
+        listOf(
+            binding.recentsFilterAll to Filter.ALL,
+            binding.recentsFilterMissed to Filter.MISSED,
+            binding.recentsFilterUnknown to Filter.UNKNOWN
+        ).forEach { (chip, chipFilter) ->
+            val selected = chipFilter == filter
+            val accent = if (chipFilter == Filter.MISSED) 0xFFFF6B6B.toInt() else 0xFF4F7CFF.toInt()
+            chip.backgroundTintList = android.content.res.ColorStateList.valueOf(if (selected) accent else 0xFF1B1F27.toInt())
+            chip.setTextColor(if (selected) 0xFF0F1115.toInt() else omnioTextColor)
+        }
+    }
     private var recentsHelper = RecentsHelper(context)
 
     override fun onFinishInflate() {
         super.onFinishInflate()
         binding = FragmentRecentsBinding.bind(this)
         innerBinding = RecentsInnerBinding(binding)
+        setupFilters()
     }
 
     override fun setupFragment() {
@@ -67,6 +125,8 @@ class RecentsFragment(
     override fun setupColors(textColor: Int, primaryColor: Int, properPrimaryColor: Int) {
         binding.recentsPlaceholder.setTextColor(textColor)
         binding.recentsPlaceholder2.setTextColor(properPrimaryColor)
+        omnioTextColor = textColor
+        styleFilters()
 
         recentsAdapter?.apply {
             updateTextColor(textColor)
@@ -88,8 +148,8 @@ class RecentsFragment(
 
     override fun onSearchClosed() {
         searchQuery = null
-        showOrHidePlaceholder(allRecentCalls.isEmpty())
-        recentsAdapter?.updateItems(allRecentCalls)
+        showOrHidePlaceholder(filtered(allRecentCalls).isEmpty())
+        recentsAdapter?.updateItems(filtered(allRecentCalls))
     }
 
     override fun onSearchQueryChanged(text: String) {
@@ -104,7 +164,7 @@ class RecentsFragment(
             val recentCalls = allRecentCalls
                 .filterIsInstance<RecentCall>()
                 .filter {
-                    it.name.contains(fixedText, true) || it.doesContainPhoneNumber(fixedText)
+                    (it.name.contains(fixedText, true) || it.doesContainPhoneNumber(fixedText)) && matchesFilter(it)
                 }
                 .sortedWith(
                     compareByDescending<RecentCall> { it.dayCode }
@@ -190,7 +250,7 @@ class RecentsFragment(
         getRecentCalls(loadAll) {
             allRecentCalls = it
             if (searchQuery.isNullOrEmpty()) {
-                activity?.runOnUiThread { gotRecents(it) }
+                activity?.runOnUiThread { gotRecents(filtered(it)) }
             } else {
                 updateSearchResult()
             }

@@ -5,10 +5,38 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!-- Omnio One: All / Missed / Unknown filter -->
+    <LinearLayout
+        android:id="@+id/recents_filters"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/activity_margin"
+        android:paddingTop="8dp"
+        android:paddingEnd="@dimen/activity_margin"
+        android:paddingBottom="4dp">
+
+        <TextView
+            android:id="@+id/recents_filter_all"
+            style="@style/OmnioChip"
+            android:text="@string/omnio_filter_all" />
+
+        <TextView
+            android:id="@+id/recents_filter_missed"
+            style="@style/OmnioChip"
+            android:text="@string/omnio_filter_missed" />
+
+        <TextView
+            android:id="@+id/recents_filter_unknown"
+            style="@style/OmnioChip"
+            android:text="@string/omnio_filter_unknown" />
+    </LinearLayout>
+
     <org.fossify.commons.views.MyTextView
         android:id="@+id/recents_placeholder"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/recents_filters"
         android:layout_centerHorizontal="true"
         android:alpha="0.8"
         android:gravity="center"
@@ -37,6 +65,7 @@
         android:id="@+id/recents_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_below="@+id/recents_filters"
         android:clipToPadding="false"
         android:layoutAnimation="@anim/layout_animation"
         android:paddingBottom="@dimen/recyclerview_fab_padding"

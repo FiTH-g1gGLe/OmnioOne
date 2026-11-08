@@ -203,11 +203,12 @@ class RecentCallsAdapter(
 
     fun initDrawables() {
         val theme = activity.theme
-        missedCallColor = resources.getColor(R.color.color_missed_call, theme)
+        // Omnio One colours: outgoing blue, incoming green, missed red
+        missedCallColor = 0xFFFF6B6B.toInt()
         secondaryTextColor = textColor.adjustAlpha(0.6f)
 
-        val outgoingCallColor = resources.getColor(R.color.color_outgoing_call, theme)
-        val incomingCallColor = resources.getColor(R.color.color_incoming_call, theme)
+        val outgoingCallColor = 0xFF4F7CFF.toInt()
+        val incomingCallColor = 0xFF22C55E.toInt()
         outgoingCallIcon = resources.getColoredDrawableWithColor(R.drawable.ic_call_made_vector, outgoingCallColor)
         incomingCallIcon = resources.getColoredDrawableWithColor(R.drawable.ic_call_received_vector, incomingCallColor)
         incomingMissedCallIcon = resources.getColoredDrawableWithColor(R.drawable.ic_call_missed_vector, missedCallColor)
@@ -498,7 +499,8 @@ class RecentCallsAdapter(
 
                 itemRecentsName.apply {
                     text = nameToShow
-                    setTextColor(textColor)
+                    // Omnio One: missed calls stand out in red, like on iPhone
+                    setTextColor(if (call.type == Calls.MISSED_TYPE) missedCallColor else textColor)
                     setTextSize(TypedValue.COMPLEX_UNIT_PX, currentFontSize)
                     isSelected = true
                 }
@@ -617,7 +619,7 @@ class RecentCallsAdapter(
     private inner class RecentCallDateViewHolder(val binding: ItemRecentsDateBinding) : ViewHolder(binding.root) {
         fun bind(date: CallLogItem.Date) {
             binding.dateTextView.apply {
-                setTextColor(secondaryTextColor)
+                setTextColor(0xFF4F7CFF.toInt())
                 setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * 0.76f)
 
                 val now = DateTime.now()

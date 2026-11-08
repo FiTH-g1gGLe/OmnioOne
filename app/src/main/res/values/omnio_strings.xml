@@ -21,4 +21,9 @@
     <string name="omnio_missed_call">Missed call</string>
     <string name="omnio_declined_call">Declined call</string>
     <string name="omnio_new">New</string>
+    <string name="omnio_filter_all">All</string>
+    <string name="omnio_filter_missed">Missed</string>
+    <string name="omnio_filter_unknown">Unknown</string>
+    <string name="omnio_no_missed_calls">No missed calls</string>
+    <string name="omnio_no_unknown_calls">No calls from unknown numbers</string>
 </resources>
