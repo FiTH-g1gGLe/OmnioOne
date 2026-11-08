@@ -201,7 +201,7 @@ class MainActivity : SimpleActivity() {
             findItem(R.id.sort).isVisible = currentFragment != getRecentsFragment()
             findItem(R.id.filter).isVisible = currentFragment != getRecentsFragment()
             findItem(R.id.create_new_contact).isVisible = currentFragment == getContactsFragment()
-            findItem(R.id.change_view_type).isVisible = currentFragment == getFavoritesFragment()
+            findItem(R.id.change_view_type).isVisible = currentFragment == getFavoritesFragment() || currentFragment == getContactsFragment()
             findItem(R.id.column_count).isVisible = currentFragment == getFavoritesFragment() && config.viewType == VIEW_TYPE_GRID
             findItem(R.id.more_apps_from_us).isVisible = resources.getBoolean(R.bool.is_google_play_build)
         }
@@ -231,7 +231,7 @@ class MainActivity : SimpleActivity() {
                     R.id.filter -> showFilterDialog()
                     R.id.more_apps_from_us -> launchMoreAppsFromUsIntent()
                     R.id.settings -> launchSettings()
-                    R.id.change_view_type -> changeViewType()
+                    R.id.change_view_type -> if (getCurrentFragment() is ContactsFragment) showOmnioDisplayDialog() else changeViewType()
                     R.id.column_count -> changeColumnCount()
                     R.id.about -> launchAbout()
                     else -> return@setOnMenuItemClickListener false
@@ -254,6 +254,18 @@ class MainActivity : SimpleActivity() {
                 config.contactsGridColumnCount = newColumnCount
                 getFavoritesFragment()?.columnCountChanged()
             }
+        }
+    }
+
+    /** Omnio One: contact display styles for the Contacts tab. */
+    private fun showOmnioDisplayDialog() {
+        org.fossify.phone.dialogs.OmnioDisplayDialog(this) { surnameChanged ->
+            if (surnameChanged) {
+                storedStartNameWithSurname = config.startNameWithSurname
+                getContactsFragment()?.startNameWithSurnameChanged(config.startNameWithSurname)
+            }
+            getContactsFragment()?.displayStyleChanged()
+            getFavoritesFragment()?.refreshItems()
         }
     }
 

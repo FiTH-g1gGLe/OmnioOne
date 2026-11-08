@@ -29,6 +29,11 @@ import org.fossify.commons.models.contacts.Contact
 import org.fossify.commons.views.MyRecyclerView
 import org.fossify.phone.R
 import org.fossify.phone.databinding.ItemOmnioContactBinding
+import org.fossify.phone.databinding.ItemOmnioContactCardBinding
+import org.fossify.phone.databinding.ItemOmnioContactGridBinding
+import org.fossify.phone.databinding.ItemOmnioContactTileBinding
+import org.fossify.phone.extensions.startCallWithConfirmationCheck
+import org.fossify.phone.helpers.OmnioDisplay
 import org.fossify.phone.activities.SimpleActivity
 import org.fossify.phone.extensions.areMultipleSIMsAvailable
 import org.fossify.phone.extensions.callContactWithSim
@@ -49,7 +54,9 @@ class ContactsAdapter(
     private val allowLongClick: Boolean = true,
     itemClick: (Any) -> Unit,
     val profileIconClick: ((Any) -> Unit)? = null,
-    private val showLetterHeaders: Boolean = false
+    private val showLetterHeaders: Boolean = false,
+    /** Omnio One display style for the Contacts tab; -1 keeps Fossify's own list/grid. */
+    private val omnioStyle: Int = -1
 ) : MyRecyclerViewAdapter(activity, recyclerView, itemClick),
     ItemTouchHelperContract, MyRecyclerView.MyZoomListener {
 
@@ -153,7 +160,92 @@ class ContactsAdapter(
     }
 
     override fun getItemViewType(position: Int): Int {
-        return viewType
+        return if (omnioStyle >= 0) OMNIO_VIEW_TYPE_BASE + omnioStyle else viewType
+    }
+
+    private val omnioDensity = if (omnioStyle >= 0) OmnioDisplay.getDensity(activity) else OmnioDisplay.DENSITY_NORMAL
+    private val omnioFirstNameOnly = omnioStyle >= 0 && OmnioDisplay.isFirstNameOnly(activity)
+
+    private fun dp(value: Int) = (value * activity.resources.displayMetrics.density).toInt()
+
+    /** Omnio One: per-style finishing touches after the shared binding code has run. */
+    private fun applyOmnioStyle(binding: ItemViewBinding, contact: Contact) {
+        if (omnioStyle < 0) return
+        val style = omnioStyle
+
+        if (omnioFirstNameOnly && textToHighlight.isEmpty()) {
+            binding.itemContactName.text = contact.getNameToDisplay().trim().substringBefore(" ")
+        }
+
+        if (OmnioDisplay.isList(style)) {
+            val vertical = when (omnioDensity) {
+                OmnioDisplay.DENSITY_COMPACT -> dp(2)
+                OmnioDisplay.DENSITY_COMFY -> dp(14)
+                else -> dp(8)
+            }
+            val compact = style == OmnioDisplay.STYLE_COMPACT
+            binding.itemContactFrame.apply {
+                setPadding(paddingLeft, if (compact) dp(2) else vertical, paddingRight, if (compact) dp(2) else vertical)
+                minHeight = if (compact) dp(44) else dp(64)
+            }
+            binding.itemContactImage.layoutParams = binding.itemContactImage.layoutParams.apply {
+                val size = if (compact) dp(34) else dp(48)
+                width = size
+                height = size
+            }
+            if (compact) {
+                binding.itemContactName.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * 0.92f)
+                binding.itemContactTags?.beGone()
+            }
+        }
+
+        if (style == OmnioDisplay.STYLE_DETAILED || style == OmnioDisplay.STYLE_CARDS) {
+            binding.itemContactTags?.apply {
+                val number = (contact.phoneNumbers.firstOrNull { it.isPrimary } ?: contact.phoneNumbers.firstOrNull())?.value.orEmpty()
+                val tags = appTags[contact.contactId]
+                val line = android.text.SpannableStringBuilder(number)
+                if (!tags.isNullOrEmpty()) {
+                    if (line.isNotEmpty()) line.append("  ·  ")
+                    line.append(tags)
+                }
+                text = line
+                setTextColor(textColor.adjustAlpha(0.7f))
+                beVisibleIf(line.isNotEmpty())
+            }
+        }
+
+        if (style == OmnioDisplay.STYLE_CARDS) {
+            binding.itemContactName.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * 1.02f)
+            binding.itemContactFrame.backgroundTintList = android.content.res.ColorStateList.valueOf(
+                if (selectedKeys.contains(contact.rawId)) 0xFF22304F.toInt() else 0xFF171B22.toInt()
+            )
+            val number = (contact.phoneNumbers.firstOrNull { it.isPrimary } ?: contact.phoneNumbers.firstOrNull())?.value
+            binding.itemContactCall?.apply {
+                beVisibleIf(number != null)
+                setOnClickListener { (activity as SimpleActivity).startCallWithConfirmationCheck(contact) }
+            }
+            binding.itemContactSms?.apply {
+                beVisibleIf(number != null)
+                setOnClickListener { number?.let { activity.launchSendSMSIntent(it) } }
+            }
+        }
+
+        if (OmnioDisplay.isGrid(style)) {
+            binding.itemContactName.setTextColor(if (style == OmnioDisplay.STYLE_TILES) 0xFFFFFFFF.toInt() else textColor)
+            binding.itemContactImage.setOnClickListener(null)
+            binding.itemContactImage.isClickable = false
+            binding.itemContactImage.background = null
+            val name = contact.getNameToDisplay()
+            when (style) {
+                OmnioDisplay.STYLE_SQUARES -> OmnioDisplay.loadAvatar(binding.itemContactImage, contact.photoUri, name, dp(16))
+                OmnioDisplay.STYLE_TILES -> OmnioDisplay.loadAvatar(binding.itemContactImage, contact.photoUri, name, dp(18))
+                else -> SimpleContactsHelper(activity).loadContactImage(contact.photoUri, binding.itemContactImage, name)
+            }
+            if (style == OmnioDisplay.STYLE_SPEED_DIAL) {
+                binding.itemContactName.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+            }
+            binding.itemContactFrame.alpha = if (selectedKeys.isNotEmpty() && !selectedKeys.contains(contact.rawId)) 0.55f else 1f
+        }
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -448,6 +540,8 @@ class ContactsAdapter(
             if (!activity.isDestroyed) {
                 SimpleContactsHelper(root.context).loadContactImage(contact.photoUri, itemContactImage, contact.getNameToDisplay())
             }
+
+            applyOmnioStyle(this, contact)
         }
     }
 
@@ -495,10 +589,19 @@ class ContactsAdapter(
         }
     }
 
+    companion object {
+        const val OMNIO_VIEW_TYPE_BASE = 100
+    }
+
     private sealed interface Binding {
         companion object {
             fun getByItemViewType(viewType: Int): Binding {
                 return when (viewType) {
+                    OMNIO_VIEW_TYPE_BASE + OmnioDisplay.STYLE_CARDS -> ItemOmnioCard
+                    OMNIO_VIEW_TYPE_BASE + OmnioDisplay.STYLE_CIRCLES,
+                    OMNIO_VIEW_TYPE_BASE + OmnioDisplay.STYLE_SQUARES,
+                    OMNIO_VIEW_TYPE_BASE + OmnioDisplay.STYLE_SPEED_DIAL -> ItemOmnioGrid
+                    OMNIO_VIEW_TYPE_BASE + OmnioDisplay.STYLE_TILES -> ItemOmnioTile
                     VIEW_TYPE_GRID -> ItemContactGrid
                     else -> ItemContact
                 }
@@ -508,6 +611,27 @@ class ContactsAdapter(
         fun inflate(layoutInflater: LayoutInflater, viewGroup: ViewGroup, attachToRoot: Boolean): ItemViewBinding
 
         fun bind(view: View): ItemViewBinding
+
+        data object ItemOmnioCard : Binding {
+            override fun inflate(layoutInflater: LayoutInflater, viewGroup: ViewGroup, attachToRoot: Boolean): ItemViewBinding =
+                ItemOmnioCardBindingAdapter(ItemOmnioContactCardBinding.inflate(layoutInflater, viewGroup, attachToRoot))
+
+            override fun bind(view: View): ItemViewBinding = ItemOmnioCardBindingAdapter(ItemOmnioContactCardBinding.bind(view))
+        }
+
+        data object ItemOmnioGrid : Binding {
+            override fun inflate(layoutInflater: LayoutInflater, viewGroup: ViewGroup, attachToRoot: Boolean): ItemViewBinding =
+                ItemOmnioGridBindingAdapter(ItemOmnioContactGridBinding.inflate(layoutInflater, viewGroup, attachToRoot))
+
+            override fun bind(view: View): ItemViewBinding = ItemOmnioGridBindingAdapter(ItemOmnioContactGridBinding.bind(view))
+        }
+
+        data object ItemOmnioTile : Binding {
+            override fun inflate(layoutInflater: LayoutInflater, viewGroup: ViewGroup, attachToRoot: Boolean): ItemViewBinding =
+                ItemOmnioTileBindingAdapter(ItemOmnioContactTileBinding.inflate(layoutInflater, viewGroup, attachToRoot))
+
+            override fun bind(view: View): ItemViewBinding = ItemOmnioTileBindingAdapter(ItemOmnioContactTileBinding.bind(view))
+        }
 
         data object ItemContactGrid : Binding {
             override fun inflate(layoutInflater: LayoutInflater, viewGroup: ViewGroup, attachToRoot: Boolean): ItemViewBinding {
@@ -537,6 +661,38 @@ class ContactsAdapter(
         val dragHandleIcon: ImageView
         val itemContactHeader: TextView? get() = null
         val itemContactTags: TextView? get() = null
+        val itemContactCall: ImageView? get() = null
+        val itemContactSms: ImageView? get() = null
+    }
+
+    private class ItemOmnioCardBindingAdapter(val binding: ItemOmnioContactCardBinding) : ItemViewBinding {
+        override val itemContactName = binding.itemContactName
+        override val itemContactImage = binding.itemContactImage
+        override val itemContactFrame = binding.itemContactFrame
+        override val dragHandleIcon = binding.dragHandleIcon
+        override val itemContactTags = binding.itemContactTags
+        override val itemContactCall = binding.itemContactCall
+        override val itemContactSms = binding.itemContactSms
+
+        override fun getRoot(): View = binding.root
+    }
+
+    private class ItemOmnioGridBindingAdapter(val binding: ItemOmnioContactGridBinding) : ItemViewBinding {
+        override val itemContactName = binding.itemContactName
+        override val itemContactImage = binding.itemContactImage
+        override val itemContactFrame = binding.itemContactFrame
+        override val dragHandleIcon = binding.dragHandleIcon
+
+        override fun getRoot(): View = binding.root
+    }
+
+    private class ItemOmnioTileBindingAdapter(val binding: ItemOmnioContactTileBinding) : ItemViewBinding {
+        override val itemContactName = binding.itemContactName
+        override val itemContactImage = binding.itemContactImage
+        override val itemContactFrame = binding.itemContactFrame
+        override val dragHandleIcon = binding.dragHandleIcon
+
+        override fun getRoot(): View = binding.root
     }
 
     private class ItemContactGridBindingAdapter(val binding: ItemContactWithoutNumberGridBinding) : ItemViewBinding {

@@ -15,6 +15,10 @@ import com.google.android.material.appbar.AppBarLayout
 import org.fossify.commons.helpers.SimpleContactsHelper
 import org.fossify.commons.helpers.ensureBackgroundThread
 import org.fossify.phone.helpers.OmnioAppTags
+import org.fossify.phone.helpers.OmnioDisplay
+import org.fossify.phone.extensions.startCallWithConfirmationCheck
+import org.fossify.commons.views.MyGridLayoutManager
+import org.fossify.commons.views.MyLinearLayoutManager
 import org.fossify.commons.adapters.MyRecyclerViewAdapter
 import org.fossify.commons.extensions.areSystemAnimationsEnabled
 import org.fossify.commons.extensions.baseConfig
@@ -263,21 +267,29 @@ class ContactsFragment(context: Context, attributeSet: AttributeSet) : MyViewPag
             }
 
             if (binding.fragmentList.adapter == null) {
+                val style = OmnioDisplay.getStyle(context)
+                applyLayoutManager(style)
                 ContactsAdapter(
                     activity = activity as SimpleActivity,
                     contacts = contacts,
                     recyclerView = binding.fragmentList,
                     refreshItemsListener = this,
                     itemClick = {
-                        // Omnio One: tapping a contact opens its contact page
-                        activity?.startContactDetailsIntent(it as Contact)
+                        // Omnio One: tapping a contact opens its contact page (Speed dial calls instead)
+                        if (style == OmnioDisplay.STYLE_SPEED_DIAL) {
+                            activity?.startCallWithConfirmationCheck(it as Contact)
+                        } else {
+                            activity?.startContactDetailsIntent(it as Contact)
+                        }
                     },
                     profileIconClick = {
                         activity?.startContactDetailsIntent(it as Contact)
                     },
-                    showLetterHeaders = true
+                    showLetterHeaders = OmnioDisplay.isList(style),
+                    omnioStyle = style
                 ).apply {
                     appTags = this@ContactsFragment.appTags
+                    onSpanCountListener = { columns -> OmnioDisplay.setColumns(context, style, columns) }
                     binding.fragmentList.adapter = this
                 }
 
@@ -288,6 +300,24 @@ class ContactsFragment(context: Context, attributeSet: AttributeSet) : MyViewPag
                 (binding.fragmentList.adapter as ContactsAdapter).updateItems(contacts)
             }
         }
+    }
+
+    private fun applyLayoutManager(style: Int) {
+        if (OmnioDisplay.isGrid(style)) {
+            binding.letterFastscroller.beGone()
+            binding.letterFastscrollerThumb.beGone()
+            binding.fragmentList.layoutManager = MyGridLayoutManager(context, OmnioDisplay.getColumns(context, style))
+        } else {
+            binding.letterFastscroller.beVisible()
+            binding.letterFastscrollerThumb.beVisible()
+            binding.fragmentList.layoutManager = MyLinearLayoutManager(context)
+        }
+    }
+
+    /** Omnio One: rebuild the list after the display style dialog is closed. */
+    fun displayStyleChanged() {
+        binding.fragmentList.adapter = null
+        gotContacts(allContacts)
     }
 
     private fun setupLetterFastScroller(contacts: ArrayList<Contact>) {
