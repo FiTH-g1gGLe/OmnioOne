@@ -1,4 +1,5 @@
 [versions]
+mmslib = "1.0.1"
 #jetbrains
 geocoderVersion = "3.40"
 kotlin = "2.4.20"
@@ -50,6 +51,7 @@ ezVcard = "0.12.2"
 gson = "2.14.0"
 jodaTime = "2.14.3"
 [libraries]
+mmslib = { module = "org.fossify:mmslib", version.ref = "mmslib" }
 #Compose
 compose-detekt = { module = "io.nlopez.compose.rules:detekt", version.ref = "detektCompose" }
 #Fossify

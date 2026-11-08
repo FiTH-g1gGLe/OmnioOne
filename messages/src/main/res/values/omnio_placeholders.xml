@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Placeholders so the Messages module compiles; the Omnio One app's own values replace them. -->
+<resources>
+    <string name="app_name" translatable="false">Omnio One</string>
+    <string name="app_launcher_name" translatable="false">Omnio One</string>
+    <string name="faq_2_title" translatable="false">Omnio One</string>
+    <string name="faq_2_text" translatable="false">Omnio One</string>
+    <string name="faq_3_title" translatable="false">Omnio One</string>
+    <string name="faq_3_text" translatable="false">Omnio One</string>
+</resources>

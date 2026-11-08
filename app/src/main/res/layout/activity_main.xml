@@ -47,7 +47,9 @@
             android:layout_height="wrap_content"
             app:layout_constraintBottom_toBottomOf="parent"
             app:tabIndicator="@null"
-            app:tabMinWidth="150dp"
+            app:tabMinWidth="72dp"
+            app:tabMode="fixed"
+            app:tabGravity="fill"
             app:tabRippleColor="@null" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

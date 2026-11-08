@@ -48,6 +48,9 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
+private const val OMNIO_MESSAGES_TAB = "omnio_messages"
+private const val OMNIO_MESSAGES_GREEN = 0xFF22C55E.toInt()
+
 class MainActivity : SimpleActivity() {
     override var isSearchBarEnabled = true
     
@@ -379,7 +382,37 @@ class MainActivity : SimpleActivity() {
         binding.mainTabsHolder.setBackgroundColor(bottomBarColor)
     }
 
-    private fun getInactiveTabIndexes(activeIndex: Int) = (0 until binding.mainTabsHolder.tabCount).filter { it != activeIndex }
+    private fun getInactiveTabIndexes(activeIndex: Int) = (0 until pageTabCount).filter { it != activeIndex }
+
+    // Omnio One: the Messages tab sits after the phone tabs and opens the messages screen
+    private val pageTabCount: Int
+        get() = tabsList.count { config.showTabs and it != 0 }
+
+    private fun addMessagesTab() {
+        binding.mainTabsHolder.newTab().setCustomView(R.layout.bottom_tablayout_item).apply {
+            tag = OMNIO_MESSAGES_TAB
+            customView?.findViewById<ImageView>(R.id.tab_item_icon)?.apply {
+                setImageResource(R.drawable.ic_omnio_chat)
+                applyColorFilter(OMNIO_MESSAGES_GREEN)
+                alpha = 0.75f
+            }
+            customView?.findViewById<TextView>(R.id.tab_item_label)?.text = getString(R.string.omnio_messages_tab)
+            AutofitHelper.create(customView?.findViewById(R.id.tab_item_label))
+            binding.mainTabsHolder.addTab(this, false)
+        }
+    }
+
+    private fun openMessages() {
+        try {
+            startActivity(Intent(this, org.fossify.messages.activities.MainActivity::class.java))
+        } catch (e: Exception) {
+            showErrorToast(e)
+        }
+        // keep the current phone tab highlighted
+        binding.mainTabsHolder.post {
+            binding.mainTabsHolder.getTabAt(binding.viewPager.currentItem)?.select()
+        }
+    }
 
     private fun getSelectedTabDrawableIds(): List<Int> {
         val showTabs = config.showTabs
@@ -446,7 +479,7 @@ class MainActivity : SimpleActivity() {
 
                 // open the Recents tab if we got here by clicking a missed call notification
                 if (intent.action == Intent.ACTION_VIEW && config.showTabs and TAB_CALL_HISTORY > 0) {
-                    wantedTab = binding.mainTabsHolder.tabCount - 1
+                    wantedTab = pageTabCount - 1
                 }
 
                 binding.mainTabsHolder.getTabAt(wantedTab)?.select()
@@ -481,19 +514,25 @@ class MainActivity : SimpleActivity() {
                 }
             }
         }
+        addMessagesTab()
 
         binding.mainTabsHolder.onTabSelectionChanged(
             tabUnselectedAction = {
+                if (it.tag == OMNIO_MESSAGES_TAB) return@onTabSelectionChanged
                 updateBottomTabItemColors(it.customView, false, getDeselectedTabDrawableIds()[it.position])
                 tintOmnioTab(it.customView, it.position, selected = false)
             },
             tabSelectedAction = {
+                if (it.tag == OMNIO_MESSAGES_TAB) {
+                    openMessages()
+                    return@onTabSelectionChanged
+                }
                 getCurrentFragment()?.onSearchQueryChanged(binding.mainMenu.getCurrentQuery())
                 binding.viewPager.currentItem = it.position
                 updateBottomTabItemColors(it.customView, true, getSelectedTabDrawableIds()[it.position])
                 tintOmnioTab(it.customView, it.position)
 
-                val lastPosition = binding.mainTabsHolder.tabCount - 1
+                val lastPosition = pageTabCount - 1
                 if (it.position == lastPosition && config.showTabs and TAB_CALL_HISTORY > 0) {
                     clearMissedCalls()
                 }
@@ -586,7 +625,7 @@ class MainActivity : SimpleActivity() {
     private fun getDefaultTab(): Int {
         val showTabsMask = config.showTabs
         return when (config.defaultTab) {
-            TAB_LAST_USED -> if (config.lastUsedViewPagerPage < binding.mainTabsHolder.tabCount) config.lastUsedViewPagerPage else 0
+            TAB_LAST_USED -> if (config.lastUsedViewPagerPage < pageTabCount) config.lastUsedViewPagerPage else 0
             TAB_CONTACTS -> 0
             TAB_FAVORITES -> if (showTabsMask and TAB_CONTACTS > 0) 1 else 0
             else -> {
