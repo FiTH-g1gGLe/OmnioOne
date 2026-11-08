@@ -50,7 +50,7 @@ class OmnioContactActivity : SimpleActivity() {
         const val EXTRA_CONTACT_ID = "omnio_contact_id"
         private const val CALLS_BLUE = 0xFF4F7CFF.toInt()
         private const val MESSAGES_GREEN = 0xFF22C55E.toInt()
-        private const val MAX_RECENT = 6
+        private const val MAX_RECENT = 10
     }
 
     private val binding by viewBinding(ActivityOmnioContactBinding::inflate)

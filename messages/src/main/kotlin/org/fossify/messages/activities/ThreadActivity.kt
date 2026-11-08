@@ -594,6 +594,7 @@ class ThreadActivity : SimpleActivity() {
                 itemClick = { handleItemClick(it) },
                 isRecycleBin = isRecycleBin,
                 onReact = { showOmnioReactionPicker(it) },
+                onQuickReact = { message, emoji -> sendOmnioReaction(emoji, message) },
                 deleteMessages = { messages, toRecycleBin, fromRecycleBin ->
                     deleteMessages(
                         messages,

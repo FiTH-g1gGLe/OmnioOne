@@ -8,6 +8,7 @@ import android.graphics.drawable.Drawable
 import android.util.TypedValue
 import android.view.Menu
 import android.view.View
+import android.widget.TextView
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
@@ -98,8 +99,10 @@ class ThreadAdapter(
     itemClick: (Any) -> Unit,
     val isRecycleBin: Boolean,
     val deleteMessages: (messages: List<Message>, toRecycleBin: Boolean, fromRecycleBin: Boolean) -> Unit,
-    /** Omnio One: send a reaction to a message */
-    val onReact: ((Message) -> Unit)? = null
+    /** Omnio One: open the full reaction picker for a message */
+    val onReact: ((Message) -> Unit)? = null,
+    /** Omnio One: send this emoji as a reaction straight away */
+    val onQuickReact: ((Message, String) -> Unit)? = null
 ) : MyRecyclerViewListAdapter<ThreadItem>(activity, recyclerView, ThreadItemDiffCallback(), itemClick) {
     private var fontSize = activity.getTextSize()
 
@@ -393,6 +396,9 @@ class ThreadAdapter(
                 beVisibleIf(message.body.isNotEmpty())
                 setOnLongClickListener {
                     holder.viewLongClicked()
+                    if (!isRecycleBin && onQuickReact != null && message.body.isNotEmpty()) {
+                        showQuickReactions(this, message)
+                    }
                     true
                 }
 
@@ -437,6 +443,58 @@ class ThreadAdapter(
                 threadMessageAttachmentsHolder.beGone()
                 threadMessagePlayOutline.beGone()
             }
+        }
+    }
+
+    private var quickReactionPopup: android.widget.PopupWindow? = null
+
+    /** Omnio One: little emoji bar above a long-pressed bubble, like WhatsApp / iMessage. */
+    private fun showQuickReactions(anchor: View, message: Message) {
+        quickReactionPopup?.dismiss()
+        val density = activity.resources.displayMetrics.density
+        fun dp(v: Int) = (v * density).toInt()
+        val bar = android.widget.LinearLayout(activity).apply {
+            orientation = android.widget.LinearLayout.HORIZONTAL
+            setPadding(dp(6), dp(4), dp(6), dp(4))
+            background = androidx.core.content.ContextCompat.getDrawable(activity, R.drawable.msg_reaction_bar)
+            elevation = dp(6).toFloat()
+        }
+        val popup = android.widget.PopupWindow(
+            bar,
+            android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
+            android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
+            true
+        ).apply {
+            isOutsideTouchable = true
+            elevation = dp(6).toFloat()
+            setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
+        }
+        (listOf("👍", "❤️", "😂", "😮", "😢", "🙏") + "+").forEach { emoji ->
+            bar.addView(TextView(activity).apply {
+                text = emoji
+                gravity = android.view.Gravity.CENTER
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, if (emoji == "+") 22f else 26f)
+                if (emoji == "+") setTextColor(0xFFECEFF4.toInt())
+                layoutParams = android.widget.LinearLayout.LayoutParams(dp(44), dp(44))
+                background = androidx.core.content.ContextCompat.getDrawable(activity, org.fossify.commons.R.drawable.ripple_all_corners)
+                setOnClickListener {
+                    popup.dismiss()
+                    finishActMode()
+                    if (emoji == "+") onReact?.invoke(message) else onQuickReact?.invoke(message, emoji)
+                }
+            })
+        }
+        bar.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED)
+        val location = IntArray(2)
+        anchor.getLocationInWindow(location)
+        val screenWidth = activity.resources.displayMetrics.widthPixels
+        val x = (location[0] + anchor.width / 2 - bar.measuredWidth / 2).coerceIn(dp(8), screenWidth - bar.measuredWidth - dp(8))
+        var y = location[1] - bar.measuredHeight - dp(8)
+        if (y < dp(80)) y = location[1] + anchor.height + dp(8)
+        try {
+            popup.showAtLocation(anchor, android.view.Gravity.NO_GRAVITY, x, y)
+            quickReactionPopup = popup
+        } catch (ignored: Exception) {
         }
     }
 
