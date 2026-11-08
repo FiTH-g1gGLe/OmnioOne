@@ -7,4 +7,17 @@
     <string name="omnio_birthday">Birthday</string>
     <string name="omnio_email">Email</string>
     <string name="omnio_number_count">%d numbers</string>
+    <string name="omnio_recent">Recent</string>
+    <string name="omnio_notes">Notes</string>
+    <string name="omnio_whatsapp">WhatsApp</string>
+    <string name="omnio_whatsapp_video">Video</string>
+    <string name="omnio_telegram">Telegram</string>
+    <string name="omnio_signal">Signal</string>
+    <string name="omnio_always_sim">Always %s</string>
+    <string name="omnio_added_favourite">Added to Favourites</string>
+    <string name="omnio_removed_favourite">Removed from Favourites</string>
+    <string name="omnio_incoming_call">Incoming call</string>
+    <string name="omnio_outgoing_call">Outgoing call</string>
+    <string name="omnio_missed_call">Missed call</string>
+    <string name="omnio_declined_call">Declined call</string>
 </resources>

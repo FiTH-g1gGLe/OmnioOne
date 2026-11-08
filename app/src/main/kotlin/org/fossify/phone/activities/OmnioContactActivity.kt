@@ -1,6 +1,12 @@
 package org.fossify.phone.activities
 
+import android.content.Intent
 import android.content.res.ColorStateList
+import android.net.Uri
+import android.provider.CallLog.Calls
+import android.provider.ContactsContract
+import android.telephony.PhoneNumberUtils
+import android.text.format.DateUtils
 import android.os.Bundle
 import android.provider.ContactsContract.CommonDataKinds.Phone
 import android.util.TypedValue
@@ -13,7 +19,6 @@ import org.fossify.commons.extensions.applyColorFilter
 import org.fossify.commons.extensions.beGone
 import org.fossify.commons.extensions.getProperBackgroundColor
 import org.fossify.commons.extensions.getProperTextColor
-import org.fossify.commons.extensions.launchCallIntent
 import org.fossify.commons.extensions.launchSendSMSIntent
 import org.fossify.commons.extensions.sendEmailIntent
 import org.fossify.commons.extensions.toast
@@ -24,11 +29,18 @@ import org.fossify.commons.helpers.ensureBackgroundThread
 import org.fossify.commons.models.contacts.Contact
 import org.fossify.phone.R
 import org.fossify.phone.databinding.ActivityOmnioContactBinding
+import org.fossify.phone.extensions.config
+import org.fossify.phone.extensions.getAvailableSIMCardLabels
 import org.fossify.phone.extensions.openContactInSystemApp
+import org.fossify.phone.extensions.startCallWithConfirmationCheck
+import org.fossify.phone.helpers.RecentsHelper
+import org.fossify.commons.extensions.beVisible
+import org.fossify.commons.extensions.getFormattedDuration
 
 /**
  * Omnio One's own contact page, so tapping a contact no longer jumps to another app.
- * First version: photo, name, Call / Text / Edit, numbers, emails and birthday.
+ * Photo, name, favourite star, Call / Text / Edit, chat-app buttons, numbers (with SIM),
+ * recent calls, emails, birthday and notes.
  */
 class OmnioContactActivity : SimpleActivity() {
 
@@ -70,6 +82,7 @@ class OmnioContactActivity : SimpleActivity() {
         binding.contactSubtitle.setTextColor(textColor)
         binding.contactNumbersLabel.setTextColor(textColor)
         binding.contactDetailsLabel.setTextColor(textColor)
+        binding.contactRecentLabel.setTextColor(textColor)
         binding.contactBack.applyColorFilter(textColor)
         binding.contactFavourite.applyColorFilter(0xFFFFC85A.toInt())
         binding.contactCall.compoundDrawablesRelative[1]?.mutate()?.setTint(0xFF0F1115.toInt())
@@ -93,8 +106,10 @@ class OmnioContactActivity : SimpleActivity() {
             else org.fossify.commons.R.drawable.ic_star_outline_vector
         )
 
+        binding.contactFavourite.setOnClickListener { toggleFavourite() }
+
         val primary = contact.phoneNumbers.firstOrNull { it.isPrimary } ?: contact.phoneNumbers.firstOrNull()
-        binding.contactCall.setOnClickListener { primary?.let { launchCallIntent(it.value) } }
+        binding.contactCall.setOnClickListener { primary?.let { startCallWithConfirmationCheck(it.value, name) } }
         binding.contactText.setOnClickListener { primary?.let { launchSendSMSIntent(it.value) } }
         binding.contactEdit.setOnClickListener { openContactInSystemApp(contact) }
 
@@ -103,11 +118,11 @@ class OmnioContactActivity : SimpleActivity() {
             addRow(
                 holder = binding.contactNumbersHolder,
                 title = number.value,
-                subtitle = getPhoneTypeLabel(number.type, number.label),
+                subtitle = getNumberSubtitle(number.value, number.type, number.label),
                 showDivider = index > 0,
                 actionIcon = org.fossify.commons.R.drawable.ic_phone_vector,
                 actionColor = CALLS_BLUE,
-                onAction = { launchCallIntent(number.value) },
+                onAction = { startCallWithConfirmationCheck(number.value, name) },
                 secondIcon = org.fossify.commons.R.drawable.ic_sms_vector,
                 secondColor = MESSAGES_GREEN,
                 onSecond = { launchSendSMSIntent(number.value) }
@@ -128,9 +143,165 @@ class OmnioContactActivity : SimpleActivity() {
             addRow(binding.contactDetailsHolder, birthday, getString(R.string.omnio_birthday), detailRows > 0, null)
             detailRows++
         }
+        if (contact.notes.isNotBlank()) {
+            addRow(binding.contactDetailsHolder, contact.notes, getString(R.string.omnio_notes), detailRows > 0, null)
+            detailRows++
+        }
         if (detailRows == 0) {
             binding.contactDetailsLabel.beGone()
             binding.contactDetailsHolder.beGone()
+        }
+
+        loadAppButtons(contact)
+        loadRecentCalls(contact)
+    }
+
+    private var firstResume = true
+
+    override fun onPostResume() {
+        super.onPostResume()
+        if (firstResume) {
+            firstResume = false
+            return
+        }
+        contact?.let { loadRecentCalls(it) }
+    }
+
+    private fun toggleFavourite() {
+        val current = contact ?: return
+        val helper = ContactsHelper(this)
+        if (current.starred == 1) {
+            helper.removeFavorites(arrayListOf(current))
+            current.starred = 0
+            toast(R.string.omnio_removed_favourite)
+        } else {
+            helper.addFavorites(arrayListOf(current))
+            current.starred = 1
+            toast(R.string.omnio_added_favourite)
+        }
+        binding.contactFavourite.setImageResource(
+            if (current.starred == 1) org.fossify.commons.R.drawable.ic_star_vector
+            else org.fossify.commons.R.drawable.ic_star_outline_vector
+        )
+    }
+
+    /** Number type, plus "Always SIM 2" when a SIM has been remembered for this number. */
+    private fun getNumberSubtitle(number: String, type: Int, label: String): String {
+        val typeLabel = getPhoneTypeLabel(type, label)
+        val handle = config.getCustomSIM(number) ?: return typeLabel
+        val sim = getAvailableSIMCardLabels().firstOrNull { it.handle == handle } ?: return typeLabel
+        return "$typeLabel · " + getString(R.string.omnio_always_sim, sim.label)
+    }
+
+    private data class AppAction(val label: Int, val icon: Int, val tint: Int, val background: Int, val dataId: Long, val mimeType: String, val pkg: String)
+
+    /** Shows WhatsApp, WhatsApp video, Telegram and Signal buttons for contacts that use them. */
+    private fun loadAppButtons(contact: Contact) {
+        ensureBackgroundThread {
+            val wanted = mapOf(
+                "vnd.android.cursor.item/vnd.com.whatsapp.profile" to Triple(R.string.omnio_whatsapp, R.drawable.ic_omnio_chat, "com.whatsapp"),
+                "vnd.android.cursor.item/vnd.com.whatsapp.video.call" to Triple(R.string.omnio_whatsapp_video, R.drawable.ic_omnio_video, "com.whatsapp"),
+                "vnd.android.cursor.item/vnd.org.telegram.messenger.android.profile" to Triple(R.string.omnio_telegram, R.drawable.ic_omnio_chat, "org.telegram.messenger"),
+                "vnd.android.cursor.item/vnd.org.thoughtcrime.securesms.contact" to Triple(R.string.omnio_signal, R.drawable.ic_omnio_chat, "org.thoughtcrime.securesms")
+            )
+            val found = LinkedHashMap<String, AppAction>()
+            try {
+                val selection = "${ContactsContract.Data.CONTACT_ID} = ? AND ${ContactsContract.Data.MIMETYPE} IN (${wanted.keys.joinToString { "?" }})"
+                val args = arrayOf(contact.contactId.toString()) + wanted.keys.toTypedArray()
+                contentResolver.query(
+                    ContactsContract.Data.CONTENT_URI,
+                    arrayOf(ContactsContract.Data._ID, ContactsContract.Data.MIMETYPE),
+                    selection, args, null
+                )?.use { cursor ->
+                    while (cursor.moveToNext()) {
+                        val id = cursor.getLong(0)
+                        val mime = cursor.getString(1)
+                        if (found.containsKey(mime)) continue
+                        val (label, icon, pkg) = wanted[mime] ?: continue
+                        val isWhatsApp = pkg == "com.whatsapp"
+                        val tint = if (isWhatsApp) 0xFF5DD39E.toInt() else 0xFF6CBCF2.toInt()
+                        val bg = if (isWhatsApp) 0xFF163028.toInt() else 0xFF15283A.toInt()
+                        found[mime] = AppAction(label, icon, tint, bg, id, mime, pkg)
+                    }
+                }
+            } catch (ignored: Exception) {
+            }
+            val ordered = wanted.keys.mapNotNull { found[it] }
+            runOnUiThread { showAppButtons(ordered) }
+        }
+    }
+
+    private fun showAppButtons(actions: List<AppAction>) {
+        val holder = binding.contactAppsHolder
+        holder.removeAllViews()
+        if (actions.isEmpty()) {
+            holder.beGone()
+            return
+        }
+        holder.beVisible()
+        actions.forEachIndexed { index, action ->
+            holder.addView(TextView(this).apply {
+                text = getString(action.label)
+                setTextColor(action.tint)
+                gravity = Gravity.CENTER
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+                setTypeface(typeface, android.graphics.Typeface.BOLD)
+                val icon = getDrawable(action.icon)?.mutate()
+                icon?.setTint(action.tint)
+                setCompoundDrawablesRelativeWithIntrinsicBounds(icon, null, null, null)
+                compoundDrawablePadding = dp(6)
+                setPadding(dp(10), 0, dp(10), 0)
+                background = getDrawable(R.drawable.omnio_round_bg)
+                backgroundTintList = ColorStateList.valueOf(action.background)
+                layoutParams = LinearLayout.LayoutParams(0, dp(48), 1f).apply {
+                    if (index > 0) marginStart = dp(8)
+                }
+                setOnClickListener {
+                    try {
+                        startActivity(Intent(Intent.ACTION_VIEW).apply {
+                            setDataAndType(Uri.parse("content://com.android.contacts/data/${action.dataId}"), action.mimeType)
+                            setPackage(action.pkg)
+                        })
+                    } catch (e: Exception) {
+                        toast(org.fossify.commons.R.string.no_app_found)
+                    }
+                }
+            })
+        }
+    }
+
+    /** Last few calls with this contact, newest first. */
+    private fun loadRecentCalls(contact: Contact) {
+        val numbers = contact.phoneNumbers.map { it.normalizedNumber.ifEmpty { it.value } }
+        if (numbers.isEmpty()) return
+        RecentsHelper(this).getRecentCalls(queryLimit = 300) { calls ->
+            val mine = calls.filter { call ->
+                numbers.any { PhoneNumberUtils.compare(it, call.phoneNumber) }
+            }.sortedByDescending { it.startTS }.take(5)
+            runOnUiThread { showRecentCalls(mine) }
+        }
+    }
+
+    private fun showRecentCalls(calls: List<org.fossify.phone.models.RecentCall>) {
+        val holder = binding.contactRecentHolder
+        holder.removeAllViews()
+        if (calls.isEmpty()) {
+            holder.beGone()
+            binding.contactRecentLabel.beGone()
+            return
+        }
+        holder.beVisible()
+        binding.contactRecentLabel.beVisible()
+        calls.forEachIndexed { index, call ->
+            val (title, icon, color) = when (call.type) {
+                Calls.MISSED_TYPE -> Triple(R.string.omnio_missed_call, R.drawable.ic_call_missed_vector, 0xFFFF8A8A.toInt())
+                Calls.REJECTED_TYPE, Calls.BLOCKED_TYPE -> Triple(R.string.omnio_declined_call, R.drawable.ic_call_missed_vector, 0xFFFF8A8A.toInt())
+                Calls.OUTGOING_TYPE -> Triple(R.string.omnio_outgoing_call, R.drawable.ic_call_made_vector, CALLS_BLUE)
+                else -> Triple(R.string.omnio_incoming_call, R.drawable.ic_call_received_vector, MESSAGES_GREEN)
+            }
+            val whenText = DateUtils.getRelativeTimeSpanString(call.startTS, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS).toString()
+            val subtitle = if (call.duration > 0) "$whenText · ${call.duration.getFormattedDuration()}" else whenText
+            addRow(holder, getString(title), subtitle, index > 0, icon, color, null, null, 0, null)
         }
     }
 
