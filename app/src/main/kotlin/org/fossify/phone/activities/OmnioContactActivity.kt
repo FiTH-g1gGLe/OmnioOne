@@ -168,10 +168,11 @@ class OmnioContactActivity : SimpleActivity() {
 
         // opened from a link shared to Omnio One, or back from "Find on …" after being closed
         val shared = intent.getStringExtra(EXTRA_SHARED_LINK)
-        val sharedNetwork = shared?.let { OmnioSocials.networkFor(it) }
-        if (shared != null && sharedNetwork != null) {
+        if (shared != null) {
             intent.removeExtra(EXTRA_SHARED_LINK)
-            offerLink(contact, sharedNetwork, shared)
+            val wanted = OmnioSocials.getPendingLink(this)?.networkKey
+            // wait for the apps card so we know what's already linked
+            binding.root.postDelayed({ handleIncomingLink(contact, wanted, shared) }, 600)
         } else {
             binding.root.post { checkCopiedLink() }
         }
@@ -233,7 +234,10 @@ class OmnioContactActivity : SimpleActivity() {
         }
     }
 
+    private var currentSocials: List<OmnioSocials.FoundSocial> = emptyList()
+
     private fun showApps(contact: Contact, chats: List<OmnioSocials.FoundChat>, socials: List<OmnioSocials.FoundSocial>) {
+        currentSocials = socials
         // Big Video button: WhatsApp video first, then the other apps that can video call
         val video = listOf("com.whatsapp", "com.whatsapp.w4b", "org.telegram.messenger", "com.google.android.apps.tachyon")
             .firstNotNullOfOrNull { pkg -> chats.firstOrNull { it.app.pkg == pkg && it.action.kind == OmnioSocials.Kind.VIDEO } }
@@ -410,7 +414,13 @@ class OmnioContactActivity : SimpleActivity() {
         val items = ArrayList(OmnioSocials.networks.mapIndexed { index, network -> org.fossify.commons.models.RadioItem(index, network.name) })
         org.fossify.commons.dialogs.RadioGroupDialog(this, items, titleId = R.string.omnio_add_social) { picked ->
             val network = OmnioSocials.networks.getOrNull(picked as Int) ?: return@RadioGroupDialog
-            askUsername(contact, network)
+            val facebook = currentSocials.firstOrNull { it.network.key == "facebook" }
+            if (network.key == "messenger" && facebook != null) {
+                // build Messenger straight from the Facebook profile that's already linked
+                offerMessengerFromFacebook(contact, facebook.url) { askUsername(contact, network) }
+            } else {
+                askUsername(contact, network)
+            }
         }
     }
 
@@ -490,8 +500,62 @@ class OmnioContactActivity : SimpleActivity() {
             null
         }
         val url = OmnioSocials.firstUrl(clip) ?: return
+        handleIncomingLink(current, pending.networkKey, url)
+    }
+
+    /** A copied or shared link: work out what it's for and offer it once. */
+    private fun handleIncomingLink(contact: Contact, wantedKey: String?, url: String) {
         val network = OmnioSocials.networkFor(url) ?: return
-        offerLink(current, network, url)
+        if (wantedKey == "messenger" && network.key == "facebook") {
+            OmnioSocials.clearPendingLink(this)
+            offerMessengerFromFacebook(contact, url, null)
+            return
+        }
+        // already on this contact: nothing to ask
+        if (currentSocials.any { it.url.equals(url, true) }) {
+            OmnioSocials.clearPendingLink(this)
+            return
+        }
+        offerLink(contact, network, url)
+    }
+
+    private fun offerMessengerFromFacebook(contact: Contact, facebookUrl: String, onFail: (() -> Unit)?) {
+        toast(R.string.omnio_checking_profile)
+        ensureBackgroundThread {
+            val resolved = OmnioSocials.resolveFacebook(facebookUrl)
+            val messengerUrl = resolved?.let { OmnioSocials.messengerFromFacebook(it) }
+            runOnUiThread {
+                if (messengerUrl == null) {
+                    if (onFail != null) {
+                        toast(R.string.omnio_messenger_failed_type, android.widget.Toast.LENGTH_LONG)
+                        onFail()
+                    } else {
+                        toast(R.string.omnio_messenger_failed, android.widget.Toast.LENGTH_LONG)
+                    }
+                    return@runOnUiThread
+                }
+                if (currentSocials.any { it.url.equals(messengerUrl, true) }) return@runOnUiThread
+                org.fossify.commons.dialogs.ConfirmationDialog(
+                    this,
+                    message = getString(R.string.omnio_add_messenger_too, contact.getNameToDisplay()) + "\n\n" + messengerUrl,
+                    positive = org.fossify.commons.R.string.yes,
+                    negative = org.fossify.commons.R.string.no
+                ) {
+                    ensureBackgroundThread {
+                        OmnioSocials.addSocial(this, contact.contactId, messengerUrl)
+                        // swap an opaque facebook.com/share link for the real profile address
+                        val oldFacebook = currentSocials.firstOrNull { it.url.equals(facebookUrl, true) && it.network.key == "facebook" }
+                        if (oldFacebook != null && resolved != null && resolved != facebookUrl &&
+                            OmnioSocials.network("facebook").usernameFrom(facebookUrl).isEmpty()
+                        ) {
+                            OmnioSocials.addSocial(this, contact.contactId, resolved)
+                            OmnioSocials.removeSocial(this, oldFacebook.dataId)
+                        }
+                        runOnUiThread { loadApps(contact) }
+                    }
+                }
+            }
+        }
     }
 
     /** Called with a link that was copied or shared to Omnio One. */
@@ -506,8 +570,10 @@ class OmnioContactActivity : SimpleActivity() {
         ) {
             ensureBackgroundThread {
                 val existing = OmnioSocials.findSocials(this, contact.contactId)
-                val ok = existing.any { it.url.equals(url, true) } || OmnioSocials.addSocial(this, contact.contactId, url)
-                val messengerHandle = if (network.key == "facebook") network.usernameFrom(url) else ""
+                // facebook.com/share/… links hide the username, so look up the real profile address
+                val saveUrl = if (network.key == "facebook") OmnioSocials.resolveFacebook(url) ?: url else url
+                val ok = existing.any { it.url.equals(saveUrl, true) } || OmnioSocials.addSocial(this, contact.contactId, saveUrl)
+                val messengerHandle = if (network.key == "facebook") network.usernameFrom(saveUrl) else ""
                 val hasMessenger = existing.any { it.network.key == "messenger" }
                 runOnUiThread {
                     linkDialogShowing = false
@@ -544,8 +610,7 @@ class OmnioContactActivity : SimpleActivity() {
         // a link shared to Omnio One while finding this contact
         val url = intent.getStringExtra(EXTRA_SHARED_LINK) ?: return
         val current = contact ?: return
-        val network = OmnioSocials.networkFor(url) ?: return
-        offerLink(current, network, url)
+        handleIncomingLink(current, OmnioSocials.getPendingLink(this)?.networkKey, url)
     }
 
     private fun confirmRemoveSocial(contact: Contact, social: OmnioSocials.FoundSocial) {

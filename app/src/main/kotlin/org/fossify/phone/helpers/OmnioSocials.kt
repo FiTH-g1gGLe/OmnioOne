@@ -57,7 +57,10 @@ object OmnioSocials {
         }
 
         /** The bare username/id, for building a Messenger link from a Facebook one. */
-        fun usernameFrom(url: String) = handleFrom(url).removePrefix("@")
+        fun usernameFrom(url: String): String {
+            val handle = handleFrom(url).removePrefix("@")
+            return if (handle.lowercase() in reservedPaths) "" else handle
+        }
     }
 
     private fun hostOf(url: String): String {
@@ -70,6 +73,8 @@ object OmnioSocials {
     }
 
     private const val ITEM = "vnd.android.cursor.item/"
+
+    private val reservedPaths = setOf("share", "login", "login.php", "profile.php", "people", "search", "home.php", "watch", "groups", "pages")
 
     val chatApps = listOf(
         ChatApp(
@@ -160,6 +165,50 @@ object OmnioSocials {
         text?.let { Regex("https?://[^\\s\"'<>]+").find(it)?.value?.trimEnd('.', ',', ')') }
 
     fun networkFor(url: String) = networks.firstOrNull { it.matches(url) }
+
+    fun network(key: String) = networks.first { it.key == key }
+
+    /**
+     * Facebook "Copy link" gives facebook.com/share/abc, which hides the profile address.
+     * Follow it like a browser would to get facebook.com/username or profile.php?id=123.
+     * Runs network requests: call on a background thread. Returns null if it can't tell.
+     */
+    fun resolveFacebook(url: String): String? {
+        val facebook = network("facebook")
+        if (facebook.usernameFrom(url).isNotEmpty()) return url
+        var current = url
+        repeat(6) {
+            val next = try {
+                val connection = (java.net.URL(current).openConnection() as java.net.HttpURLConnection).apply {
+                    instanceFollowRedirects = false
+                    connectTimeout = 8000
+                    readTimeout = 8000
+                    setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android 16) OmnioOne")
+                }
+                val location = connection.getHeaderField("Location")
+                connection.disconnect()
+                location
+            } catch (e: Exception) {
+                null
+            } ?: return null
+
+            val absolute = if (next.startsWith("/")) "https://www.facebook.com$next" else next
+            // a login wall still carries the profile in ?next=
+            val target = Regex("[?&]next=([^&]+)").find(absolute)?.let { android.net.Uri.decode(it.groupValues[1]) } ?: absolute
+            if (facebook.matches(target) && facebook.usernameFrom(target).isNotEmpty() && !target.contains("/login")) {
+                val id = Regex("[?&]id=(\\d+)").find(target)?.groupValues?.get(1)
+                return if (id != null) "https://facebook.com/profile.php?id=$id" else facebook.urlFor(facebook.usernameFrom(target))
+            }
+            current = target
+        }
+        return null
+    }
+
+    /** Messenger link for a Facebook profile link, or null when the username can't be worked out. */
+    fun messengerFromFacebook(facebookUrl: String): String? {
+        val handle = network("facebook").usernameFrom(facebookUrl)
+        return if (handle.isEmpty()) null else network("messenger").urlFor(handle)
+    }
 
     /** A chat-app entry found on the contact: which app, which action, and the data row that opens it. */
     data class FoundChat(val app: ChatApp, val action: ChatAction, val dataId: Long)

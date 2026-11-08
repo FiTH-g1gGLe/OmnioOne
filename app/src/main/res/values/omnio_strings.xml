@@ -69,4 +69,7 @@
     <string name="omnio_share_label">Link to contact</string>
     <string name="omnio_share_not_profile">That isn\'t a profile link Omnio One knows</string>
     <string name="omnio_share_no_contact">Open a contact in Omnio One, tap Add social → Find on…, then share their profile</string>
+    <string name="omnio_checking_profile">Checking the Facebook profile…</string>
+    <string name="omnio_messenger_failed">Couldn\'t get a Messenger link from that profile. Open her chat in Messenger, tap her name → Share → Omnio One.</string>
+    <string name="omnio_messenger_failed_type">Couldn\'t work out Messenger from Facebook, type the username instead</string>
 </resources>
