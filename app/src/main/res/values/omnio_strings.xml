@@ -389,4 +389,10 @@
     <string name="omnio_add_to_home">Add to home screen</string>
     <string name="omnio_shortcut_unsupported">Your home screen doesn’t support shortcuts</string>
     <string name="omnio_delete_contact_desc">This removes them from your phone’s contacts. It can’t be undone.</string>
+    <string name="omnio_hang_up">Hang up</string>
+    <string name="omnio_channel_ringing">Incoming calls</string>
+    <string name="omnio_channel_ongoing">Ongoing calls</string>
+    <string name="omnio_notification_calling">Calling…</string>
+    <string name="omnio_notification_on_hold">On hold</string>
+    <string name="omnio_notification_on_call">On call</string>
 </resources>

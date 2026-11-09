@@ -1,100 +1,92 @@
 package com.omnioone.app.services
 
+import android.Manifest
+import android.app.KeyguardManager
+import android.app.NotificationManager
+import android.content.pm.PackageManager
+import android.os.Build
+import android.os.PowerManager
 import android.telecom.Call
 import android.telecom.CallAudioState
 import android.telecom.InCallService
-import com.omnioone.commons.extensions.canUseFullScreenIntent
-import com.omnioone.commons.extensions.hasPermission
-import com.omnioone.commons.helpers.PERMISSION_POST_NOTIFICATIONS
-import com.omnioone.app.activities.CallActivity
+import com.omnioone.app.activities.OmnioCallActivity
 import com.omnioone.app.extensions.config
-import com.omnioone.app.extensions.isOutgoing
-import com.omnioone.app.extensions.keyguardManager
-import com.omnioone.app.extensions.powerManager
-import com.omnioone.app.helpers.CallManager
-import com.omnioone.app.helpers.CallNotificationManager
-import com.omnioone.app.helpers.NoCall
-import com.omnioone.app.models.Events
-import org.greenrobot.eventbus.EventBus
+import com.omnioone.app.helpers.OmnioCallNotification
+import com.omnioone.app.helpers.OmnioCalls
 
+/**
+ * Omnio One's link to Android's phone system. Android hands every call to this service;
+ * it passes them to [OmnioCalls], keeps the call notification up to date and opens the
+ * call screen when needed.
+ */
 class CallService : InCallService() {
-    private val callNotificationManager by lazy { CallNotificationManager(this) }
 
-    private val callListener = object : Call.Callback() {
-        override fun onStateChanged(call: Call, state: Int) {
-            super.onStateChanged(call, state)
-            if (state == Call.STATE_DISCONNECTED || state == Call.STATE_DISCONNECTING) {
-                callNotificationManager.cancelNotification()
-            } else {
-                callNotificationManager.setupNotification()
-            }
+    private val changed: () -> Unit = { OmnioCallNotification.update(this) }
+
+    override fun onCreate() {
+        super.onCreate()
+        OmnioCalls.addListener(changed)
+    }
+
+    override fun onDestroy() {
+        OmnioCalls.removeListener(changed)
+        OmnioCallNotification.cancel(this)
+        super.onDestroy()
+    }
+
+    private fun isOutgoing(call: Call): Boolean =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            call.details.callDirection == Call.Details.DIRECTION_OUTGOING
+        } else {
+            OmnioCalls.stateOf(call) == OmnioCalls.State.DIALING
         }
+
+    private fun canPopUp(): Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) return false
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE &&
+            !getSystemService(NotificationManager::class.java).canUseFullScreenIntent()
+        ) return false
+        return true
     }
 
     override fun onCallAdded(call: Call) {
         super.onCallAdded(call)
-        CallManager.onCallAdded(call)
-        CallManager.inCallService = this
-        com.omnioone.app.helpers.OmnioCalls.onCallAdded(this, call)
-        call.registerCallback(callListener)
+        OmnioCalls.onCallAdded(this, call)
 
-        // Incoming/Outgoing (locked): high priority (FSI)
-        // Incoming (unlocked): if user opted in, low priority ➜ manual activity start, otherwise high priority (FSI)
-        // Outgoing (unlocked): low priority ➜ manual activity start
-        val isIncoming = !call.isOutgoing()
-        val isDeviceLocked = !powerManager.isInteractive || keyguardManager.isDeviceLocked
-        val lowPriority = when {
-            isIncoming && isDeviceLocked -> false
-            !isIncoming && isDeviceLocked -> false
-            isIncoming && !isDeviceLocked -> config.alwaysShowFullscreen
-            else -> true
-        }
-
-        callNotificationManager.setupNotification(lowPriority)
-        if (
-            lowPriority
-            || !hasPermission(PERMISSION_POST_NOTIFICATIONS)
-            || !canUseFullScreenIntent()
-        ) {
-            try {
-                startActivity(CallActivity.getStartIntent(this))
-            } catch (_: Exception) {
-                // seems like startActivity can throw AndroidRuntimeException and
-                // ActivityNotFoundException, not yet sure when and why, lets show a notification
-                callNotificationManager.setupNotification()
-            }
-        }
+        // Locked phone: ring full-screen from the notification.
+        // Unlocked: outgoing calls (and incoming, if "always full screen" is on) open the call screen straight away.
+        val locked = !getSystemService(PowerManager::class.java).isInteractive || getSystemService(KeyguardManager::class.java).isDeviceLocked
+        val incoming = !isOutgoing(call)
+        val openNow = !locked && (!incoming || config.alwaysShowFullscreen)
+        OmnioCallNotification.quietRinging = openNow
+        OmnioCallNotification.update(this)
+        if (openNow || !canPopUp()) openCallScreen()
     }
 
     override fun onCallRemoved(call: Call) {
         super.onCallRemoved(call)
-        call.unregisterCallback(callListener)
-        val wasPrimaryCall = call == CallManager.getPrimaryCall()
-        CallManager.onCallRemoved(call)
-        com.omnioone.app.helpers.OmnioCalls.onCallRemoved(call)
-        if (CallManager.getPhoneState() == NoCall) {
-            CallManager.inCallService = null
-            callNotificationManager.cancelNotification()
+        val wasPrimary = call == OmnioCalls.primary()
+        OmnioCalls.onCallRemoved(call)
+        if (!OmnioCalls.hasCalls()) {
+            OmnioCallNotification.cancel(this)
         } else {
-            callNotificationManager.setupNotification()
-            if (wasPrimaryCall) {
-                startActivity(CallActivity.getStartIntent(this))
-            }
+            OmnioCallNotification.update(this)
+            if (wasPrimary) openCallScreen()
         }
-
-        EventBus.getDefault().post(Events.RefreshCallLog)
     }
 
     override fun onCallAudioStateChanged(audioState: CallAudioState?) {
         super.onCallAudioStateChanged(audioState)
-        if (audioState != null) {
-            CallManager.onAudioStateChanged(audioState)
-            com.omnioone.app.helpers.OmnioCalls.onAudioChanged()
-        }
+        OmnioCalls.onAudioChanged()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        callNotificationManager.cancelNotification()
+    private fun openCallScreen() {
+        try {
+            startActivity(OmnioCallActivity.startIntent(this))
+        } catch (ignored: Exception) {
+            // the notification is still there to open it
+        }
     }
 }
