@@ -52,7 +52,7 @@ import org.fossify.commons.extensions.getFormattedDuration
 /** Opens the network's people search for this contact; the profile link is caught when they come back. */
 internal fun OmnioContactActivity.startFinding(contact: Contact, network: OmnioSocials.Network) {
     val helperOn = org.fossify.phone.services.OmnioLinkHelperService.isEnabled(this)
-    val prefs = getSharedPreferences("omnio", MODE_PRIVATE)
+    val prefs = getSharedPreferences("omnio", android.content.Context.MODE_PRIVATE)
     if (!helperOn && !prefs.getBoolean("link_helper_dont_ask", false)) {
         OmnioSheet.confirm(
             this,
@@ -115,7 +115,7 @@ internal fun OmnioContactActivity.checkCopiedLink() {
     val pending = OmnioSocials.getPendingLink(this) ?: return
     if (pending.contactId != current.contactId) return
     val clip = try {
-        (getSystemService(CLIPBOARD_SERVICE) as android.content.ClipboardManager).primaryClip?.getItemAt(0)?.coerceToText(this)
+        (getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager).primaryClip?.getItemAt(0)?.coerceToText(this)
     } catch (e: Exception) {
         null
     }
@@ -132,7 +132,7 @@ internal fun OmnioContactActivity.checkCopiedLink() {
 }
 
 internal fun OmnioContactActivity.clipboardText(): String? = try {
-    (getSystemService(CLIPBOARD_SERVICE) as android.content.ClipboardManager).primaryClip?.getItemAt(0)?.coerceToText(this)?.toString()
+    (getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager).primaryClip?.getItemAt(0)?.coerceToText(this)?.toString()
 } catch (e: Exception) {
     null
 }
