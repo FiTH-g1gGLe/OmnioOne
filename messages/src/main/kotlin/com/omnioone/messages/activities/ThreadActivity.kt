@@ -609,18 +609,19 @@ class ThreadActivity : SimpleActivity() {
         return currAdapter as ThreadAdapter
     }
 
-    private var omnioEmailOffered = false
+    /** The last address offered on this screen, so each new address gets its own offer. */
+    private var omnioEmailOffered: String? = null
 
     /** Omnio One: you asked this person for their email and their reply has one: offer to save it. */
     private fun checkOmnioAskedEmail() {
-        if (omnioEmailOffered) return
         val number = participants.firstOrNull()?.phoneNumbers?.firstOrNull()?.normalizedNumber
             ?: participants.firstOrNull()?.phoneNumbers?.firstOrNull()?.value ?: return
         val askedAt = com.omnioone.messages.helpers.OmnioEmail.askedAt(this, number) ?: return
         val reply = messages.lastOrNull { it.isReceivedMessage() && it.millis() >= askedAt - 60_000 && com.omnioone.messages.helpers.OmnioEmail.findEmail(it.body) != null }
             ?: return
         val email = com.omnioone.messages.helpers.OmnioEmail.findEmail(reply.body) ?: return
-        omnioEmailOffered = true
+        if (email == omnioEmailOffered) return
+        omnioEmailOffered = email
         com.omnioone.messages.helpers.OmnioEmail.offerFromReply(this, email, reply.senderPhoneNumber.ifEmpty { number })
     }
 

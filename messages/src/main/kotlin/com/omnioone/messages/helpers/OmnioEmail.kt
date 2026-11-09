@@ -55,7 +55,18 @@ object OmnioEmail {
         return if (at > 0 && System.currentTimeMillis() - at < 14L * 24 * 60 * 60 * 1000) at else null
     }
 
-    fun clearAsked(context: Context, number: String) = prefs(context).edit().remove(key(number)).apply()
+    fun clearAsked(context: Context, number: String) = prefs(context).edit().remove(key(number)).remove(declinedKey(number)).apply()
+
+    private fun declinedKey(number: String) = "declined_email_" + number.filter { it.isDigit() }.takeLast(9)
+
+    /** "Not now" on one address: don't offer that address again, but do offer a different one. */
+    fun markDeclined(context: Context, number: String, email: String) {
+        val current = prefs(context).getStringSet(declinedKey(number), emptySet()).orEmpty()
+        prefs(context).edit().putStringSet(declinedKey(number), current + email.lowercase()).apply()
+    }
+
+    fun isDeclined(context: Context, number: String, email: String) =
+        email.lowercase() in prefs(context).getStringSet(declinedKey(number), emptySet()).orEmpty()
 
     // ---- contacts ----
 
@@ -133,6 +144,7 @@ object OmnioEmail {
     fun offerFromReply(activity: Activity, email: String, senderNumber: String) {
         ensureBackgroundThread {
             val sender = findContact(activity, senderNumber) ?: return@ensureBackgroundThread
+            if (isDeclined(activity, senderNumber, email)) return@ensureBackgroundThread
             if (contactHasEmail(activity, sender.contactId, email)) {
                 clearAsked(activity, senderNumber)
                 return@ensureBackgroundThread
@@ -143,7 +155,7 @@ object OmnioEmail {
                     .setMessage(activity.getString(R.string.omnio_email_reply_message, sender.name, email))
                     .setPositiveButton(R.string.omnio_email_add) { _, _ -> addAndConfirm(activity, sender, email, senderNumber) }
                     .setNeutralButton(R.string.omnio_email_more) { _, _ -> showActions(activity, email, senderNumber) }
-                    .setNegativeButton(R.string.omnio_email_not_now) { _, _ -> clearAsked(activity, senderNumber) }
+                    .setNegativeButton(R.string.omnio_email_not_now) { _, _ -> markDeclined(activity, senderNumber, email) }
                     .show()
             }
         }
