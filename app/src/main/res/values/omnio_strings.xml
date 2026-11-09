@@ -117,7 +117,7 @@
     <string name="omnio_add_phone">Add phone</string>
     <string name="omnio_phone_hint">Phone number</string>
     <string name="omnio_add_birthday">Add birthday</string>
-    <string name="omnio_section_work">Work</string>
+    <string name="omnio_section_work">Work &amp; organisation</string>
     <string name="omnio_company">Company</string>
     <string name="omnio_job_title">Job title</string>
     <string name="omnio_section_address">Address</string>
@@ -143,4 +143,9 @@
     <string name="omnio_change_photo">Change photo</string>
     <string name="omnio_choose_photo">Choose from gallery</string>
     <string name="omnio_remove_photo">Remove photo</string>
+    <string name="omnio_last_name">Last name</string>
+    <string name="omnio_select_birthday">Select birthday…</string>
+    <string name="omnio_section_social">Social media</string>
+    <string name="omnio_automatic">Automatic</string>
+    <string name="omnio_add_social_editor_help">Type their username or paste their profile link. Tip: on the contact page, Add social → Find on… finds it for you.</string>
 </resources>

@@ -78,6 +78,11 @@ class OmnioEditContactActivity : SimpleActivity() {
     private lateinit var phonesHolder: LinearLayout
     private lateinit var emailsHolder: LinearLayout
     private lateinit var sourceValue: TextView
+    private lateinit var socialsHolder: LinearLayout
+    /** Social profile links on the contact (saved as websites), and any other websites kept as they are. */
+    private val socialUrls = ArrayList<String>()
+    private val otherWebsites = ArrayList<String>()
+    private var chatApps: List<org.fossify.phone.helpers.OmnioSocials.ChatApp> = emptyList()
     private val phones = ArrayList<Row>()
     private val emails = ArrayList<Row>()
 
@@ -180,10 +185,21 @@ class OmnioEditContactActivity : SimpleActivity() {
 
         // photo
         photoView = ImageView(this).apply {
-            layoutParams = LinearLayout.LayoutParams(dp(112), dp(112)).apply { gravity = Gravity.CENTER_HORIZONTAL }
-            setOnClickListener { photoChoices() }
+            layoutParams = android.widget.FrameLayout.LayoutParams(dp(112), dp(112))
         }
-        form.addView(photoView)
+        form.addView(android.widget.FrameLayout(this).apply {
+            layoutParams = LinearLayout.LayoutParams(dp(116), dp(116)).apply { gravity = Gravity.CENTER_HORIZONTAL }
+            setOnClickListener { photoChoices() }
+            addView(photoView)
+            addView(ImageView(this@OmnioEditContactActivity).apply {
+                setImageResource(org.fossify.commons.R.drawable.ic_camera_vector)
+                imageTintList = ColorStateList.valueOf(0xFF0F1115.toInt())
+                setPadding(dp(7), dp(7), dp(7), dp(7))
+                background = getDrawable(R.drawable.omnio_circle_bg)
+                backgroundTintList = ColorStateList.valueOf(OmnioSheet.BLUE)
+                layoutParams = android.widget.FrameLayout.LayoutParams(dp(34), dp(34)).apply { gravity = Gravity.BOTTOM or Gravity.END }
+            })
+        })
         photoLabel = TextView(this).apply {
             setTextColor(OmnioSheet.BLUE)
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
@@ -193,23 +209,23 @@ class OmnioEditContactActivity : SimpleActivity() {
         }
         form.addView(photoLabel)
 
-        form.addView(section(R.string.omnio_section_name))
+        form.addView(section(R.string.omnio_section_name, "👤"))
         firstName = field(R.string.omnio_first_name, InputType.TYPE_TEXT_FLAG_CAP_WORDS)
-        surname = field(R.string.omnio_surname, InputType.TYPE_TEXT_FLAG_CAP_WORDS)
-        form.addView(firstName)
-        form.addView(surname)
+        surname = field(R.string.omnio_last_name, InputType.TYPE_TEXT_FLAG_CAP_WORDS)
+        form.addView(labelled(firstName, R.string.omnio_first_name))
+        form.addView(labelled(surname, R.string.omnio_last_name))
 
-        form.addView(section(R.string.omnio_section_phone))
+        form.addView(section(R.string.omnio_section_phone, "📞"))
         phonesHolder = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         form.addView(phonesHolder)
         form.addView(addButton(R.string.omnio_add_phone) { addPhoneRow("", PhoneKind.TYPE_MOBILE, "", focus = true) })
 
-        form.addView(section(R.string.omnio_email))
+        form.addView(section(R.string.omnio_email, "✉️"))
         emailsHolder = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         form.addView(emailsHolder)
         form.addView(addButton(R.string.omnio_add_email) { addEmailRow("", EmailKind.TYPE_HOME, "", focus = true) })
 
-        form.addView(section(R.string.omnio_birthday))
+        form.addView(section(R.string.omnio_birthday, "🎂"))
         birthdayValue = TextView(this).apply {
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
             background = getDrawable(R.drawable.omnio_round_bg)
@@ -220,19 +236,24 @@ class OmnioEditContactActivity : SimpleActivity() {
         form.addView(birthdayValue)
         showBirthday()
 
-        form.addView(section(R.string.omnio_section_work))
+        form.addView(section(R.string.omnio_section_work, "💼"))
         company = field(R.string.omnio_company, InputType.TYPE_TEXT_FLAG_CAP_WORDS)
         jobTitle = field(R.string.omnio_job_title, InputType.TYPE_TEXT_FLAG_CAP_SENTENCES)
-        form.addView(company)
-        form.addView(jobTitle)
+        form.addView(labelled(company, R.string.omnio_company))
+        form.addView(labelled(jobTitle, R.string.omnio_job_title))
 
-        form.addView(section(R.string.omnio_section_address))
+        form.addView(section(R.string.omnio_section_social, "🌐"))
+        socialsHolder = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        form.addView(socialsHolder)
+        form.addView(addButton(R.string.omnio_add_social) { addSocialInEditor() })
+
+        form.addView(section(R.string.omnio_section_address, "📍"))
         address = field(R.string.omnio_address, InputType.TYPE_TEXT_FLAG_CAP_WORDS or InputType.TYPE_TEXT_VARIATION_POSTAL_ADDRESS, multiLine = true)
-        form.addView(address)
+        form.addView(labelled(address, R.string.omnio_address))
 
-        form.addView(section(R.string.omnio_notes))
+        form.addView(section(R.string.omnio_notes, "📝"))
         notes = field(R.string.omnio_notes, InputType.TYPE_TEXT_FLAG_CAP_SENTENCES, multiLine = true)
-        form.addView(notes)
+        form.addView(labelled(notes, R.string.omnio_notes))
 
         // account (new contacts only)
         sourceValue = TextView(this).apply {
@@ -244,7 +265,7 @@ class OmnioEditContactActivity : SimpleActivity() {
             setOnClickListener { pickSource() }
         }
         if (isNew) {
-            form.addView(section(R.string.omnio_section_save_to))
+            form.addView(section(R.string.omnio_section_save_to, "💾"))
             form.addView(sourceValue)
         } else {
             form.addView(TextView(this).apply {
@@ -268,14 +289,39 @@ class OmnioEditContactActivity : SimpleActivity() {
         showPhoto()
     }
 
-    private fun section(textRes: Int) = TextView(this).apply {
-        text = getString(textRes)
+    private fun section(textRes: Int, emoji: String) = TextView(this).apply {
+        text = emoji + "  " + getString(textRes).uppercase()
         setTextColor(OmnioSheet.TEXT)
-        alpha = 0.6f
-        isAllCaps = true
+        alpha = 0.75f
         setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
         setTypeface(typeface, Typeface.BOLD)
-        setPadding(dp(4), dp(22), 0, dp(8))
+        letterSpacing = 0.05f
+        setPadding(dp(4), dp(24), 0, dp(8))
+    }
+
+    /** A rounded box with a small label above what you type. */
+    private fun labelled(input: EditText, labelRes: Int): View {
+        input.background = null
+        input.backgroundTintList = null
+        input.setPadding(0, dp(2), 0, 0)
+        input.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+        return LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            background = getDrawable(R.drawable.omnio_round_bg)
+            backgroundTintList = ColorStateList.valueOf(OmnioSheet.CARD)
+            setPadding(dp(16), dp(10), dp(16), dp(10))
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
+                bottomMargin = dp(8)
+            }
+            addView(TextView(this@OmnioEditContactActivity).apply {
+                text = getString(labelRes)
+                setTextColor(OmnioSheet.BLUE)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
+                setTypeface(typeface, Typeface.BOLD)
+            })
+            addView(input)
+            setOnClickListener { input.requestFocus() }
+        }
     }
 
     private fun field(hintRes: Int, extraType: Int, multiLine: Boolean = false) = EditText(this).apply {
@@ -350,7 +396,7 @@ class OmnioEditContactActivity : SimpleActivity() {
         }
         val row = Row(line, input, type, label)
         val typeChip = TextView(this).apply {
-            text = typeName(type, label, types)
+            text = typeName(type, label, types) + "  ▾"
             setTextColor(OmnioSheet.TEXT)
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
             gravity = Gravity.CENTER
@@ -363,7 +409,7 @@ class OmnioEditContactActivity : SimpleActivity() {
             OmnioSheet.list(this, getString(R.string.omnio_pick_type), null, types.map { OmnioSheet.Item(getString(it.second)) }) { picked ->
                 row.type = types[picked].first
                 row.label = ""
-                typeChip.text = getString(types[picked].second)
+                typeChip.text = getString(types[picked].second) + "  ▾"
             }
         }
         val remove = ImageView(this).apply {
@@ -391,10 +437,10 @@ class OmnioEditContactActivity : SimpleActivity() {
         if (photoUri.isEmpty()) {
             photoView.setImageDrawable(null)
             photoView.setImageBitmap(SimpleContactsHelper(this).getContactLetterIcon(name))
-            photoLabel.text = getString(R.string.omnio_add_photo)
+            photoLabel.text = "📷  " + getString(R.string.omnio_add_photo)
         } else {
             SimpleContactsHelper(this).loadContactImage(photoUri, photoView, name)
-            photoLabel.text = getString(R.string.omnio_change_photo)
+            photoLabel.text = "📷  " + getString(R.string.omnio_change_photo)
         }
     }
 
@@ -419,10 +465,10 @@ class OmnioEditContactActivity : SimpleActivity() {
 
     private fun showBirthday() {
         if (birthday.isEmpty()) {
-            birthdayValue.text = "+  " + getString(R.string.omnio_add_birthday)
+            birthdayValue.text = "📅  " + getString(R.string.omnio_select_birthday)
             birthdayValue.setTextColor(OmnioSheet.ORANGE)
         } else {
-            birthdayValue.text = formatBirthday(birthday)
+            birthdayValue.text = "📅  " + formatBirthday(birthday)
             birthdayValue.setTextColor(OmnioSheet.TEXT)
         }
     }
@@ -524,6 +570,119 @@ class OmnioEditContactActivity : SimpleActivity() {
         photoUri = loaded.photoUri
         originalPhotoUri = loaded.photoUri
         showPhoto()
+
+        loaded.websites.forEach { url ->
+            if (org.fossify.phone.helpers.OmnioSocials.networkFor(url) != null) socialUrls.add(url) else otherWebsites.add(url)
+        }
+        ensureBackgroundThread {
+            val apps = org.fossify.phone.helpers.OmnioSocials.findChats(this, loaded.contactId).map { it.app }.distinct()
+            runOnUiThread {
+                chatApps = apps
+                showSocials()
+            }
+        }
+        showSocials()
+    }
+
+    // ---- social media ----
+
+    private fun appIcon(pkg: String, name: String, color: Int) =
+        org.fossify.phone.helpers.OmnioAppTags.icon(this, org.fossify.phone.helpers.OmnioAppTags.Badge(name, pkg, color))
+
+    private fun showSocials() {
+        socialsHolder.removeAllViews()
+        chatApps.forEach { app ->
+            socialsHolder.addView(socialRow(appIcon(app.pkg, app.name, app.color), app.name, null, getString(R.string.omnio_automatic), null))
+        }
+        socialUrls.toList().forEach { url ->
+            val network = org.fossify.phone.helpers.OmnioSocials.networkFor(url) ?: return@forEach
+            val handle = network.displayHandle(url).ifEmpty { getString(R.string.omnio_profile_linked) }
+            socialsHolder.addView(socialRow(appIcon(network.pkg, network.name, network.color), network.name, handle, null) {
+                socialUrls.remove(url)
+                showSocials()
+            })
+        }
+    }
+
+    private fun socialRow(icon: android.graphics.drawable.Drawable, name: String, handle: String?, note: String?, onRemove: (() -> Unit)?) =
+        LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            background = getDrawable(R.drawable.omnio_round_bg)
+            backgroundTintList = ColorStateList.valueOf(OmnioSheet.CARD)
+            setPadding(dp(14), dp(6), dp(4), dp(6))
+            minimumHeight = dp(54)
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
+                bottomMargin = dp(8)
+            }
+            addView(ImageView(this@OmnioEditContactActivity).apply {
+                setImageDrawable(icon)
+                layoutParams = LinearLayout.LayoutParams(dp(28), dp(28)).apply { marginEnd = dp(14) }
+            })
+            addView(LinearLayout(this@OmnioEditContactActivity).apply {
+                orientation = LinearLayout.VERTICAL
+                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+                addView(TextView(this@OmnioEditContactActivity).apply {
+                    text = name
+                    setTextColor(OmnioSheet.TEXT)
+                    setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
+                })
+                if (handle != null) {
+                    addView(TextView(this@OmnioEditContactActivity).apply {
+                        text = handle
+                        setTextColor(OmnioSheet.TEXT)
+                        alpha = 0.6f
+                        setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
+                    })
+                }
+            })
+            if (note != null) {
+                addView(TextView(this@OmnioEditContactActivity).apply {
+                    text = note
+                    setTextColor(OmnioSheet.GREEN)
+                    setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
+                    setPadding(0, 0, dp(12), 0)
+                })
+            }
+            if (onRemove != null) {
+                addView(ImageView(this@OmnioEditContactActivity).apply {
+                    setImageResource(org.fossify.commons.R.drawable.ic_cross_vector)
+                    imageTintList = ColorStateList.valueOf(0x99FFFFFF.toInt())
+                    setPadding(dp(12), dp(12), dp(12), dp(12))
+                    layoutParams = LinearLayout.LayoutParams(dp(44), dp(44))
+                    setOnClickListener { onRemove() }
+                })
+            }
+        }
+
+    private fun addSocialInEditor() {
+        val networks = org.fossify.phone.helpers.OmnioSocials.networks
+        OmnioSheet.list(
+            this,
+            title = getString(R.string.omnio_add_social),
+            subtitle = getString(R.string.omnio_add_social_editor_help),
+            items = networks.map { OmnioSheet.Item(it.name, appIcon(it.pkg, it.name, it.color)) }
+        ) { picked ->
+            val network = networks[picked]
+            val isDiscord = network.key == "discord"
+            OmnioSheet.input(
+                this,
+                title = if (isDiscord) getString(R.string.omnio_add_discord_id_title) else getString(R.string.omnio_add_network_title, network.name),
+                message = getString(if (isDiscord) R.string.omnio_discord_hint else R.string.omnio_username_hint),
+                hint = if (isDiscord) "123456789012345678" else "@username",
+                inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_URI
+            ) { typed ->
+                val url = if (isDiscord) org.fossify.phone.helpers.OmnioSocials.discordUrl(typed)
+                else org.fossify.phone.helpers.OmnioSocials.buildUrl(network, typed)
+                if (url == null) {
+                    toast(if (isDiscord) R.string.omnio_discord_bad_input else R.string.omnio_username_hint)
+                    return@input
+                }
+                if (isDiscord) socialUrls.removeAll { org.fossify.phone.helpers.OmnioSocials.networkFor(it)?.key == "discord" }
+                if (socialUrls.none { it.equals(url, true) }) socialUrls.add(url)
+                showSocials()
+            }
+        }
     }
 
     private fun collectPhones() = phones.mapNotNull { row ->
@@ -564,6 +723,7 @@ class OmnioEditContactActivity : SimpleActivity() {
             (if (addressText.isNotEmpty()) listOf(Address(addressText, target.addresses.firstOrNull()?.type ?: StructuredPostal.TYPE_HOME, "")) else emptyList()) + otherAddresses
         )
         target.notes = notes.text.toString().trim()
+        target.websites = ArrayList(otherWebsites + socialUrls)
 
         val photoStatus = when {
             photoUri == originalPhotoUri -> PHOTO_UNCHANGED
