@@ -76,6 +76,13 @@ class OmnioSettingsActivity : SimpleActivity() {
             action(R.string.omnio_settings_language, getString(R.string.omnio_settings_language_desc)) { openLanguage() },
         )
 
+        section("📲", R.string.omnio_settings_call_screen)
+        val callStyle = org.fossify.phone.helpers.OmnioCallStyle.get(this)
+        card(
+            action(R.string.omnio_settings_call_style, getString(org.fossify.phone.helpers.OmnioCallStyle.name(callStyle))) { pickCallStyle() },
+            action(R.string.omnio_settings_test_call, getString(R.string.omnio_settings_test_call_desc)) { testCall(callStyle) },
+        )
+
         section("📱", R.string.omnio_settings_default_apps)
         val isDialer = isDefaultDialer()
         val isSms = Telephony.Sms.getDefaultSmsPackage(this) == packageName
@@ -139,6 +146,33 @@ class OmnioSettingsActivity : SimpleActivity() {
     }
 
     // ---- actions ----
+
+    private fun pickCallStyle() {
+        val styles = org.fossify.phone.helpers.OmnioCallStyle.all
+        val current = org.fossify.phone.helpers.OmnioCallStyle.get(this)
+        OmnioSheet.list(
+            this,
+            getString(R.string.omnio_settings_call_style),
+            getString(R.string.omnio_settings_call_style_help),
+            styles.map {
+                OmnioSheet.Item(
+                    getString(org.fossify.phone.helpers.OmnioCallStyle.name(it)) + "  ·  " + getString(org.fossify.phone.helpers.OmnioCallStyle.description(it)),
+                    trailing = if (it == current) "✓" else null
+                )
+            }
+        ) { picked ->
+            org.fossify.phone.helpers.OmnioCallStyle.set(this, styles[picked])
+            buildRows()
+            testCall(styles[picked])
+        }
+    }
+
+    private fun testCall(style: Int) {
+        startActivity(Intent(this, OmnioCallActivity::class.java).apply {
+            putExtra(OmnioCallActivity.EXTRA_PREVIEW, true)
+            putExtra(OmnioCallActivity.EXTRA_STYLE, style)
+        })
+    }
 
     private fun openLanguage() {
         val opened = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && try {

@@ -195,6 +195,16 @@
             android:screenOrientation="portrait"
             android:showOnLockScreen="true" />
 
+        <!-- Omnio One call screen (incoming styles + in-call) -->
+        <activity
+            android:name=".activities.OmnioCallActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:label="@string/ongoing_call"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"
+            android:showOnLockScreen="true" />
+
         <activity
             android:name=".activities.DialpadActivity"
             android:exported="true"

@@ -42,11 +42,8 @@ import kotlin.math.min
 
 class CallActivity : SimpleActivity() {
     companion object {
-        fun getStartIntent(context: Context): Intent {
-            val openAppIntent = Intent(context, CallActivity::class.java)
-            openAppIntent.flags = Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT or Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
-            return openAppIntent
-        }
+        // Omnio One: every call (service, notification, answer button) now opens Omnio's own call screen
+        fun getStartIntent(context: Context): Intent = OmnioCallActivity.startIntent(context)
     }
 
     private val binding by viewBinding(ActivityCallBinding::inflate)

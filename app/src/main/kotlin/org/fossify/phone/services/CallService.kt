@@ -35,6 +35,7 @@ class CallService : InCallService() {
         super.onCallAdded(call)
         CallManager.onCallAdded(call)
         CallManager.inCallService = this
+        org.fossify.phone.helpers.OmnioCalls.onCallAdded(this, call)
         call.registerCallback(callListener)
 
         // Incoming/Outgoing (locked): high priority (FSI)
@@ -70,6 +71,7 @@ class CallService : InCallService() {
         call.unregisterCallback(callListener)
         val wasPrimaryCall = call == CallManager.getPrimaryCall()
         CallManager.onCallRemoved(call)
+        org.fossify.phone.helpers.OmnioCalls.onCallRemoved(call)
         if (CallManager.getPhoneState() == NoCall) {
             CallManager.inCallService = null
             callNotificationManager.cancelNotification()
@@ -87,6 +89,7 @@ class CallService : InCallService() {
         super.onCallAudioStateChanged(audioState)
         if (audioState != null) {
             CallManager.onAudioStateChanged(audioState)
+            org.fossify.phone.helpers.OmnioCalls.onAudioChanged()
         }
     }
 
