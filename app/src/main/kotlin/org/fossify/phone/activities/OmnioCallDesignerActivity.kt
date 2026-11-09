@@ -18,6 +18,7 @@ import androidx.core.widget.NestedScrollView
 import org.fossify.commons.extensions.toast
 import org.fossify.commons.helpers.OmnioColors
 import org.fossify.phone.R
+import org.fossify.phone.helpers.OmnioAnswerControls
 import org.fossify.phone.helpers.OmnioCallInfo
 import org.fossify.phone.helpers.OmnioCallScreen
 import org.fossify.phone.helpers.OmnioCallStyle
@@ -208,6 +209,12 @@ class OmnioCallDesignerActivity : SimpleActivity() {
         card(
             action(R.string.omnio_designer_answer_style, answerName(design.answer)) {
                 choose(R.string.omnio_designer_answer_style, Answer.entries.map { answerName(it) }) { design.answer = Answer.entries[it] }
+            },
+            action(R.string.omnio_designer_answer_design, getString(OmnioAnswerControls.variantName(design.answer, design.answerVariant))) {
+                choose(
+                    R.string.omnio_designer_answer_design,
+                    (0 until OmnioAnswerControls.VARIANTS).map { getString(OmnioAnswerControls.variantName(design.answer, it)) }
+                ) { design.answerVariant = it }
             },
             colourRow(R.string.omnio_designer_accept_colour, design.acceptColor) { design.acceptColor = it },
             colourRow(R.string.omnio_designer_decline_colour, design.declineColor) { design.declineColor = it },

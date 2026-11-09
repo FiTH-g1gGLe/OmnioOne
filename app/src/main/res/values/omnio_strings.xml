@@ -307,8 +307,8 @@
     <string name="omnio_designer_shape_rounded">Rounded square</string>
     <string name="omnio_designer_shape_hidden">Hidden</string>
     <string name="omnio_designer_answer_buttons">Buttons</string>
-    <string name="omnio_designer_answer_slide">Slide to answer</string>
-    <string name="omnio_designer_answer_swipe">Swipe up</string>
+    <string name="omnio_designer_answer_slide">Swipe left / right</string>
+    <string name="omnio_designer_answer_swipe">Swipe up / down</string>
     <string name="omnio_designer_size_small">Small</string>
     <string name="omnio_designer_size_medium">Medium</string>
     <string name="omnio_designer_size_large">Large</string>
@@ -325,4 +325,22 @@
     <string name="omnio_call_style_orbit">Orbit</string>
     <string name="omnio_call_style_orbit_desc">The Omnio ring spinning round their photo</string>
     <string name="omnio_designer_orbit">Spinning Omnio ring</string>
+    <string name="omnio_designer_answer_design">Design</string>
+    <string name="omnio_answer_buttons_0">Classic circles</string>
+    <string name="omnio_answer_buttons_1">Side-by-side pills</string>
+    <string name="omnio_answer_buttons_2">Stacked bars</string>
+    <string name="omnio_answer_buttons_3">Breathing bubble</string>
+    <string name="omnio_answer_buttons_4">Rounded tiles</string>
+    <string name="omnio_answer_vertical_0">Classic: decline left, swipe up right</string>
+    <string name="omnio_answer_vertical_1">Centre handle: up answers, down declines</string>
+    <string name="omnio_answer_vertical_2">Tall track</string>
+    <string name="omnio_answer_vertical_3">Drifting arrows</string>
+    <string name="omnio_answer_vertical_4">Pull-up bar</string>
+    <string name="omnio_answer_sideways_0">Classic track</string>
+    <string name="omnio_answer_sideways_1">Slide from the left</string>
+    <string name="omnio_answer_sideways_2">Red and green glow</string>
+    <string name="omnio_answer_sideways_3">Big circle with arrows</string>
+    <string name="omnio_answer_sideways_4">Mini pill</string>
+    <string name="omnio_answer_up_down_hint">Swipe up to answer · down to decline</string>
+    <string name="omnio_answer_slide_label">slide to answer</string>
 </resources>

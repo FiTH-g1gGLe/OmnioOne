@@ -39,6 +39,7 @@ object OmnioCallStyle {
         var pulse: Boolean = false,
         var orbit: Boolean = false,
         var answer: Answer = Answer.BUTTONS,
+        var answerVariant: Int = 0,
         var acceptColor: Int = OmnioColors.MESSAGES,
         var declineColor: Int = 0xFFE5484D.toInt(),
         var textColor: Int = OmnioColors.TEXT,
@@ -57,7 +58,7 @@ object OmnioCallStyle {
             put("id", id); put("name", name)
             put("background", background.name); put("backgroundColor", backgroundColor); put("gradientColor", gradientColor)
             put("photoShape", photoShape.name); put("photoSize", photoSize); put("pulse", pulse); put("orbit", orbit)
-            put("answer", answer.name)
+            put("answer", answer.name); put("answerVariant", answerVariant)
             put("acceptColor", acceptColor); put("declineColor", declineColor); put("textColor", textColor); put("nameSize", nameSize)
             put("showNumber", showNumber); put("showLastText", showLastText); put("showBirthday", showBirthday)
             put("showNotes", showNotes); put("showApps", showApps)
@@ -76,6 +77,7 @@ object OmnioCallStyle {
                 pulse = json.optBoolean("pulse", false),
                 orbit = json.optBoolean("orbit", false),
                 answer = enumOr(json.optString("answer"), Answer.BUTTONS),
+                answerVariant = json.optInt("answerVariant", 0),
                 acceptColor = json.optInt("acceptColor", OmnioColors.MESSAGES),
                 declineColor = json.optInt("declineColor", 0xFFE5484D.toInt()),
                 textColor = json.optInt("textColor", OmnioColors.TEXT),
