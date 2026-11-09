@@ -1,46 +1,46 @@
 package com.omnioone.app.services
 
+import android.net.Uri
+import android.provider.BlockedNumberContract
+import android.provider.ContactsContract
 import android.telecom.Call
 import android.telecom.CallScreeningService
 import com.omnioone.commons.extensions.baseConfig
-import com.omnioone.commons.extensions.getMyContactsCursor
-import com.omnioone.commons.extensions.isNumberBlocked
-import com.omnioone.commons.helpers.ContactLookupResult
-import com.omnioone.commons.helpers.SimpleContactsHelper
 
+/** Omnio One: turns away blocked numbers, and unknown or hidden callers if you've chosen that. */
 class SimpleCallScreeningService : CallScreeningService() {
 
     override fun onScreenCall(callDetails: Call.Details) {
-        val number = callDetails.handle?.schemeSpecificPart
-        when {
-            number != null && isNumberBlocked(number) -> {
-                respondToCall(callDetails, isBlocked = true)
-            }
-
-            number != null && baseConfig.blockUnknownNumbers -> {
-                val privateCursor = getMyContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
-                val result = SimpleContactsHelper(this).existsSync(number, privateCursor)
-                respondToCall(callDetails, isBlocked = result == ContactLookupResult.NotFound)
-            }
-
-            number == null && baseConfig.blockHiddenNumbers -> {
-                respondToCall(callDetails, isBlocked = true)
-            }
-
-            else -> {
-                respondToCall(callDetails, isBlocked = false)
-            }
+        val number = callDetails.handle?.schemeSpecificPart.orEmpty()
+        val block = when {
+            number.isEmpty() -> baseConfig.blockHiddenNumbers
+            isBlocked(number) -> true
+            baseConfig.blockUnknownNumbers -> !isSaved(number)
+            else -> false
         }
+        respondToCall(
+            callDetails,
+            CallResponse.Builder()
+                .setDisallowCall(block)
+                .setRejectCall(block)
+                .setSkipCallLog(block)
+                .setSkipNotification(block)
+                .build()
+        )
     }
 
-    private fun respondToCall(callDetails: Call.Details, isBlocked: Boolean) {
-        val response = CallResponse.Builder()
-            .setDisallowCall(isBlocked)
-            .setRejectCall(isBlocked)
-            .setSkipCallLog(isBlocked)
-            .setSkipNotification(isBlocked)
-            .build()
+    private fun isBlocked(number: String) = try {
+        BlockedNumberContract.isBlocked(this, number)
+    } catch (e: Exception) {
+        false
+    }
 
-        respondToCall(callDetails, response)
+    private fun isSaved(number: String) = try {
+        contentResolver.query(
+            Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(number)),
+            arrayOf(ContactsContract.PhoneLookup._ID), null, null, null
+        )?.use { it.count > 0 } ?: false
+    } catch (e: Exception) {
+        true // if we can't check, don't block
     }
 }

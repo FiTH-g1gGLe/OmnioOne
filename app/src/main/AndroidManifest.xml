@@ -88,8 +88,24 @@
 
         <activity
             android:name=".activities.OmnioSettingsActivity"
+            android:exported="true"
+            android:label="@string/omnio_settings">
+
+            <intent-filter>
+                <action android:name="android.intent.action.APPLICATION_PREFERENCES" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".activities.OmnioSpeedDialActivity"
             android:exported="false"
-            android:label="@string/omnio_settings" />
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".activities.OmnioBlockedActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
 
         <activity
             android:name=".activities.OmnioCallDesignerActivity"
@@ -154,37 +170,20 @@
             android:configChanges="orientation"
             android:exported="false"
             android:label="@string/customize_colors"
-            android:parentActivityName=".activities.SettingsActivity" />
+            android:parentActivityName=".activities.OmnioSettingsActivity" />
 
         <activity
             android:name="com.omnioone.commons.activities.ManageBlockedNumbersActivity"
             android:configChanges="orientation"
             android:exported="false"
             android:label="@string/blocked_numbers"
-            android:parentActivityName=".activities.SettingsActivity"
+            android:parentActivityName=".activities.OmnioSettingsActivity"
             tools:replace="android:label" />
 
-        <activity
-            android:name=".activities.ManageSpeedDialActivity"
-            android:configChanges="orientation"
-            android:exported="false"
-            android:label="@string/speed_dial"
-            android:parentActivityName=".activities.SettingsActivity" />
 
         
 
-        <activity
-            android:name=".activities.SettingsActivity"
-            android:configChanges="orientation"
-            android:exported="true"
-            android:label="@string/settings"
-            android:parentActivityName=".activities.MainActivity">
 
-            <intent-filter>
-                <action android:name="android.intent.action.APPLICATION_PREFERENCES" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
 
         
 

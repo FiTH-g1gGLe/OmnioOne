@@ -42,7 +42,6 @@ import com.omnioone.app.fragments.FavoritesFragment
 import com.omnioone.app.fragments.MyViewPagerFragment
 import com.omnioone.app.fragments.RecentsFragment
 import com.omnioone.app.helpers.OPEN_DIAL_PAD_AT_LAUNCH
-import com.omnioone.app.helpers.RecentsHelper
 import com.omnioone.app.helpers.tabsList
 import com.omnioone.app.models.Events
 import org.greenrobot.eventbus.EventBus

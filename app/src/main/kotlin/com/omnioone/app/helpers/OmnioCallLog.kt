@@ -126,4 +126,49 @@ object OmnioCallLog {
         } catch (ignored: Exception) {
         }
     }
+
+    /** Your call history as JSON, and how many calls it holds. Run on a background thread. */
+    fun exportJson(context: Context): Pair<String, Int> {
+        val array = org.json.JSONArray()
+        load(context, limit = 100000, group = false).forEach { entry ->
+            val call = entry.latest
+            array.put(org.json.JSONObject().apply {
+                put("number", call.number)
+                put("type", call.type)
+                put("date", call.date)
+                put("duration", call.duration)
+            })
+        }
+        return array.toString() to array.length()
+    }
+
+    /**
+     * Adds calls from an export back into the history (skipping ones already there).
+     * Also reads files saved by the app's earlier call history export. Returns how many were added.
+     */
+    fun importJson(context: Context, text: String): Int {
+        val array = org.json.JSONArray(text)
+        val existing = HashSet<String>()
+        load(context, limit = 100000, group = false).forEach { existing += "${it.number}|${it.latest.date}" }
+        var added = 0
+        for (i in 0 until array.length()) {
+            val item = array.optJSONObject(i) ?: continue
+            val number = item.optString("number").ifEmpty { item.optString("phoneNumber") }
+            val date = item.optLong("date", item.optLong("startTS", 0L))
+            if (date <= 0L || "$number|$date" in existing) continue
+            val values = android.content.ContentValues().apply {
+                put(Calls.NUMBER, number)
+                put(Calls.TYPE, item.optInt("type", Calls.INCOMING_TYPE))
+                put(Calls.DATE, date)
+                put(Calls.DURATION, item.optLong("duration", 0L))
+                put(Calls.NEW, 0)
+            }
+            try {
+                context.contentResolver.insert(Calls.CONTENT_URI, values)
+                added++
+            } catch (ignored: Exception) {
+            }
+        }
+        return added
+    }
 }

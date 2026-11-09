@@ -37,7 +37,6 @@ import com.omnioone.app.extensions.config
 import com.omnioone.app.extensions.getAvailableSIMCardLabels
 import com.omnioone.app.extensions.openContactInSystemApp
 import com.omnioone.app.extensions.startCallWithConfirmationCheck
-import com.omnioone.app.helpers.RecentsHelper
 import com.omnioone.commons.extensions.beVisibleIf
 import com.omnioone.commons.extensions.setupDialogStuff
 import com.omnioone.commons.extensions.getAlertDialogBuilder
