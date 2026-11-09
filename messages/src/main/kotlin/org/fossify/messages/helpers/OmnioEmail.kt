@@ -24,7 +24,32 @@ object OmnioEmail {
 
     data class SenderContact(val contactId: Long, val name: String)
 
-    fun findEmail(text: String): String? = Patterns.EMAIL_ADDRESS.matcher(text).let { if (it.find()) it.group() else null }
+    fun findEmail(text: String): String? = Patterns.EMAIL_ADDRESS.matcher(text).let { if (it.find()) it.group().lowercase() else null }
+
+    /** Opens the sender's Omnio contact page (found by their number). */
+    fun openContactPage(activity: Activity, number: String): Boolean {
+        val rawId = try {
+            val contactId = findContact(activity, number)?.contactId ?: return false
+            activity.contentResolver.query(
+                ContactsContract.RawContacts.CONTENT_URI,
+                arrayOf(ContactsContract.RawContacts._ID),
+                "${ContactsContract.RawContacts.CONTACT_ID} = ? AND ${ContactsContract.RawContacts.DELETED} = 0",
+                arrayOf(contactId.toString()),
+                null
+            )?.use { if (it.moveToFirst()) it.getInt(0) else null }
+        } catch (e: Exception) {
+            null
+        } ?: return false
+        return try {
+            activity.startActivity(Intent().apply {
+                setClassName(activity.packageName, "org.fossify.phone.activities.OmnioContactActivity")
+                putExtra("omnio_contact_id", rawId)
+            })
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
 
     // ---- "Ask for email" memory ----
 

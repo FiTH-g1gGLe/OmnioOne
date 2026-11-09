@@ -518,10 +518,14 @@ class ThreadAdapter(
 
             threadMessageSenderPhoto.beVisible()
             threadMessageSenderPhoto.setOnClickListener {
-                val contact = message.getSender()!!
-                activity.getContactFromAddress(contact.phoneNumbers.first().normalizedNumber) {
-                    if (it != null) {
-                        activity.startContactDetailsIntent(it)
+                // Omnio One: open their Omnio contact page
+                val contact = message.getSender() ?: return@setOnClickListener
+                val number = contact.phoneNumbers.firstOrNull()?.normalizedNumber ?: return@setOnClickListener
+                org.fossify.commons.helpers.ensureBackgroundThread {
+                    if (!org.fossify.messages.helpers.OmnioEmail.openContactPage(activity, number)) {
+                        activity.runOnUiThread {
+                            activity.getContactFromAddress(number) { found -> if (found != null) activity.startContactDetailsIntent(found) }
+                        }
                     }
                 }
             }

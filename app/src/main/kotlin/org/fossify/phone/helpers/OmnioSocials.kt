@@ -408,6 +408,7 @@ object OmnioSocials {
                 .withValue(Website.TYPE, Website.TYPE_PROFILE)
                 .build()
             context.contentResolver.applyBatch(ContactsContract.AUTHORITY, arrayListOf(operation))
+            clearPendingLink(context)
             true
         } catch (e: Exception) {
             false

@@ -68,7 +68,7 @@ class ContactsAdapter(
     var onSpanCountListener: (Int) -> Unit = {}
 
     /** Omnio One: chat apps each contact uses, keyed by contact id, shown as coloured tags under the name. */
-    var appTags: Map<Int, CharSequence> = emptyMap()
+    var appTags: Map<Int, List<org.fossify.phone.helpers.OmnioAppTags.Badge>> = emptyMap()
         @SuppressLint("NotifyDataSetChanged")
         set(value) {
             field = value
@@ -196,21 +196,16 @@ class ContactsAdapter(
             if (compact) {
                 binding.itemContactName.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * 0.92f)
                 binding.itemContactTags?.beGone()
+                binding.itemContactAppIcons?.beGone()
             }
         }
 
         if (style == OmnioDisplay.STYLE_DETAILED || style == OmnioDisplay.STYLE_CARDS) {
             binding.itemContactTags?.apply {
                 val number = (contact.phoneNumbers.firstOrNull { it.isPrimary } ?: contact.phoneNumbers.firstOrNull())?.value.orEmpty()
-                val tags = appTags[contact.contactId]
-                val line = android.text.SpannableStringBuilder(number)
-                if (!tags.isNullOrEmpty()) {
-                    if (line.isNotEmpty()) line.append("  ·  ")
-                    line.append(tags)
-                }
-                text = line
+                text = number
                 setTextColor(textColor.adjustAlpha(0.7f))
-                beVisibleIf(line.isNotEmpty())
+                beVisibleIf(number.isNotEmpty())
             }
         }
 
@@ -463,11 +458,20 @@ class ContactsAdapter(
                 beVisibleIf(showHeader)
             }
 
-            itemContactTags?.apply {
-                val tags = appTags[contact.contactId]
-                text = tags
-                setTextColor(textColor)
-                beVisibleIf(!tags.isNullOrEmpty())
+            // Omnio One: small app icons for the chat apps and socials they use
+            itemContactTags?.beGone()
+            itemContactAppIcons?.apply {
+                removeAllViews()
+                val badges = appTags[contact.contactId].orEmpty()
+                beVisibleIf(badges.isNotEmpty())
+                val size = (16 * activity.resources.displayMetrics.density).toInt()
+                badges.forEach { badge ->
+                    addView(ImageView(activity).apply {
+                        setImageDrawable(org.fossify.phone.helpers.OmnioAppTags.icon(activity, badge))
+                        contentDescription = badge.name
+                        layoutParams = android.widget.LinearLayout.LayoutParams(size, size).apply { marginEnd = size / 3 }
+                    })
+                }
             }
 
             itemContactImage.apply {
@@ -661,6 +665,7 @@ class ContactsAdapter(
         val dragHandleIcon: ImageView
         val itemContactHeader: TextView? get() = null
         val itemContactTags: TextView? get() = null
+        val itemContactAppIcons: android.widget.LinearLayout? get() = null
         val itemContactCall: ImageView? get() = null
         val itemContactSms: ImageView? get() = null
     }
@@ -671,6 +676,7 @@ class ContactsAdapter(
         override val itemContactFrame = binding.itemContactFrame
         override val dragHandleIcon = binding.dragHandleIcon
         override val itemContactTags = binding.itemContactTags
+        override val itemContactAppIcons = binding.itemContactAppIcons
         override val itemContactCall = binding.itemContactCall
         override val itemContactSms = binding.itemContactSms
 
@@ -711,6 +717,7 @@ class ContactsAdapter(
         override val dragHandleIcon = binding.dragHandleIcon
         override val itemContactHeader = binding.itemContactHeader
         override val itemContactTags = binding.itemContactTags
+        override val itemContactAppIcons = binding.itemContactAppIcons
 
         override fun getRoot(): View = binding.root
     }

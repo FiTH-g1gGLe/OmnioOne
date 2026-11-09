@@ -53,7 +53,7 @@ class ContactsFragment(context: Context, attributeSet: AttributeSet) : MyViewPag
     private lateinit var binding: FragmentLettersLayoutBinding
     private lateinit var outerBinding: FragmentContactsBinding
     private var allContacts = ArrayList<Contact>()
-    private var appTags: Map<Int, CharSequence> = emptyMap()
+    private var appTags: Map<Int, List<OmnioAppTags.Badge>> = emptyMap()
     private var omnioTextColor = 0xFFECEFF4.toInt()
 
     override fun onFinishInflate() {

@@ -413,6 +413,9 @@ class MainActivity : SimpleActivity() {
 
     @Suppress("DEPRECATION")
     private fun openMessages() {
+        if (binding.mainMenu.isSearchOpen || binding.mainMenu.getCurrentQuery().isNotEmpty()) {
+            binding.mainMenu.closeSearch()
+        }
         try {
             startActivity(Intent(this, org.fossify.messages.activities.MainActivity::class.java))
             overridePendingTransition(0, 0)
@@ -544,6 +547,10 @@ class MainActivity : SimpleActivity() {
                 if (it.tag == OMNIO_MESSAGES_TAB) {
                     openMessages()
                     return@onTabSelectionChanged
+                }
+                // Omnio One: switching tab clears the search
+                if (binding.mainMenu.isSearchOpen || binding.mainMenu.getCurrentQuery().isNotEmpty()) {
+                    binding.mainMenu.closeSearch()
                 }
                 getCurrentFragment()?.onSearchQueryChanged(binding.mainMenu.getCurrentQuery())
                 binding.viewPager.currentItem = it.position

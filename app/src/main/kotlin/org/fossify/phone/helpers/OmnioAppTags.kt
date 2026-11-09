@@ -1,56 +1,86 @@
 package org.fossify.phone.helpers
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.Typeface
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.provider.ContactsContract
-import android.text.SpannableStringBuilder
-import android.text.Spanned
-import android.text.style.ForegroundColorSpan
+import android.provider.ContactsContract.CommonDataKinds.Website
 
 /**
- * Omnio One: works out which chat apps each contact uses, from the entries those apps
- * add to the phone's contacts (the same ones that power the WhatsApp/Telegram buttons).
+ * Omnio One: which chat apps and socials each contact has, shown as small app icons under
+ * their name in the Contacts list.
  */
 object OmnioAppTags {
 
-    private data class App(val name: String, val color: Int)
+    data class Badge(val name: String, val pkg: String, val color: Int)
 
-    private val apps = linkedMapOf(
-        "vnd.android.cursor.item/vnd.com.whatsapp.profile" to App("WhatsApp", 0xFF5DD39E.toInt()),
-        "vnd.android.cursor.item/vnd.org.telegram.messenger.android.profile" to App("Telegram", 0xFF6CBCF2.toInt()),
-        "vnd.android.cursor.item/vnd.org.thoughtcrime.securesms.contact" to App("Signal", 0xFF8FA8FF.toInt()),
-    )
+    private val iconCache = HashMap<String, Drawable>()
 
-    /** Contact id -> coloured "WhatsApp · Telegram" text. Run on a background thread. */
-    fun load(context: Context): Map<Int, CharSequence> {
-        val found = HashMap<Int, LinkedHashSet<App>>()
+    /** Contact id -> badges, chat apps first, then socials. Run on a background thread. */
+    fun load(context: Context): Map<Int, List<Badge>> {
+        val found = HashMap<Int, LinkedHashSet<Badge>>()
+
+        // chat apps add their own rows to the phone's contacts
+        val chatByMime = OmnioSocials.chatApps.flatMap { app -> app.actions.map { it.mimeType to app } }.toMap()
         try {
-            val selection = "${ContactsContract.Data.MIMETYPE} IN (${apps.keys.joinToString { "?" }})"
             context.contentResolver.query(
                 ContactsContract.Data.CONTENT_URI,
                 arrayOf(ContactsContract.Data.CONTACT_ID, ContactsContract.Data.MIMETYPE),
-                selection,
-                apps.keys.toTypedArray(),
+                "${ContactsContract.Data.MIMETYPE} IN (${chatByMime.keys.joinToString { "?" }})",
+                chatByMime.keys.toTypedArray(),
                 null
             )?.use { cursor ->
                 while (cursor.moveToNext()) {
-                    val contactId = cursor.getInt(0)
-                    val app = apps[cursor.getString(1)] ?: continue
-                    found.getOrPut(contactId) { LinkedHashSet() }.add(app)
+                    val app = chatByMime[cursor.getString(1)] ?: continue
+                    found.getOrPut(cursor.getInt(0)) { LinkedHashSet() }.add(Badge(app.name, app.pkg, app.color))
                 }
             }
         } catch (ignored: Exception) {
         }
 
-        val order = apps.values.toList()
-        return found.mapValues { (_, used) ->
-            val text = SpannableStringBuilder()
-            used.sortedBy { order.indexOf(it) }.forEachIndexed { index, app ->
-                if (index > 0) text.append("  ·  ")
-                val start = text.length
-                text.append(app.name)
-                text.setSpan(ForegroundColorSpan(app.color), start, text.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        // socials are saved as profile links
+        try {
+            context.contentResolver.query(
+                ContactsContract.Data.CONTENT_URI,
+                arrayOf(ContactsContract.Data.CONTACT_ID, Website.URL),
+                "${ContactsContract.Data.MIMETYPE} = ?",
+                arrayOf(Website.CONTENT_ITEM_TYPE),
+                null
+            )?.use { cursor ->
+                while (cursor.moveToNext()) {
+                    val url = cursor.getString(1) ?: continue
+                    val network = OmnioSocials.networkFor(url) ?: continue
+                    found.getOrPut(cursor.getInt(0)) { LinkedHashSet() }.add(Badge(network.name, network.pkg, network.color))
+                }
             }
-            text
+        } catch (ignored: Exception) {
+        }
+
+        return found.mapValues { it.value.toList() }
+    }
+
+    /** The app's real icon, or a coloured letter if it isn't installed. Cached. */
+    fun icon(context: Context, badge: Badge): Drawable = iconCache.getOrPut(badge.pkg) {
+        try {
+            context.packageManager.getApplicationIcon(badge.pkg)
+        } catch (e: Exception) {
+            val size = (context.resources.displayMetrics.density * 36).toInt()
+            val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(bitmap)
+            canvas.drawCircle(size / 2f, size / 2f, size / 2f, Paint().apply { isAntiAlias = true; color = badge.color })
+            val paint = Paint().apply {
+                isAntiAlias = true
+                color = if (androidx.core.graphics.ColorUtils.calculateLuminance(badge.color) > 0.6) 0xFF0F1115.toInt() else 0xFFFFFFFF.toInt()
+                textSize = size * 0.5f
+                textAlign = Paint.Align.CENTER
+                typeface = Typeface.DEFAULT_BOLD
+            }
+            canvas.drawText(badge.name.take(1), size / 2f, size / 2f - (paint.descent() + paint.ascent()) / 2f, paint)
+            BitmapDrawable(context.resources, bitmap)
         }
     }
 }

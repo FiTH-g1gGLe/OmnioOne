@@ -1092,6 +1092,16 @@ class ThreadActivity : SimpleActivity() {
         } else {
             participants.getThreadTitle()
         }
+        // Omnio One: tap the name at the top to open their contact page
+        binding.threadToolbar.setOnClickListener {
+            if (participants.size != 1) return@setOnClickListener
+            val number = participants.first().phoneNumbers.firstOrNull()?.normalizedNumber
+                ?: participants.first().phoneNumbers.firstOrNull()?.value ?: return@setOnClickListener
+            ensureBackgroundThread {
+                val opened = org.fossify.messages.helpers.OmnioEmail.openContactPage(this, number)
+                if (!opened) runOnUiThread { toast(R.string.omnio_not_saved_contact) }
+            }
+        }
     }
 
     @SuppressLint("MissingPermission")

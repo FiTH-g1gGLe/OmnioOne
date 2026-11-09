@@ -170,7 +170,11 @@ class OmnioContactActivity : SimpleActivity() {
             firstResume = false
             return
         }
-        contact?.let { loadRecentCalls(it) }
+        // coming back to the page: show the latest apps, socials and history
+        contact?.let {
+            loadApps(it)
+            loadRecentCalls(it)
+        }
     }
 
     private fun toggleFavourite() {
@@ -183,7 +187,9 @@ class OmnioContactActivity : SimpleActivity() {
                 org.fossify.phone.helpers.OmnioFavourites.notifyChanged()
             }
         } else {
-            makeFavourite = org.fossify.phone.helpers.OmnioFavourites.toggle(this, current.contactId)
+            // do exactly what the star shows, whatever has or hasn't loaded yet
+            makeFavourite = current.starred != 1
+            org.fossify.phone.helpers.OmnioFavourites.set(this, current.contactId, makeFavourite)
         }
         current.starred = if (makeFavourite) 1 else 0
         toast(if (makeFavourite) R.string.omnio_added_favourite else R.string.omnio_removed_favourite)
@@ -208,6 +214,7 @@ class OmnioContactActivity : SimpleActivity() {
     override fun onStart() {
         super.onStart()
         org.fossify.phone.helpers.OmnioFavourites.addListener(favouritesListener)
+        org.fossify.phone.helpers.OmnioFavourites.reload(this)
     }
 
     override fun onStop() {
@@ -393,6 +400,7 @@ class OmnioContactActivity : SimpleActivity() {
     }
 
     private fun openChat(chat: OmnioSocials.FoundChat) {
+        OmnioSocials.clearPendingLink(this)
         try {
             startActivity(Intent(Intent.ACTION_VIEW).apply {
                 setDataAndType(Uri.parse("content://com.android.contacts/data/${chat.dataId}"), chat.action.mimeType)
@@ -404,6 +412,8 @@ class OmnioContactActivity : SimpleActivity() {
     }
 
     private fun openSocial(social: OmnioSocials.FoundSocial) {
+        // using a linked profile ends any "Find on…": stop listening for links
+        OmnioSocials.clearPendingLink(this)
         if (social.network.key == "discord" && OmnioSocials.discordId(social.url) == null) {
             // an old username-only link: Discord can't open those
             toast(R.string.omnio_discord_need_id, android.widget.Toast.LENGTH_LONG)
@@ -436,9 +446,39 @@ class OmnioContactActivity : SimpleActivity() {
     }
 
     private fun pickNetworkToAdd(contact: Contact) {
-        val items = ArrayList(OmnioSocials.networks.mapIndexed { index, network -> org.fossify.commons.models.RadioItem(index, network.name) })
-        org.fossify.commons.dialogs.RadioGroupDialog(this, items, titleId = R.string.omnio_add_social) { picked ->
-            val network = OmnioSocials.networks.getOrNull(picked as Int) ?: return@RadioGroupDialog
+        var dialog: androidx.appcompat.app.AlertDialog? = null
+        val list = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(12), dp(4), dp(12), dp(4))
+        }
+        OmnioSocials.networks.forEach { network ->
+            list.addView(LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_VERTICAL
+                setPadding(dp(12), dp(10), dp(12), dp(10))
+                background = getDrawable(android.R.drawable.list_selector_background)
+                addView(ImageView(this@OmnioContactActivity).apply {
+                    setImageDrawable(appIcon(network.pkg, network.name, network.color))
+                    layoutParams = LinearLayout.LayoutParams(dp(30), dp(30)).apply { marginEnd = dp(16) }
+                })
+                addView(TextView(this@OmnioContactActivity).apply {
+                    text = network.name
+                    setTextColor(getProperTextColor())
+                    setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
+                })
+                setOnClickListener {
+                    dialog?.dismiss()
+                    onNetworkPicked(contact, network)
+                }
+            })
+        }
+        val scroll = android.widget.ScrollView(this).apply { addView(list) }
+        getAlertDialogBuilder()
+            .setNegativeButton(org.fossify.commons.R.string.cancel, null)
+            .apply { setupDialogStuff(scroll, this, R.string.omnio_add_social) { dialog = it } }
+    }
+
+    private fun onNetworkPicked(contact: Contact, network: OmnioSocials.Network) {
             val facebook = currentSocials.firstOrNull { it.network.key == "facebook" }
             if (network.key == "messenger" && facebook != null) {
                 // build Messenger straight from the Facebook profile that's already linked
@@ -446,7 +486,6 @@ class OmnioContactActivity : SimpleActivity() {
             } else {
                 askUsername(contact, network)
             }
-        }
     }
 
     private fun askUsername(contact: Contact, network: OmnioSocials.Network) {
@@ -893,7 +932,8 @@ class OmnioContactActivity : SimpleActivity() {
             addInfoLine(holder, label, number.value) { startCallWithConfirmationCheck(number.value, name) }
         }
         contact.emails.forEach { email ->
-            addInfoLine(holder, email.value, email.value) { sendEmailIntent(email.value) }
+            val address = email.value.trim().lowercase()
+            addInfoLine(holder, address, address) { sendEmailIntent(address) }
         }
         if (contact.emails.isEmpty()) {
             holder.addView(LinearLayout(this).apply {
@@ -1019,7 +1059,7 @@ class OmnioContactActivity : SimpleActivity() {
         }
         getAlertDialogBuilder()
             .setPositiveButton(org.fossify.commons.R.string.ok) { _, _ ->
-                val email = input.text.toString().trim()
+                val email = input.text.toString().trim().lowercase()
                 if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
                     toast(R.string.omnio_invalid_email)
                     return@setPositiveButton
