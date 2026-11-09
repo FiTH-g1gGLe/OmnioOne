@@ -388,17 +388,17 @@ class OmnioCallActivity : SimpleActivity() {
     /** 2. Poster: photo fills the screen, swipe up to answer. */
     private fun buildPoster() {
         val who = info
-        val background = ImageView(this).apply {
+        val posterImage = ImageView(this).apply {
             scaleType = ImageView.ScaleType.CENTER_CROP
             layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
         }
         if (!who?.photoUri.isNullOrEmpty()) {
-            Glide.with(this).load(who?.photoUri).centerCrop().into(background)
+            Glide.with(this).load(who?.photoUri).centerCrop().into(posterImage)
         } else {
-            background.background = GradientDrawable(GradientDrawable.Orientation.TL_BR, intArrayOf(0xFF2B3A67.toInt(), 0xFF101828.toInt()))
-            background.setImageBitmap(null)
+            posterImage.background = GradientDrawable(GradientDrawable.Orientation.TL_BR, intArrayOf(0xFF2B3A67.toInt(), 0xFF101828.toInt()))
+            posterImage.setImageBitmap(null)
         }
-        root.addView(background)
+        root.addView(posterImage)
         root.addView(View(this).apply {
             background = GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP, intArrayOf(0xEE0F1115.toInt(), 0x660F1115, 0x220F1115))
             layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
