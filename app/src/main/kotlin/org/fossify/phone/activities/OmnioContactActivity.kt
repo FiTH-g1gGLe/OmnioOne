@@ -41,6 +41,7 @@ import org.fossify.commons.extensions.beVisibleIf
 import org.fossify.commons.extensions.setupDialogStuff
 import org.fossify.commons.extensions.getAlertDialogBuilder
 import org.fossify.phone.helpers.OmnioSocials
+import org.fossify.messages.messaging.sendMessageCompat
 import org.fossify.commons.extensions.beVisible
 import org.fossify.commons.extensions.getFormattedDuration
 
@@ -61,7 +62,6 @@ class OmnioContactActivity : SimpleActivity() {
 
     private val binding by viewBinding(ActivityOmnioContactBinding::inflate)
     private var contact: Contact? = null
-    private val favouriteWriter = java.util.concurrent.Executors.newSingleThreadExecutor()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -115,10 +115,10 @@ class OmnioContactActivity : SimpleActivity() {
         binding.contactSubtitle.text = contact.organization.company
         binding.contactSubtitle.beVisibleIf(contact.organization.company.isNotEmpty())
 
-        binding.contactFavourite.setImageResource(
-            if (contact.starred == 1) org.fossify.commons.R.drawable.ic_star_vector
-            else org.fossify.commons.R.drawable.ic_star_outline_vector
-        )
+        if (!contact.isPrivate() && org.fossify.phone.helpers.OmnioFavourites.isLoaded) {
+            contact.starred = if (org.fossify.phone.helpers.OmnioFavourites.isFavourite(contact.contactId)) 1 else 0
+        }
+        showStar(contact.starred == 1)
 
         binding.contactFavourite.setOnClickListener { toggleFavourite() }
 
@@ -175,29 +175,44 @@ class OmnioContactActivity : SimpleActivity() {
 
     private fun toggleFavourite() {
         val current = contact ?: return
-        val makeFavourite = current.starred != 1
+        val makeFavourite: Boolean
+        if (current.isPrivate()) {
+            makeFavourite = current.starred != 1
+            ensureBackgroundThread {
+                org.fossify.commons.helpers.LocalContactsHelper(this).toggleFavorites(arrayOf(current.id), makeFavourite)
+                org.fossify.phone.helpers.OmnioFavourites.notifyChanged()
+            }
+        } else {
+            makeFavourite = org.fossify.phone.helpers.OmnioFavourites.toggle(this, current.contactId)
+        }
         current.starred = if (makeFavourite) 1 else 0
         toast(if (makeFavourite) R.string.omnio_added_favourite else R.string.omnio_removed_favourite)
-        // One write at a time, in order, so quick add/remove/add taps can't land out of order
-        favouriteWriter.execute {
-            try {
-                if (current.isPrivate()) {
-                    org.fossify.commons.helpers.LocalContactsHelper(this).toggleFavorites(arrayOf(current.id), makeFavourite)
-                } else {
-                    val values = android.content.ContentValues().apply {
-                        put(ContactsContract.Contacts.STARRED, if (makeFavourite) 1 else 0)
-                    }
-                    val uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI, current.contactId.toString())
-                    contentResolver.update(uri, values, null, null)
-                }
-            } catch (e: Exception) {
-                runOnUiThread { showErrorToast(e) }
-            }
-        }
+        showStar(makeFavourite)
+    }
+
+    private fun showStar(favourite: Boolean) {
         binding.contactFavourite.setImageResource(
-            if (current.starred == 1) org.fossify.commons.R.drawable.ic_star_vector
-            else org.fossify.commons.R.drawable.ic_star_outline_vector
+            if (favourite) org.fossify.commons.R.drawable.ic_star_vector else org.fossify.commons.R.drawable.ic_star_outline_vector
         )
+    }
+
+    /** Keeps the star right if favourites change elsewhere while this page is open. */
+    private val favouritesListener: () -> Unit = {
+        contact?.takeIf { !it.isPrivate() }?.let { current ->
+            val favourite = org.fossify.phone.helpers.OmnioFavourites.isFavourite(current.contactId)
+            current.starred = if (favourite) 1 else 0
+            showStar(favourite)
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        org.fossify.phone.helpers.OmnioFavourites.addListener(favouritesListener)
+    }
+
+    override fun onStop() {
+        org.fossify.phone.helpers.OmnioFavourites.removeListener(favouritesListener)
+        super.onStop()
     }
 
     /** Number type, plus "Always SIM 2" when a SIM has been remembered for this number. */
@@ -881,13 +896,34 @@ class OmnioContactActivity : SimpleActivity() {
             addInfoLine(holder, email.value, email.value) { sendEmailIntent(email.value) }
         }
         if (contact.emails.isEmpty()) {
-            holder.addView(TextView(this).apply {
-                text = "+ " + getString(R.string.omnio_add_email)
-                setTextColor(0xFFFF8A3D.toInt())
-                setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
-                setPadding(dp(12), dp(6), dp(12), dp(6))
-                background = getDrawable(android.R.drawable.list_selector_background)
-                setOnClickListener { askEmail(contact) }
+            holder.addView(LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_VERTICAL
+                addView(TextView(this@OmnioContactActivity).apply {
+                    text = "+ " + getString(R.string.omnio_add_email)
+                    setTextColor(0xFFFF8A3D.toInt())
+                    setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+                    setPadding(dp(12), dp(6), dp(12), dp(6))
+                    background = getDrawable(android.R.drawable.list_selector_background)
+                    setOnClickListener { askEmail(contact) }
+                })
+                // Omnio One: text them asking for their email
+                val number = (contact.phoneNumbers.firstOrNull { it.isPrimary } ?: contact.phoneNumbers.firstOrNull())?.value
+                if (number != null) {
+                    addView(TextView(this@OmnioContactActivity).apply {
+                        text = getString(R.string.omnio_ask)
+                        setTextColor(0xFF0F1115.toInt())
+                        setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+                        setTypeface(typeface, android.graphics.Typeface.BOLD)
+                        setPadding(dp(14), dp(5), dp(14), dp(5))
+                        background = getDrawable(R.drawable.omnio_round_bg)
+                        backgroundTintList = ColorStateList.valueOf(MESSAGES_GREEN)
+                        layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
+                            marginStart = dp(4)
+                        }
+                        setOnClickListener { askForEmailByText(contact, number) }
+                    })
+                }
             })
         }
     }
@@ -923,6 +959,39 @@ class OmnioContactActivity : SimpleActivity() {
                 })
             }
         })
+    }
+
+    /** Sends them a text asking for their email; their reply gets offered for saving in Messages. */
+    private fun askForEmailByText(contact: Contact, number: String) {
+        val firstName = contact.getNameToDisplay().trim().substringBefore(" ")
+        val input = android.widget.EditText(this).apply {
+            setText(getString(R.string.omnio_ask_email_text, firstName))
+            setTextColor(getProperTextColor())
+            minLines = 3
+            gravity = Gravity.TOP or Gravity.START
+        }
+        val wrapper = android.widget.FrameLayout(this).apply {
+            setPadding(dp(24), dp(8), dp(24), 0)
+            addView(input)
+        }
+        getAlertDialogBuilder()
+            .setPositiveButton(R.string.omnio_send) { _, _ ->
+                val text = input.text.toString().trim()
+                if (text.isEmpty()) return@setPositiveButton
+                try {
+                    sendOmnioText(text, number)
+                    org.fossify.messages.helpers.OmnioEmail.markAsked(this, number)
+                    toast(getString(R.string.omnio_ask_sent, firstName))
+                } catch (e: Exception) {
+                    showErrorToast(e)
+                }
+            }
+            .setNegativeButton(org.fossify.commons.R.string.cancel, null)
+            .apply { setupDialogStuff(wrapper, this, titleText = getString(R.string.omnio_ask_email_title, firstName)) }
+    }
+
+    private fun sendOmnioText(text: String, number: String) {
+        sendMessageCompat(text, listOf(number), null, emptyList())
     }
 
     private fun shareText(text: String) {

@@ -68,6 +68,37 @@ class FavoritesFragment(context: Context, attributeSet: AttributeSet) : MyViewPa
         }
     }
 
+    /** Omnio One: everyone with a number; the favourites shown are picked from this. */
+    private var everyone = ArrayList<Contact>()
+
+    private val favouritesListener: () -> Unit = { showFavouritesNow() }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        org.fossify.phone.helpers.OmnioFavourites.addListener(favouritesListener)
+    }
+
+    override fun onDetachedFromWindow() {
+        org.fossify.phone.helpers.OmnioFavourites.removeListener(favouritesListener)
+        super.onDetachedFromWindow()
+    }
+
+    private fun isFavourite(contact: Contact) =
+        if (contact.isPrivate() || !org.fossify.phone.helpers.OmnioFavourites.isLoaded) {
+            contact.starred == 1
+        } else {
+            org.fossify.phone.helpers.OmnioFavourites.isFavourite(contact.contactId)
+        }
+
+    /** Re-pick favourites from the contacts already loaded: instant, no reload. */
+    private fun showFavouritesNow() {
+        val activity = activity ?: return
+        val favorites = everyone.filter { isFavourite(it) }.distinctBy { it.contactId } as? ArrayList<Contact>
+            ?: ArrayList(everyone.filter { isFavourite(it) }.distinctBy { it.contactId })
+        allContacts = if (activity.config.isCustomOrderSelected) sortByCustomOrder(favorites) else ArrayList(favorites)
+        gotContacts(allContacts)
+    }
+
     override fun refreshItems(invalidate: Boolean, callback: (() -> Unit)?) {
         ContactsHelper(context).getContacts(showOnlyContactsWithNumbers = true) { contacts ->
             allContacts = contacts
@@ -82,7 +113,8 @@ class FavoritesFragment(context: Context, attributeSet: AttributeSet) : MyViewPa
                     allContacts.sort()
                 }
             }
-            val favorites = contacts.filter { it.starred == 1 } as ArrayList<Contact>
+            everyone = ArrayList(allContacts)
+            val favorites = ArrayList(allContacts.filter { isFavourite(it) }.distinctBy { it.contactId })
 
             allContacts = if (activity!!.config.isCustomOrderSelected) {
                 sortByCustomOrder(favorites)

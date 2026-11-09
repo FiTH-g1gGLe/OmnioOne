@@ -66,6 +66,23 @@
             tools:drawableEndCompat="@drawable/scheduled_message_icon"
             tools:text="Message content" />
 
+        <!-- Omnio One: email spotted in a received text: tap for Add / Email / Copy -->
+        <TextView
+            android:id="@+id/thread_message_email_chip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/thread_message_body"
+            android:layout_alignStart="@+id/thread_message_body"
+            android:layout_marginTop="14dp"
+            android:background="@drawable/msg_reaction_bar"
+            android:paddingStart="12dp"
+            android:paddingTop="6dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="6dp"
+            android:textColor="#FF5DD39E"
+            android:textSize="13sp"
+            android:visibility="gone" />
+
         <!-- Omnio One: reaction badge (👍 ❤️ 😂 …) tucked under the bubble -->
         <TextView
             android:id="@+id/thread_message_reactions"

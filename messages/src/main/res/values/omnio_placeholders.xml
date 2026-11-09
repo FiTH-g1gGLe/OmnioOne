@@ -9,4 +9,16 @@
     <string name="faq_3_text" translatable="false">Omnio One</string>
     <string name="omnio_messages_label">Messages</string>
     <string name="omnio_react">React</string>
+    <string name="omnio_email_add_to">Add to %s</string>
+    <string name="omnio_email_save_new">Save as a new contact</string>
+    <string name="omnio_email_send">Email this address</string>
+    <string name="omnio_email_add_other">Add to another contact</string>
+    <string name="omnio_email_already_saved">%s (already saved)</string>
+    <string name="omnio_email_reply_title">Email address received</string>
+    <string name="omnio_email_reply_message">%1$s replied with an email address:\n\n%2$s\n\nAdd it to their contact?</string>
+    <string name="omnio_email_add">Add</string>
+    <string name="omnio_email_more">More</string>
+    <string name="omnio_email_not_now">Not now</string>
+    <string name="omnio_email_added">Email added to %s</string>
+    <string name="omnio_email_chip">✉  %s  ·  Add to contact</string>
 </resources>

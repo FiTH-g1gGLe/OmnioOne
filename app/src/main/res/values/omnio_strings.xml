@@ -92,4 +92,9 @@
     <string name="omnio_discord_bad_input">That isn\'t a Discord ID. On their profile tap ⋯ → Copy ID (a long number). Usernames don\'t work.</string>
     <string name="omnio_find_instructions_discord">Find %s, open their profile, tap ⋯ → Copy ID (not username), then come back.</string>
     <string name="omnio_add_discord_question">Add this Discord ID to %1$s?\n\n%2$s</string>
+    <string name="omnio_ask">Ask</string>
+    <string name="omnio_send">Send</string>
+    <string name="omnio_ask_email_title">Ask %s for their email</string>
+    <string name="omnio_ask_email_text">Hi %s, what\'s your email address? I\'d like to add it to your contact. Thanks!</string>
+    <string name="omnio_ask_sent">Sent. When %s replies, Omnio will offer to save their email.</string>
 </resources>

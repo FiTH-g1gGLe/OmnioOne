@@ -609,10 +609,26 @@ class ThreadActivity : SimpleActivity() {
         return currAdapter as ThreadAdapter
     }
 
+    private var omnioEmailOffered = false
+
+    /** Omnio One: you asked this person for their email and their reply has one: offer to save it. */
+    private fun checkOmnioAskedEmail() {
+        if (omnioEmailOffered) return
+        val number = participants.firstOrNull()?.phoneNumbers?.firstOrNull()?.normalizedNumber
+            ?: participants.firstOrNull()?.phoneNumbers?.firstOrNull()?.value ?: return
+        val askedAt = org.fossify.messages.helpers.OmnioEmail.askedAt(this, number) ?: return
+        val reply = messages.lastOrNull { it.isReceivedMessage() && it.millis() >= askedAt - 60_000 && org.fossify.messages.helpers.OmnioEmail.findEmail(it.body) != null }
+            ?: return
+        val email = org.fossify.messages.helpers.OmnioEmail.findEmail(reply.body) ?: return
+        omnioEmailOffered = true
+        org.fossify.messages.helpers.OmnioEmail.offerFromReply(this, email, reply.senderPhoneNumber.ifEmpty { number })
+    }
+
     private fun setupAdapter() {
         val latestThreadItems = getThreadItems()
 
         runOnUiThread {
+            checkOmnioAskedEmail()
             threadItems = latestThreadItems
             refreshMenuItems()
             getOrCreateThreadAdapter().apply {

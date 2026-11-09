@@ -424,6 +424,15 @@ class ThreadAdapter(
                 }
             }
 
+            threadMessageEmailChip.apply {
+                val email = if (message.isReceivedMessage()) org.fossify.messages.helpers.OmnioEmail.findEmail(message.body) else null
+                beVisibleIf(email != null)
+                if (email != null) {
+                    text = activity.getString(R.string.omnio_email_chip, email)
+                    setOnClickListener { org.fossify.messages.helpers.OmnioEmail.showActions(activity, email, message.senderPhoneNumber) }
+                }
+            }
+
             threadMessageAttachmentsHolder.removeAllViews()
             if (message.attachment?.attachments?.isNotEmpty() == true) {
                 threadMessageAttachmentsHolder.beVisible()

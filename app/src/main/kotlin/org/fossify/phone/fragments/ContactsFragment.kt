@@ -137,55 +137,37 @@ class ContactsFragment(context: Context, attributeSet: AttributeSet) : MyViewPag
         }
     }
 
-    /** Omnio One: keep the favourites row in step when a contact is starred or unstarred anywhere. */
-    private val starObserver = object : android.database.ContentObserver(android.os.Handler(android.os.Looper.getMainLooper())) {
+    /** Omnio One: the favourites row redraws the moment favourites change, anywhere. */
+    private val favouritesListener: () -> Unit = { showFavouritesStrip() }
+
+    /** Other apps starring someone: ask OmnioFavourites to re-read (it tells us if anything changed). */
+    private val contactsObserver = object : android.database.ContentObserver(android.os.Handler(android.os.Looper.getMainLooper())) {
         override fun onChange(selfChange: Boolean) {
-            removeCallbacks(refreshStarsRunnable)
-            postDelayed(refreshStarsRunnable, 400)
+            removeCallbacks(reloadFavourites)
+            postDelayed(reloadFavourites, 500)
         }
     }
 
-    private val refreshStarsRunnable = Runnable { refreshStars() }
+    private val reloadFavourites = Runnable { org.fossify.phone.helpers.OmnioFavourites.reload(context) }
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
+        org.fossify.phone.helpers.OmnioFavourites.addListener(favouritesListener)
+        org.fossify.phone.helpers.OmnioFavourites.reload(context)
         try {
-            context.contentResolver.registerContentObserver(android.provider.ContactsContract.Contacts.CONTENT_URI, true, starObserver)
+            context.contentResolver.registerContentObserver(android.provider.ContactsContract.Contacts.CONTENT_URI, true, contactsObserver)
         } catch (ignored: Exception) {
         }
     }
 
     override fun onDetachedFromWindow() {
+        org.fossify.phone.helpers.OmnioFavourites.removeListener(favouritesListener)
         try {
-            context.contentResolver.unregisterContentObserver(starObserver)
+            context.contentResolver.unregisterContentObserver(contactsObserver)
         } catch (ignored: Exception) {
         }
-        removeCallbacks(refreshStarsRunnable)
+        removeCallbacks(reloadFavourites)
         super.onDetachedFromWindow()
-    }
-
-    private fun refreshStars() {
-        val ctx = context ?: return
-        ensureBackgroundThread {
-            val starredIds = HashSet<Int>()
-            try {
-                ctx.contentResolver.query(
-                    android.provider.ContactsContract.Contacts.CONTENT_URI,
-                    arrayOf(android.provider.ContactsContract.Contacts._ID),
-                    "${android.provider.ContactsContract.Contacts.STARRED} = 1",
-                    null,
-                    null
-                )?.use { cursor ->
-                    while (cursor.moveToNext()) starredIds.add(cursor.getInt(0))
-                }
-            } catch (ignored: Exception) {
-                return@ensureBackgroundThread
-            }
-            activity?.runOnUiThread {
-                allContacts.filter { !it.isPrivate() }.forEach { it.starred = if (it.contactId in starredIds) 1 else 0 }
-                showFavouritesStrip()
-            }
-        }
     }
 
     private fun loadAppTags() {
@@ -205,7 +187,13 @@ class ContactsFragment(context: Context, attributeSet: AttributeSet) : MyViewPag
     private fun showFavouritesStrip() {
         val holder = outerBinding.omnioFavouritesHolder
         holder.removeAllViews()
-        val favourites = allContacts.filter { it.starred == 1 }.distinctBy { it.contactId }
+        val favourites = allContacts.filter { contact ->
+            if (contact.isPrivate() || !org.fossify.phone.helpers.OmnioFavourites.isLoaded) {
+                contact.starred == 1
+            } else {
+                org.fossify.phone.helpers.OmnioFavourites.isFavourite(contact.contactId)
+            }
+        }.distinctBy { it.contactId }
         outerBinding.omnioFavouritesLabel.beVisibleIf(favourites.isNotEmpty())
 
         holder.addView(makeTile(context.getString(R.string.omnio_new), null) {
