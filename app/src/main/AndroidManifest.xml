@@ -81,6 +81,11 @@
             android:configChanges="orientation|screenSize"
             android:exported="false" />
 
+        <activity
+            android:name=".activities.OmnioEditContactActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
         <!-- Omnio One Link helper: reads a profile address on screen while you link a contact -->
         <service
             android:name=".services.OmnioLinkHelperService"

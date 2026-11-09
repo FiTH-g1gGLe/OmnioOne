@@ -24,12 +24,11 @@ fun SimpleActivity.handleGenericContactClick(contact: Contact) {
     }
 }
 
-fun SimpleActivity.launchCreateNewContactIntent() {
-    Intent().apply {
-        action = Intent.ACTION_INSERT
-        data = ContactsContract.Contacts.CONTENT_URI
-        launchActivityIntent(this)
-    }
+// Omnio One: new contacts are made in Omnio's own editor
+fun SimpleActivity.launchCreateNewContactIntent(number: String? = null) {
+    startActivity(Intent(this, org.fossify.phone.activities.OmnioEditContactActivity::class.java).apply {
+        if (number != null) putExtra(org.fossify.phone.activities.OmnioEditContactActivity.EXTRA_NUMBER, number)
+    })
 }
 
 // handle private contacts differently, only Simple Contacts Pro can open them
