@@ -1,64 +1,84 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Omnio One Recents -->
 <com.omnioone.app.fragments.RecentsFragment xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/recents_fragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Omnio One: All / Missed / Unknown filter -->
-    <LinearLayout
+    <HorizontalScrollView
         android:id="@+id/recents_filters"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:clipToPadding="false"
         android:paddingStart="@dimen/activity_margin"
         android:paddingTop="8dp"
         android:paddingEnd="@dimen/activity_margin"
-        android:paddingBottom="4dp">
+        android:paddingBottom="4dp"
+        android:scrollbars="none">
 
-        <TextView
-            android:id="@+id/recents_filter_all"
-            style="@style/OmnioChip"
-            android:text="@string/omnio_filter_all" />
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/recents_filter_missed"
-            style="@style/OmnioChip"
-            android:text="@string/omnio_filter_missed" />
+            <TextView
+                android:id="@+id/recents_filter_all"
+                style="@style/OmnioChip"
+                android:text="@string/omnio_filter_all" />
 
-        <TextView
-            android:id="@+id/recents_filter_unknown"
-            style="@style/OmnioChip"
-            android:text="@string/omnio_filter_unknown" />
-    </LinearLayout>
+            <TextView
+                android:id="@+id/recents_filter_missed"
+                style="@style/OmnioChip"
+                android:text="@string/omnio_filter_missed" />
 
-    <com.omnioone.commons.views.MyTextView
+            <TextView
+                android:id="@+id/recents_filter_incoming"
+                style="@style/OmnioChip"
+                android:text="@string/omnio_filter_incoming" />
+
+            <TextView
+                android:id="@+id/recents_filter_outgoing"
+                style="@style/OmnioChip"
+                android:text="@string/omnio_filter_outgoing" />
+
+            <TextView
+                android:id="@+id/recents_filter_unknown"
+                style="@style/OmnioChip"
+                android:text="@string/omnio_filter_unknown" />
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <TextView
         android:id="@+id/recents_placeholder"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/recents_filters"
-        android:layout_centerHorizontal="true"
         android:alpha="0.8"
         android:gravity="center"
         android:paddingStart="@dimen/activity_margin"
-        android:paddingTop="@dimen/activity_margin"
+        android:paddingTop="48dp"
         android:paddingEnd="@dimen/activity_margin"
         android:text="@string/no_previous_calls"
-        android:textSize="@dimen/bigger_text_size"
-        android:textStyle="italic"
+        android:textSize="17sp"
         android:visibility="gone" />
 
-    <com.omnioone.commons.views.MyTextView
+    <TextView
         android:id="@+id/recents_placeholder_2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/recents_placeholder"
         android:layout_centerHorizontal="true"
-        android:background="@drawable/ripple_all_corners"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/omnio_round_bg"
         android:gravity="center"
-        android:padding="@dimen/activity_margin"
+        android:paddingStart="24dp"
+        android:paddingTop="12dp"
+        android:paddingEnd="24dp"
+        android:paddingBottom="12dp"
         android:text="@string/request_access"
-        android:textSize="@dimen/bigger_text_size"
+        android:textSize="16sp"
+        android:textStyle="bold"
         android:visibility="gone" />
 
     <com.omnioone.commons.views.MyRecyclerView
@@ -67,10 +87,9 @@
         android:layout_height="match_parent"
         android:layout_below="@+id/recents_filters"
         android:clipToPadding="false"
-        android:layoutAnimation="@anim/layout_animation"
         android:paddingBottom="@dimen/recyclerview_fab_padding"
         android:scrollbars="none"
-        app:layoutManager="com.omnioone.commons.views.MyLinearLayoutManager" />
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
     <com.google.android.material.progressindicator.CircularProgressIndicator
         android:id="@+id/progress_indicator"

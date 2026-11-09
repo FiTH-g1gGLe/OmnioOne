@@ -1,366 +1,453 @@
 package com.omnioone.app.fragments
 
-import com.omnioone.commons.helpers.OmnioColors
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.ContentValues
 import android.content.Context
+import android.content.Intent
+import android.content.res.ColorStateList
+import android.database.ContentObserver
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.RectF
+import android.os.Handler
+import android.os.Looper
+import android.provider.BlockedNumberContract
+import android.provider.CallLog
+import android.provider.ContactsContract
 import android.util.AttributeSet
-import com.omnioone.commons.extensions.baseConfig
-import com.omnioone.commons.extensions.beGone
-import com.omnioone.commons.extensions.beGoneIf
-import com.omnioone.commons.extensions.beVisible
-import com.omnioone.commons.extensions.getMyContactsCursor
-import com.omnioone.commons.extensions.hasPermission
-import com.omnioone.commons.extensions.isVisible
-import com.omnioone.commons.extensions.underlineText
-import com.omnioone.commons.helpers.ContactsHelper
-import com.omnioone.commons.helpers.MyContactsContentProvider
-import com.omnioone.commons.helpers.PERMISSION_READ_CALL_LOG
-import com.omnioone.commons.helpers.SMT_PRIVATE
-import com.omnioone.commons.helpers.ensureBackgroundThread
-import com.omnioone.commons.models.contacts.Contact
+import android.view.View
+import android.widget.TextView
+import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.RecyclerView
 import com.omnioone.app.R
-import com.omnioone.app.activities.MainActivity
+import com.omnioone.app.activities.OmnioContactActivity
+import com.omnioone.app.activities.OmnioEditContactActivity
 import com.omnioone.app.activities.SimpleActivity
-import com.omnioone.app.adapters.RecentCallsAdapter
+import com.omnioone.app.adapters.OmnioRecentsAdapter
 import com.omnioone.app.databinding.FragmentRecentsBinding
+import com.omnioone.app.extensions.areMultipleSIMsAvailable
+import com.omnioone.app.extensions.callContactWithSimWithConfirmationCheck
 import com.omnioone.app.extensions.config
-import com.omnioone.app.extensions.runAfterAnimations
-import com.omnioone.app.extensions.startAddContactIntent
 import com.omnioone.app.extensions.startCallWithConfirmationCheck
-import com.omnioone.app.extensions.startContactDetailsIntent
-import com.omnioone.app.helpers.RecentsHelper
+import com.omnioone.app.helpers.OmnioCallLog
+import com.omnioone.app.helpers.OmnioSheet
 import com.omnioone.app.interfaces.RefreshItemsListener
-import com.omnioone.app.models.CallLogItem
-import com.omnioone.app.models.RecentCall
+import com.omnioone.commons.extensions.hasPermission
+import com.omnioone.commons.extensions.launchSendSMSIntent
+import com.omnioone.commons.extensions.toast
+import com.omnioone.commons.helpers.OmnioColors
+import com.omnioone.commons.helpers.OmnioContactData
+import com.omnioone.commons.helpers.PERMISSION_READ_CALL_LOG
+import com.omnioone.commons.helpers.PERMISSION_WRITE_CALL_LOG
+import com.omnioone.commons.helpers.ensureBackgroundThread
+import java.util.Calendar
+import java.util.Locale
 
+/**
+ * Omnio One Recents: your call history grouped by day, with filters, search, swipe to call or
+ * text, and a menu for everything else. Updates by itself whenever a call is logged.
+ */
 class RecentsFragment(
     context: Context, attributeSet: AttributeSet,
 ) : MyViewPagerFragment<MyViewPagerFragment.RecentsInnerBinding>(context, attributeSet), RefreshItemsListener {
 
+    private enum class Filter { ALL, MISSED, INCOMING, OUTGOING, UNKNOWN }
+
     private lateinit var binding: FragmentRecentsBinding
-    private var allRecentCalls = listOf<CallLogItem>()
-    private var recentsAdapter: RecentCallsAdapter? = null
-
-    private var searchQuery: String? = null
-
-    // Omnio One: All / Missed / Unknown filter
-    private enum class Filter { ALL, MISSED, UNKNOWN }
+    private var adapter: OmnioRecentsAdapter? = null
+    private var allEntries = listOf<OmnioCallLog.Entry>()
     private var filter = Filter.ALL
-    private var omnioTextColor = OmnioColors.TEXT
+    private var searchQuery = ""
+    private var textColor = OmnioColors.TEXT
+    private var loading = false
+    private var reloadAgain = false
 
-    private fun matchesFilter(call: RecentCall) = when (filter) {
-        Filter.ALL -> true
-        Filter.MISSED -> call.type == android.provider.CallLog.Calls.MISSED_TYPE ||
-            call.groupedCalls?.any { it.type == android.provider.CallLog.Calls.MISSED_TYPE } == true
-        Filter.UNKNOWN -> call.isUnknownNumber || call.name == call.phoneNumber
-    }
-
-    /** The full call log, cut down to the chosen filter and regrouped under date headers. */
-    private fun filtered(items: List<CallLogItem>): List<CallLogItem> {
-        if (filter == Filter.ALL) return items
-        return groupCallsByDate(items.filterIsInstance<RecentCall>().filter { matchesFilter(it) })
-    }
-
-    private fun setupFilters() {
-        binding.recentsFilterAll.setOnClickListener { selectFilter(Filter.ALL) }
-        binding.recentsFilterMissed.setOnClickListener { selectFilter(Filter.MISSED) }
-        binding.recentsFilterUnknown.setOnClickListener { selectFilter(Filter.UNKNOWN) }
-        styleFilters()
-    }
-
-    private fun selectFilter(newFilter: Filter) {
-        if (filter == newFilter) return
-        filter = newFilter
-        styleFilters()
-        binding.recentsPlaceholder.text = context.getString(
-            when (filter) {
-                Filter.ALL -> R.string.no_previous_calls
-                Filter.MISSED -> R.string.omnio_no_missed_calls
-                Filter.UNKNOWN -> R.string.omnio_no_unknown_calls
-            }
-        )
-        if (searchQuery.isNullOrEmpty()) {
-            gotRecents(filtered(allRecentCalls))
-        } else {
-            updateSearchResult()
-        }
-        binding.recentsList.scrollToPosition(0)
-    }
-
-    private fun styleFilters() {
-        listOf(
-            binding.recentsFilterAll to Filter.ALL,
-            binding.recentsFilterMissed to Filter.MISSED,
-            binding.recentsFilterUnknown to Filter.UNKNOWN
-        ).forEach { (chip, chipFilter) ->
-            val selected = chipFilter == filter
-            val accent = if (chipFilter == Filter.MISSED) OmnioColors.MISSED else OmnioColors.CALLS
-            chip.backgroundTintList = android.content.res.ColorStateList.valueOf(if (selected) accent else OmnioColors.CARD)
-            chip.setTextColor(if (selected) OmnioColors.ON_ACCENT else omnioTextColor)
+    private val handler = Handler(Looper.getMainLooper())
+    private val reloadSoon = Runnable { refreshItems() }
+    private val observer = object : ContentObserver(handler) {
+        override fun onChange(selfChange: Boolean) {
+            handler.removeCallbacks(reloadSoon)
+            handler.postDelayed(reloadSoon, 400)
         }
     }
-    private var recentsHelper = RecentsHelper(context)
+    private var observing = false
 
     override fun onFinishInflate() {
         super.onFinishInflate()
         binding = FragmentRecentsBinding.bind(this)
         innerBinding = RecentsInnerBinding(binding)
-        setupFilters()
+        chips().forEach { (chip, chipFilter) -> chip.setOnClickListener { selectFilter(chipFilter) } }
+        styleChips()
     }
 
-    override fun setupFragment() {
-        val placeholderResId = if (context.hasPermission(PERMISSION_READ_CALL_LOG)) {
-            R.string.no_previous_calls
-        } else {
-            R.string.could_not_access_the_call_history
-        }
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        startObserving()
+    }
 
-        binding.recentsPlaceholder.text = context.getString(placeholderResId)
-        binding.recentsPlaceholder2.apply {
-            underlineText()
-            setOnClickListener {
-                requestCallLogPermission()
-            }
+    override fun onDetachedFromWindow() {
+        if (observing) {
+            context.contentResolver.unregisterContentObserver(observer)
+            observing = false
         }
+        handler.removeCallbacks(reloadSoon)
+        super.onDetachedFromWindow()
+    }
+
+    private fun startObserving() {
+        if (observing || !context.hasPermission(PERMISSION_READ_CALL_LOG)) return
+        try {
+            context.contentResolver.registerContentObserver(CallLog.Calls.CONTENT_URI, true, observer)
+            context.contentResolver.registerContentObserver(ContactsContract.Contacts.CONTENT_URI, true, observer)
+            observing = true
+        } catch (ignored: Exception) {
+        }
+    }
+
+    // ---- MyViewPagerFragment ----
+
+    override fun setupFragment() {
+        val allowed = context.hasPermission(PERMISSION_READ_CALL_LOG)
+        binding.recentsPlaceholder.text = context.getString(if (allowed) R.string.no_previous_calls else R.string.could_not_access_the_call_history)
+        binding.recentsPlaceholder2.setOnClickListener { requestPermission() }
+
+        val list = binding.recentsList
+        adapter = OmnioRecentsAdapter(
+            onCall = { call(it) },
+            onText = { text(it) },
+            onOpen = { open(it) },
+            onMore = { showActions(it) },
+        ).also { it.textColor = textColor }
+        list.adapter = adapter
+        list.itemAnimator = null
+        ItemTouchHelper(swipe).attachToRecyclerView(list)
     }
 
     override fun setupColors(textColor: Int, primaryColor: Int, properPrimaryColor: Int) {
+        this.textColor = textColor
         binding.recentsPlaceholder.setTextColor(textColor)
-        binding.recentsPlaceholder2.setTextColor(properPrimaryColor)
-        omnioTextColor = textColor
-        styleFilters()
-
-        recentsAdapter?.apply {
-            updateTextColor(textColor)
-            initDrawables()
-        }
+        binding.recentsPlaceholder2.setTextColor(OmnioColors.ON_ACCENT)
+        binding.recentsPlaceholder2.backgroundTintList = ColorStateList.valueOf(OmnioColors.CALLS)
+        adapter?.textColor = textColor
+        styleChips()
     }
 
     override fun refreshItems(invalidate: Boolean, callback: (() -> Unit)?) {
-        if (invalidate) {
-            allRecentCalls = emptyList()
+        if (!context.hasPermission(PERMISSION_READ_CALL_LOG)) {
+            show()
+            callback?.invoke()
+            return
         }
-
-        refreshCallLog(loadAll = false) {
-            binding.recentsList.runAfterAnimations {
-                refreshCallLog(loadAll = true)
+        startObserving()
+        if (loading) {
+            reloadAgain = true
+            callback?.invoke()
+            return
+        }
+        loading = true
+        val group = context.config.groupSubsequentCalls
+        ensureBackgroundThread {
+            val entries = OmnioCallLog.load(context, group = group)
+            handler.post {
+                loading = false
+                allEntries = entries
+                show()
+                callback?.invoke()
+                if (reloadAgain) {
+                    reloadAgain = false
+                    refreshItems()
+                }
             }
         }
-    }
-
-    override fun onSearchClosed() {
-        searchQuery = null
-        showOrHidePlaceholder(filtered(allRecentCalls).isEmpty())
-        recentsAdapter?.updateItems(filtered(allRecentCalls))
     }
 
     override fun onSearchQueryChanged(text: String) {
-        searchQuery = text
-        updateSearchResult()
+        searchQuery = text.trim()
+        show()
     }
 
-    @Suppress("UNCHECKED_CAST")
-    private fun updateSearchResult() {
-        ensureBackgroundThread {
-            val fixedText = searchQuery!!.trim().replace("\\s+".toRegex(), " ")
-            val recentCalls = allRecentCalls
-                .filterIsInstance<RecentCall>()
-                .filter {
-                    (it.name.contains(fixedText, true) || it.doesContainPhoneNumber(fixedText)) && matchesFilter(it)
-                }
-                .sortedWith(
-                    compareByDescending<RecentCall> { it.dayCode }
-                        .thenByDescending { it.name.startsWith(fixedText, true) }
-                        .thenByDescending { it.startTS }
-                )
+    override fun onSearchClosed() {
+        searchQuery = ""
+        show()
+    }
 
-            prepareCallLog(recentCalls) {
-                activity?.runOnUiThread {
-                    showOrHidePlaceholder(recentCalls.isEmpty())
-                    recentsAdapter?.updateItems(it, fixedText)
-                }
-            }
+    // ---- showing ----
+
+    private fun matches(call: OmnioCallLog.Call) = when (filter) {
+        Filter.ALL, Filter.UNKNOWN -> true
+        Filter.MISSED -> call.isMissed
+        Filter.INCOMING -> call.isIncoming
+        Filter.OUTGOING -> call.isOutgoing
+    }
+
+    private fun matchesSearch(entry: OmnioCallLog.Entry): Boolean {
+        if (searchQuery.isEmpty()) return true
+        if (entry.name.contains(searchQuery, ignoreCase = true)) return true
+        val digits = searchQuery.filter { it.isDigit() }
+        return digits.isNotEmpty() && entry.number.filter { it.isDigit() }.contains(digits)
+    }
+
+    private fun visibleEntries() = allEntries
+        .filter { filter != Filter.UNKNOWN || !it.isSaved }
+        .mapNotNull { entry ->
+            if (filter == Filter.ALL || filter == Filter.UNKNOWN) entry
+            else entry.calls.filter { matches(it) }.takeIf { it.isNotEmpty() }?.let { entry.copy(calls = it) }
         }
-    }
+        .filter { matchesSearch(it) }
 
-    private fun requestCallLogPermission() {
-        activity?.handlePermission(PERMISSION_READ_CALL_LOG) {
-            if (it) {
-                binding.recentsPlaceholder.text = context.getString(R.string.no_previous_calls)
-                binding.recentsPlaceholder2.beGone()
-                refreshCallLog()
-            }
-        }
-    }
-
-    private fun showOrHidePlaceholder(show: Boolean) {
-        if (show && !binding.progressIndicator.isVisible()) {
-            binding.recentsPlaceholder.beVisible()
-        } else {
-            binding.recentsPlaceholder.beGone()
-        }
-    }
-
-    private fun gotRecents(recents: List<CallLogItem>) {
+    private fun show() {
         binding.progressIndicator.hide()
-        if (recents.isEmpty()) {
-            binding.apply {
-                showOrHidePlaceholder(true)
-                recentsPlaceholder2.beGoneIf(context.hasPermission(PERMISSION_READ_CALL_LOG))
-                recentsList.beGone()
+        val allowed = context.hasPermission(PERMISSION_READ_CALL_LOG)
+        val entries = if (allowed) visibleEntries() else emptyList()
+        adapter?.submit(entries, ::dayLabel, searchQuery)
+        binding.recentsList.visibility = if (entries.isEmpty()) View.GONE else View.VISIBLE
+        binding.recentsPlaceholder.visibility = if (entries.isEmpty()) View.VISIBLE else View.GONE
+        binding.recentsPlaceholder.text = context.getString(
+            when {
+                !allowed -> R.string.could_not_access_the_call_history
+                searchQuery.isNotEmpty() -> R.string.omnio_no_recent_matches
+                filter == Filter.MISSED -> R.string.omnio_no_missed_calls
+                filter == Filter.UNKNOWN -> R.string.omnio_no_unknown_calls
+                filter == Filter.INCOMING -> R.string.omnio_no_incoming_calls
+                filter == Filter.OUTGOING -> R.string.omnio_no_outgoing_calls
+                else -> R.string.no_previous_calls
             }
-        } else {
-            binding.apply {
-                showOrHidePlaceholder(false)
-                recentsPlaceholder2.beGone()
-                recentsList.beVisible()
-            }
+        )
+        binding.recentsPlaceholder2.visibility = if (allowed) View.GONE else View.VISIBLE
+    }
 
-            if (binding.recentsList.adapter == null) {
-                recentsAdapter = RecentCallsAdapter(
-                    activity = activity as SimpleActivity,
-                    recyclerView = binding.recentsList,
-                    refreshItemsListener = this,
-                    showOverflowMenu = true,
-                    itemDelete = { deleted ->
-                        allRecentCalls = allRecentCalls.filter { it !in deleted }
-                    },
-                    itemClick = {
-                        val recentCall = it as RecentCall
-                        activity?.startCallWithConfirmationCheck(recentCall.phoneNumber, recentCall.name)
-                    },
-                    profileIconClick = {
-                        val recentCall = it as RecentCall
-                        val contact = findContactByCall(recentCall)
-                        if (contact != null) {
-                            activity?.startContactDetailsIntent(contact)
-                        } else {
-                            activity?.startAddContactIntent(recentCall.phoneNumber)
-                        }
-                    }
-                )
+    private fun dayLabel(time: Long): String {
+        val now = Calendar.getInstance()
+        val then = Calendar.getInstance().apply { timeInMillis = time }
+        val yesterday = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -1) }
+        return when {
+            OmnioRecentsAdapter.sameDay(time, now.timeInMillis) -> context.getString(R.string.omnio_today)
+            OmnioRecentsAdapter.sameDay(time, yesterday.timeInMillis) -> context.getString(R.string.omnio_yesterday)
+            now.timeInMillis - time < 6L * 24 * 60 * 60 * 1000 ->
+                then.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG, Locale.getDefault()).orEmpty()
+            then.get(Calendar.YEAR) == now.get(Calendar.YEAR) ->
+                android.text.format.DateFormat.format(android.text.format.DateFormat.getBestDateTimePattern(Locale.getDefault(), "EEE d MMM"), then).toString()
+            else -> android.text.format.DateFormat.getMediumDateFormat(context).format(then.time)
+        }
+    }
 
-                binding.recentsList.adapter = recentsAdapter
-                recentsAdapter?.updateItems(recents)
-            } else {
-                recentsAdapter?.updateItems(recents)
+    private fun chips(): List<Pair<TextView, Filter>> = listOf(
+        binding.recentsFilterAll to Filter.ALL,
+        binding.recentsFilterMissed to Filter.MISSED,
+        binding.recentsFilterIncoming to Filter.INCOMING,
+        binding.recentsFilterOutgoing to Filter.OUTGOING,
+        binding.recentsFilterUnknown to Filter.UNKNOWN,
+    )
+
+    private fun styleChips() {
+        chips().forEach { (chip, chipFilter) ->
+            val selected = chipFilter == filter
+            val accent = if (chipFilter == Filter.MISSED) OmnioColors.MISSED else OmnioColors.CALLS
+            chip.backgroundTintList = ColorStateList.valueOf(if (selected) accent else OmnioColors.CARD)
+            chip.setTextColor(if (selected) OmnioColors.ON_ACCENT else textColor)
+        }
+    }
+
+    private fun selectFilter(newFilter: Filter) {
+        if (filter == newFilter) return
+        filter = newFilter
+        styleChips()
+        show()
+        binding.recentsList.scrollToPosition(0)
+    }
+
+    private fun requestPermission() {
+        activity?.handlePermission(PERMISSION_READ_CALL_LOG) { granted ->
+            if (granted) {
+                setupFragment()
+                refreshItems()
             }
         }
     }
 
-    private fun refreshCallLog(loadAll: Boolean = false, callback: (() -> Unit)? = null) {
-        getRecentCalls(loadAll) {
-            allRecentCalls = it
-            if (searchQuery.isNullOrEmpty()) {
-                activity?.runOnUiThread { gotRecents(filtered(it)) }
-            } else {
-                updateSearchResult()
-            }
+    // ---- actions ----
 
-            callback?.invoke()
-        }
-    }
-
-    private fun getRecentCalls(loadAll: Boolean, callback: (List<CallLogItem>) -> Unit) {
-        val queryCount = if (loadAll) Int.MAX_VALUE else RecentsHelper.QUERY_LIMIT
-        val existingRecentCalls = allRecentCalls.filterIsInstance<RecentCall>()
-
-        with(recentsHelper) {
-            if (context.config.groupSubsequentCalls) {
-                getGroupedRecentCalls(existingRecentCalls, queryCount) {
-                    prepareCallLog(it, callback)
-                }
-            } else {
-                getRecentCalls(existingRecentCalls, queryCount) {
-                    prepareCallLog(it, callback)
-                }
-            }
-        }
-    }
-
-    private fun prepareCallLog(calls: List<RecentCall>, callback: (List<CallLogItem>) -> Unit) {
-        if (calls.isEmpty()) {
-            callback(emptyList())
+    private fun call(entry: OmnioCallLog.Entry) {
+        if (entry.isPrivate) {
+            context.toast(R.string.omnio_private_number)
             return
         }
+        activity?.startCallWithConfirmationCheck(entry.number, entry.name)
+    }
 
-        ContactsHelper(context).getContacts(showOnlyContactsWithNumbers = true) { contacts ->
-            ensureBackgroundThread {
-                val privateContacts = getPrivateContacts()
-                val updatedCalls = updateNamesIfEmpty(
-                    calls = maybeFilterPrivateCalls(calls, privateContacts),
-                    contacts = contacts,
-                    privateContacts = privateContacts
-                )
+    private fun text(entry: OmnioCallLog.Entry) {
+        if (!entry.isPrivate) activity?.launchSendSMSIntent(entry.number)
+    }
 
-                callback(
-                    groupCallsByDate(updatedCalls)
-                )
+    private fun open(entry: OmnioCallLog.Entry) {
+        val host = activity ?: return
+        val contactId = entry.person?.contactId
+        if (contactId == null) {
+            if (entry.isPrivate) return
+            host.startActivity(Intent(host, OmnioEditContactActivity::class.java).putExtra(OmnioEditContactActivity.EXTRA_NUMBER, entry.number))
+            return
+        }
+        ensureBackgroundThread {
+            val rawId = OmnioContactData.firstRawId(host, contactId) ?: return@ensureBackgroundThread
+            host.runOnUiThread {
+                host.startActivity(Intent(host, OmnioContactActivity::class.java).putExtra(OmnioContactActivity.EXTRA_CONTACT_ID, rawId.toInt()))
             }
         }
     }
 
-    private fun getPrivateContacts(): ArrayList<Contact> {
-        val privateCursor = context.getMyContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
-        return MyContactsContentProvider.getContacts(context, privateCursor)
-    }
-
-    private fun maybeFilterPrivateCalls(calls: List<RecentCall>, privateContacts: List<Contact>): List<RecentCall> {
-        val ignoredSources = context.baseConfig.ignoredContactSources
-        return if (SMT_PRIVATE in ignoredSources) {
-            val privateNumbers = privateContacts.flatMap { it.phoneNumbers }.map { it.value }
-            calls.filterNot { it.phoneNumber in privateNumbers }
-        } else {
-            calls
+    private fun showActions(entry: OmnioCallLog.Entry) {
+        val host = activity ?: return
+        val actions = ArrayList<Pair<OmnioSheet.Item, () -> Unit>>()
+        fun add(label: Int, icon: Int, colour: Int, labelColour: Int = OmnioSheet.TEXT, action: () -> Unit) {
+            val drawable = ContextCompat.getDrawable(host, icon)?.mutate()?.apply { setTint(colour) }
+            actions += OmnioSheet.Item(host.getString(label), icon = drawable, labelColor = labelColour) to action
         }
-    }
-
-    private fun updateNamesIfEmpty(calls: List<RecentCall>, contacts: List<Contact>, privateContacts: List<Contact>): List<RecentCall> {
-        if (calls.isEmpty()) return mutableListOf()
-
-        val contactsWithNumbers = contacts.filter { it.phoneNumbers.isNotEmpty() }
-        return calls.map { call ->
-            if (call.phoneNumber == call.name) {
-                val privateContact = privateContacts.firstOrNull { it.doesContainPhoneNumber(call.phoneNumber) }
-                val contact = contactsWithNumbers.firstOrNull { it.phoneNumbers.first().normalizedNumber == call.phoneNumber }
-
-                when {
-                    privateContact != null -> withUpdatedName(call = call, name = privateContact.getNameToDisplay())
-                    contact != null -> withUpdatedName(call = call, name = contact.getNameToDisplay())
-                    else -> call
+        if (!entry.isPrivate) {
+            add(R.string.omnio_call, R.drawable.ic_call_accept, OmnioColors.CALLS) { call(entry) }
+            if (host.areMultipleSIMsAvailable()) {
+                add(R.string.omnio_call_sim_1, R.drawable.ic_call_accept, OmnioColors.CALLS) {
+                    host.callContactWithSimWithConfirmationCheck(entry.number, entry.name, useMainSIM = true)
                 }
+                add(R.string.omnio_call_sim_2, R.drawable.ic_call_accept, OmnioColors.CALLS) {
+                    host.callContactWithSimWithConfirmationCheck(entry.number, entry.name, useMainSIM = false)
+                }
+            }
+            add(R.string.omnio_text, R.drawable.ic_omnio_chat, OmnioColors.MESSAGES) { text(entry) }
+            if (entry.isSaved) {
+                add(R.string.omnio_open_contact, com.omnioone.commons.R.drawable.ic_person_vector, OmnioColors.CONTACTS) { open(entry) }
             } else {
-                call
+                add(R.string.omnio_add_to_contacts, com.omnioone.commons.R.drawable.ic_add_person_vector, OmnioColors.CONTACTS) { open(entry) }
+            }
+            add(R.string.omnio_copy_number, com.omnioone.commons.R.drawable.ic_copy_vector, OmnioColors.TEXT_MUTED) { copy(entry) }
+        }
+        add(R.string.omnio_call_history, com.omnioone.commons.R.drawable.ic_info_outline_vector, OmnioColors.TEXT_MUTED) { showHistory(entry) }
+        if (!entry.isPrivate) {
+            add(R.string.omnio_block_number, com.omnioone.commons.R.drawable.ic_block_vector, OmnioColors.MISSED, OmnioColors.MISSED) { confirmBlock(entry) }
+        }
+        add(R.string.omnio_delete_from_recents, com.omnioone.commons.R.drawable.ic_delete_vector, OmnioColors.MISSED, OmnioColors.MISSED) { confirmDelete(entry) }
+
+        val subtitle = listOfNotNull(
+            if (entry.isSaved && !entry.isPrivate) entry.number else null,
+            entry.person?.label?.ifEmpty { null }
+        ).joinToString("  ·  ").ifEmpty { null }
+        OmnioSheet.list(host, entry.name, subtitle, actions.map { it.first }) { picked -> actions[picked].second() }
+    }
+
+    private fun copy(entry: OmnioCallLog.Entry) {
+        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        clipboard.setPrimaryClip(ClipData.newPlainText(entry.name, entry.number))
+        context.toast(R.string.omnio_copied)
+    }
+
+    private fun showHistory(entry: OmnioCallLog.Entry) {
+        val host = activity ?: return
+        val timeFormat = android.text.format.DateFormat.getTimeFormat(host)
+        val items = entry.calls.map { call ->
+            val (label, colour) = when {
+                call.isMissed -> R.string.omnio_call_missed to OmnioColors.MISSED
+                call.isDeclined -> R.string.omnio_call_declined to OmnioColors.TEXT_MUTED
+                call.isOutgoing -> R.string.omnio_call_outgoing to OmnioColors.CALLS
+                else -> R.string.omnio_call_incoming_log to OmnioColors.MESSAGES
+            }
+            OmnioSheet.Item(
+                host.getString(label) + "  ·  " + dayLabel(call.date) + " " + timeFormat.format(call.date),
+                trailing = if (call.duration > 0 && !call.isMissed) OmnioRecentsAdapter.duration(call.duration) else null,
+                trailingColor = OmnioSheet.TEXT,
+                labelColor = colour
+            )
+        }
+        OmnioSheet.list(host, entry.name, host.getString(R.string.omnio_calls_count, entry.calls.size), items) {}
+    }
+
+    private fun confirmBlock(entry: OmnioCallLog.Entry) {
+        val host = activity ?: return
+        OmnioSheet.confirm(
+            host,
+            title = host.getString(R.string.omnio_block_question, entry.name),
+            message = host.getString(R.string.omnio_block_desc),
+            positive = host.getString(R.string.omnio_block_number),
+            mainColor = OmnioColors.MISSED
+        ) {
+            ensureBackgroundThread {
+                val blocked = try {
+                    host.contentResolver.insert(
+                        BlockedNumberContract.BlockedNumbers.CONTENT_URI,
+                        ContentValues().apply { put(BlockedNumberContract.BlockedNumbers.COLUMN_ORIGINAL_NUMBER, entry.number) }
+                    ) != null
+                } catch (e: Exception) {
+                    false
+                }
+                host.runOnUiThread { host.toast(if (blocked) R.string.omnio_blocked else R.string.omnio_block_failed) }
             }
         }
     }
 
-    private fun withUpdatedName(call: RecentCall, name: String): RecentCall {
-        return call.copy(
-            name = name,
-            groupedCalls = call.groupedCalls
-                ?.map { it.copy(name = name) }
-                ?.toMutableList()
-                ?.ifEmpty { null }
-        )
+    private fun confirmDelete(entry: OmnioCallLog.Entry) {
+        val host = activity ?: return
+        OmnioSheet.confirm(
+            host,
+            title = host.getString(R.string.omnio_delete_recents_question),
+            message = host.getString(R.string.omnio_delete_recents_desc, entry.calls.size, entry.name),
+            positive = host.getString(com.omnioone.commons.R.string.delete),
+            mainColor = OmnioColors.MISSED
+        ) {
+            host.handlePermission(PERMISSION_WRITE_CALL_LOG) { granted ->
+                if (granted) ensureBackgroundThread {
+                    OmnioCallLog.delete(host, entry.calls.map { it.id })
+                    host.runOnUiThread { refreshItems() }
+                }
+            }
+        }
     }
 
-    private fun groupCallsByDate(recentCalls: List<RecentCall>): MutableList<CallLogItem> {
-        val callLog = mutableListOf<CallLogItem>()
-        var lastDayCode = ""
-        for (call in recentCalls) {
-            val currentDayCode = call.dayCode
-            if (currentDayCode != lastDayCode) {
-                callLog += CallLogItem.Date(timestamp = call.startTS, dayCode = currentDayCode)
-                lastDayCode = currentDayCode
-            }
+    // ---- swipe right to call, left to text ----
 
-            callLog += call
+    private val swipe = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
+        private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+
+        private fun entryAt(holder: RecyclerView.ViewHolder) =
+            (adapter?.items?.getOrNull(holder.bindingAdapterPosition) as? OmnioRecentsAdapter.Item.Row)?.entry
+
+        override fun getSwipeDirs(recyclerView: RecyclerView, holder: RecyclerView.ViewHolder): Int {
+            val entry = entryAt(holder) ?: return 0
+            return if (entry.isPrivate) 0 else super.getSwipeDirs(recyclerView, holder)
         }
 
-        return callLog
-    }
+        override fun getSwipeThreshold(holder: RecyclerView.ViewHolder) = 0.35f
 
-    private fun findContactByCall(recentCall: RecentCall): Contact? {
-        return (activity as MainActivity).cachedContacts.find { it.name == recentCall.name && it.doesHavePhoneNumber(recentCall.phoneNumber) }
+        override fun onMove(recyclerView: RecyclerView, holder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder) = false
+
+        override fun onSwiped(holder: RecyclerView.ViewHolder, direction: Int) {
+            val position = holder.bindingAdapterPosition
+            val entry = entryAt(holder)
+            adapter?.notifyItemChanged(position)
+            if (entry != null) {
+                if (direction == ItemTouchHelper.RIGHT) call(entry) else text(entry)
+            }
+        }
+
+        override fun onChildDraw(canvas: Canvas, recyclerView: RecyclerView, holder: RecyclerView.ViewHolder, dX: Float, dY: Float, state: Int, active: Boolean) {
+            val view = holder.itemView
+            if (dX != 0f) {
+                val right = dX > 0
+                paint.color = if (right) OmnioColors.CALLS else OmnioColors.MESSAGES
+                val rect = if (right) RectF(view.left.toFloat(), view.top.toFloat(), view.left + dX, view.bottom.toFloat())
+                else RectF(view.right + dX, view.top.toFloat(), view.right.toFloat(), view.bottom.toFloat())
+                canvas.drawRect(rect, paint)
+                val icon = ContextCompat.getDrawable(view.context, if (right) R.drawable.ic_call_accept else R.drawable.ic_omnio_chat)?.mutate()
+                if (icon != null) {
+                    val size = (26 * view.resources.displayMetrics.density).toInt()
+                    val margin = (26 * view.resources.displayMetrics.density).toInt()
+                    val top = view.top + (view.height - size) / 2
+                    val left = if (right) view.left + margin else view.right - margin - size
+                    icon.setTint(0xFFFFFFFF.toInt())
+                    icon.setBounds(left, top, left + size, top + size)
+                    if (kotlin.math.abs(dX) > margin + size) icon.draw(canvas)
+                }
+            }
+            super.onChildDraw(canvas, recyclerView, holder, dX, dY, state, active)
+        }
     }
 }

@@ -299,9 +299,12 @@ class MainActivity : SimpleActivity() {
     private fun clearCallHistory() {
         val confirmationText = "${getString(R.string.clear_history_confirmation)}\n\n${getString(R.string.cannot_be_undone)}"
         ConfirmationDialog(this, confirmationText) {
-            RecentsHelper(this).removeAllRecentCalls(this) {
-                runOnUiThread {
-                    getRecentsFragment()?.refreshItems(invalidate = true)
+            handlePermission(com.omnioone.commons.helpers.PERMISSION_WRITE_CALL_LOG) { granted ->
+                if (granted) com.omnioone.commons.helpers.ensureBackgroundThread {
+                    com.omnioone.app.helpers.OmnioCallLog.clearAll(this)
+                    runOnUiThread {
+                        getRecentsFragment()?.refreshItems(invalidate = true)
+                    }
                 }
             }
         }
