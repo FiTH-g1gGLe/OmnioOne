@@ -86,7 +86,7 @@ object OmnioDisplay {
     )
 
     /** Coloured rounded square with the contact's first letter, for contacts without a photo. */
-    private fun letterTile(context: Context, name: String, radius: Float): Bitmap {
+    fun letterTile(context: Context, name: String, radius: Float): Bitmap {
         val size = (context.resources.displayMetrics.density * 128).toInt()
         val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)

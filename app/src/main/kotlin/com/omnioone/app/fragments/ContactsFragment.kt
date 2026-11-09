@@ -1,364 +1,292 @@
 package com.omnioone.app.fragments
 
-import com.omnioone.commons.helpers.OmnioColors
 import android.content.Context
 import android.content.res.ColorStateList
+import android.database.ContentObserver
+import android.os.Handler
+import android.os.Looper
+import android.provider.ContactsContract
 import android.text.TextUtils
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.Gravity
+import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.coordinatorlayout.widget.CoordinatorLayout
-import com.google.android.material.appbar.AppBarLayout
-import com.omnioone.commons.helpers.SimpleContactsHelper
-import com.omnioone.commons.helpers.ensureBackgroundThread
-import com.omnioone.app.helpers.OmnioAppTags
-import com.omnioone.app.helpers.OmnioDisplay
-import com.omnioone.app.extensions.startCallWithConfirmationCheck
-import com.omnioone.commons.views.MyGridLayoutManager
-import com.omnioone.commons.views.MyLinearLayoutManager
-import com.omnioone.commons.adapters.MyRecyclerViewAdapter
-import com.omnioone.commons.extensions.areSystemAnimationsEnabled
-import com.omnioone.commons.extensions.baseConfig
-import com.omnioone.commons.extensions.beGone
-import com.omnioone.commons.extensions.beVisible
-import com.omnioone.commons.extensions.beVisibleIf
-import com.omnioone.commons.extensions.getColorStateList
-import com.omnioone.commons.extensions.getContrastColor
-import com.omnioone.commons.extensions.getMyContactsCursor
-import com.omnioone.commons.extensions.hasPermission
-import com.omnioone.commons.extensions.normalizeString
-import com.omnioone.commons.extensions.underlineText
-import com.omnioone.commons.helpers.ContactsHelper
-import com.omnioone.commons.helpers.MyContactsContentProvider
-import com.omnioone.commons.helpers.PERMISSION_READ_CONTACTS
-import com.omnioone.commons.helpers.SMT_PRIVATE
-import com.omnioone.commons.helpers.getProperText
-import com.omnioone.commons.models.contacts.Contact
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.omnioone.app.R
-import com.omnioone.app.activities.MainActivity
 import com.omnioone.app.activities.SimpleActivity
-import com.omnioone.app.adapters.ContactsAdapter
+import com.omnioone.app.adapters.OmnioContactsAdapter
 import com.omnioone.app.databinding.FragmentContactsBinding
-import com.omnioone.app.databinding.FragmentLettersLayoutBinding
+import com.omnioone.app.databinding.OmnioContactsListBinding
+import com.omnioone.app.extensions.config
 import com.omnioone.app.extensions.launchCreateNewContactIntent
-import com.omnioone.app.extensions.setupWithContacts
-import com.omnioone.app.extensions.startContactDetailsIntent
+import com.omnioone.app.helpers.OmnioAppTags
+import com.omnioone.app.helpers.OmnioContactActions
+import com.omnioone.app.helpers.OmnioDisplay
+import com.omnioone.app.helpers.OmnioFavourites
+import com.omnioone.app.helpers.OmnioPeople
 import com.omnioone.app.interfaces.RefreshItemsListener
+import com.omnioone.commons.extensions.baseConfig
+import com.omnioone.commons.extensions.hasPermission
+import com.omnioone.commons.helpers.OmnioColors
+import com.omnioone.commons.helpers.PERMISSION_READ_CONTACTS
+import com.omnioone.commons.helpers.ensureBackgroundThread
 
-class ContactsFragment(context: Context, attributeSet: AttributeSet) : MyViewPagerFragment<MyViewPagerFragment.LettersInnerBinding>(context, attributeSet),
-    RefreshItemsListener {
-    private lateinit var binding: FragmentLettersLayoutBinding
+/**
+ * Omnio One Contacts tab: favourites row on top, then everyone in your chosen display style,
+ * with search, an A–Z strip and live updates when contacts change anywhere.
+ */
+class ContactsFragment(context: Context, attributeSet: AttributeSet) :
+    MyViewPagerFragment<MyViewPagerFragment.ListInnerBinding>(context, attributeSet), RefreshItemsListener {
+
     private lateinit var outerBinding: FragmentContactsBinding
-    private var allContacts = ArrayList<Contact>()
+    private lateinit var binding: OmnioContactsListBinding
+    private var adapter: OmnioContactsAdapter? = null
+    private var everyone = listOf<OmnioPeople.Person>()
     private var appTags: Map<Int, List<OmnioAppTags.Badge>> = emptyMap()
-    private var omnioTextColor = OmnioColors.TEXT
+    private var searchQuery = ""
+    private var textColor = OmnioColors.TEXT
+    private var loading = false
+    private var reloadAgain = false
+
+    private val handler = Handler(Looper.getMainLooper())
+    private val reloadSoon = Runnable {
+        OmnioFavourites.reload(context)
+        refreshItems()
+    }
+    private val contactsObserver = object : ContentObserver(handler) {
+        override fun onChange(selfChange: Boolean) {
+            handler.removeCallbacks(reloadSoon)
+            handler.postDelayed(reloadSoon, 500)
+        }
+    }
+    private val favouritesListener: () -> Unit = { showFavouritesStrip() }
+
+    private val sorting get() = context.config.sorting
+    private fun letterOf(person: OmnioPeople.Person) = person.letter(OmnioPeople.sortName(person, sorting))
 
     override fun onFinishInflate() {
         super.onFinishInflate()
         outerBinding = FragmentContactsBinding.bind(this)
-        binding = FragmentLettersLayoutBinding.bind(outerBinding.contactsFragment)
-        innerBinding = LettersInnerBinding(binding)
-
-        // Omnio One: the list sits under the favourites row and pushes it away when scrolling
-        binding.fragmentWrapper.layoutParams = CoordinatorLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT
-        ).apply { behavior = AppBarLayout.ScrollingViewBehavior() }
+        binding = outerBinding.contactsList
+        innerBinding = ListInnerBinding(binding.fragmentList)
+        binding.letterBar.bubble = binding.letterBubble
+        binding.letterBubble.backgroundTintList = ColorStateList.valueOf(OmnioColors.CONTACTS)
     }
-
-    override fun setupFragment() {
-        val placeholderResId = if (context.hasPermission(PERMISSION_READ_CONTACTS)) {
-            R.string.no_contacts_found
-        } else {
-            R.string.could_not_access_contacts
-        }
-
-        binding.fragmentPlaceholder.text = context.getString(placeholderResId)
-
-        val placeholderActionResId = if (context.hasPermission(PERMISSION_READ_CONTACTS)) {
-            R.string.create_new_contact
-        } else {
-            R.string.request_access
-        }
-
-        binding.fragmentPlaceholder2.apply {
-            text = context.getString(placeholderActionResId)
-            underlineText()
-            setOnClickListener {
-                if (context.hasPermission(PERMISSION_READ_CONTACTS)) {
-                    activity?.launchCreateNewContactIntent()
-                } else {
-                    requestReadContactsPermission()
-                }
-            }
-        }
-    }
-
-    override fun setupColors(textColor: Int, primaryColor: Int, properPrimaryColor: Int) {
-        binding.apply {
-            (fragmentList.adapter as? MyRecyclerViewAdapter)?.updateTextColor(textColor)
-            fragmentPlaceholder.setTextColor(textColor)
-            omnioTextColor = textColor
-            outerBinding.omnioFavouritesLabel.setTextColor(textColor)
-            showFavouritesStrip()
-            fragmentPlaceholder2.setTextColor(properPrimaryColor)
-
-            letterFastscroller.textColor = textColor.getColorStateList()
-            letterFastscroller.pressedTextColor = properPrimaryColor
-            letterFastscrollerThumb.setupWithFastScroller(letterFastscroller)
-            letterFastscrollerThumb.textColor = properPrimaryColor.getContrastColor()
-            letterFastscrollerThumb.thumbColor = properPrimaryColor.getColorStateList()
-        }
-    }
-
-    override fun refreshItems(invalidate: Boolean, callback: (() -> Unit)?) {
-        val privateCursor = context?.getMyContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
-        ContactsHelper(context).getContacts(showOnlyContactsWithNumbers = true) { contacts ->
-            allContacts = contacts
-
-            if (SMT_PRIVATE !in context.baseConfig.ignoredContactSources) {
-                val privateContacts = MyContactsContentProvider.getContacts(context, privateCursor)
-                if (privateContacts.isNotEmpty()) {
-                    allContacts.addAll(privateContacts)
-                    allContacts.sort()
-                }
-            }
-            (activity as MainActivity).cacheContacts()
-
-            activity?.runOnUiThread {
-                gotContacts(contacts)
-                showFavouritesStrip()
-                callback?.invoke()
-            }
-            loadAppTags()
-        }
-    }
-
-    /** Omnio One: the favourites row redraws the moment favourites change, anywhere. */
-    private val favouritesListener: () -> Unit = { showFavouritesStrip() }
-
-    /** Other apps starring someone: ask OmnioFavourites to re-read (it tells us if anything changed). */
-    private val contactsObserver = object : android.database.ContentObserver(android.os.Handler(android.os.Looper.getMainLooper())) {
-        override fun onChange(selfChange: Boolean) {
-            removeCallbacks(reloadFavourites)
-            postDelayed(reloadFavourites, 500)
-        }
-    }
-
-    private val reloadFavourites = Runnable { com.omnioone.app.helpers.OmnioFavourites.reload(context) }
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
-        com.omnioone.app.helpers.OmnioFavourites.addListener(favouritesListener)
-        com.omnioone.app.helpers.OmnioFavourites.reload(context)
+        OmnioFavourites.addListener(favouritesListener)
+        OmnioFavourites.reload(context)
         try {
-            context.contentResolver.registerContentObserver(android.provider.ContactsContract.Contacts.CONTENT_URI, true, contactsObserver)
+            context.contentResolver.registerContentObserver(ContactsContract.Contacts.CONTENT_URI, true, contactsObserver)
         } catch (ignored: Exception) {
         }
     }
 
     override fun onDetachedFromWindow() {
-        com.omnioone.app.helpers.OmnioFavourites.removeListener(favouritesListener)
+        OmnioFavourites.removeListener(favouritesListener)
         try {
             context.contentResolver.unregisterContentObserver(contactsObserver)
         } catch (ignored: Exception) {
         }
-        removeCallbacks(reloadFavourites)
+        handler.removeCallbacks(reloadSoon)
         super.onDetachedFromWindow()
     }
 
-    private fun loadAppTags() {
-        val ctx = context ?: return
+    // ---- MyViewPagerFragment ----
+
+    override fun setupFragment() {
+        binding.fragmentPlaceholder2.setOnClickListener {
+            if (context.hasPermission(PERMISSION_READ_CONTACTS)) {
+                activity?.launchCreateNewContactIntent()
+            } else {
+                activity?.handlePermission(PERMISSION_READ_CONTACTS) { granted -> if (granted) refreshItems() }
+            }
+        }
+        buildAdapter()
+    }
+
+    override fun setupColors(textColor: Int, primaryColor: Int, properPrimaryColor: Int) {
+        this.textColor = textColor
+        binding.fragmentPlaceholder.setTextColor(textColor)
+        binding.fragmentPlaceholder2.setTextColor(OmnioColors.ON_ACCENT)
+        binding.fragmentPlaceholder2.backgroundTintList = ColorStateList.valueOf(OmnioColors.CONTACTS)
+        binding.letterBar.textColor = textColor
+        outerBinding.omnioFavouritesLabel.setTextColor(textColor)
+        adapter?.textColor = textColor
+        adapter?.notifyDataSetChanged()
+        showFavouritesStrip()
+    }
+
+    override fun refreshItems(invalidate: Boolean, callback: (() -> Unit)?) {
+        if (!context.hasPermission(PERMISSION_READ_CONTACTS)) {
+            everyone = emptyList()
+            show()
+            callback?.invoke()
+            return
+        }
+        if (loading) {
+            reloadAgain = true
+            callback?.invoke()
+            return
+        }
+        loading = true
+        val ignored = context.baseConfig.ignoredContactSources.toSet()
+        val sortingNow = sorting
         ensureBackgroundThread {
-            val tags = OmnioAppTags.load(ctx)
-            activity?.runOnUiThread {
+            val people = OmnioPeople.sort(OmnioPeople.load(context, ignored), sortingNow)
+            val tags = OmnioAppTags.load(context)
+            handler.post {
+                loading = false
+                everyone = people
                 appTags = tags
-                (binding.fragmentList.adapter as? ContactsAdapter)?.appTags = tags
+                adapter?.appTags = tags
+                show()
+                showFavouritesStrip()
+                callback?.invoke()
+                if (reloadAgain) {
+                    reloadAgain = false
+                    refreshItems()
+                }
             }
         }
     }
+
+    override fun onSearchQueryChanged(text: String) {
+        searchQuery = text.trim()
+        outerBinding.omnioFavouritesStrip.visibility = if (searchQuery.isEmpty()) View.VISIBLE else View.GONE
+        if (searchQuery.isNotEmpty()) outerBinding.contactsAppbar.setExpanded(true, false)
+        show()
+    }
+
+    override fun onSearchClosed() {
+        searchQuery = ""
+        outerBinding.omnioFavouritesStrip.visibility = View.VISIBLE
+        show()
+    }
+
+    /** Rebuilds the list after the display style changes (View button or Settings). */
+    fun displayStyleChanged() {
+        buildAdapter()
+        show()
+    }
+
+    // ---- the list ----
+
+    private fun buildAdapter() {
+        val host = activity ?: return
+        val style = OmnioDisplay.getStyle(context)
+        adapter = OmnioContactsAdapter(
+            style = style,
+            onClick = { person ->
+                if (style == OmnioDisplay.STYLE_SPEED_DIAL) OmnioContactActions.call(host, person) else OmnioContactActions.open(host, person)
+            },
+            onPhoto = { OmnioContactActions.open(host, it) },
+            onLongClick = { person, _ -> OmnioContactActions.showMenu(host, person) },
+            onCall = { OmnioContactActions.call(host, it) },
+            onText = { OmnioContactActions.text(host, it) },
+        ).apply {
+            textColor = this@ContactsFragment.textColor
+            appTags = this@ContactsFragment.appTags
+            density = OmnioDisplay.getDensity(context)
+            firstNameOnly = OmnioDisplay.isFirstNameOnly(context)
+            surnameFirst = context.baseConfig.startNameWithSurname
+        }
+        val list = binding.fragmentList
+        list.layoutManager = if (OmnioDisplay.isGrid(style)) {
+            GridLayoutManager(context, OmnioDisplay.getColumns(context, style))
+        } else {
+            LinearLayoutManager(context)
+        }
+        list.setPadding(dp(if (OmnioDisplay.isGrid(style)) 10 else 0), list.paddingTop, dp(if (OmnioDisplay.isGrid(style)) 10 else 20), list.paddingBottom)
+        list.itemAnimator = null
+        list.adapter = adapter
+        binding.letterBar.onLetter = { letter ->
+            val position = adapter?.positionOf(letter, ::letterOf) ?: -1
+            if (position >= 0) (list.layoutManager as? LinearLayoutManager)?.scrollToPositionWithOffset(position, 0)
+        }
+    }
+
+    private fun show() {
+        val current = adapter ?: return
+        val allowed = context.hasPermission(PERMISSION_READ_CONTACTS)
+        val visible = if (searchQuery.isEmpty()) everyone else everyone.filter { OmnioPeople.matches(it, searchQuery) }
+            .sortedByDescending { OmnioPeople.plain(it.name).startsWith(OmnioPeople.plain(searchQuery), true) }
+        current.surnameFirst = context.baseConfig.startNameWithSurname
+        current.submit(visible, ::letterOf, showHeaders = OmnioDisplay.isList(OmnioDisplay.getStyle(context)), highlight = searchQuery)
+
+        val letters = if (current.isGrid || searchQuery.isNotEmpty()) emptyList() else visible.map(::letterOf).distinct()
+        binding.letterBar.letters = letters
+        binding.letterBar.visibility = if (letters.size > 1) View.VISIBLE else View.GONE
+
+        val empty = visible.isEmpty() && !loading
+        binding.fragmentPlaceholderHolder.visibility = if (empty) View.VISIBLE else View.GONE
+        binding.fragmentPlaceholder.text = context.getString(
+            when {
+                !allowed -> R.string.could_not_access_contacts
+                searchQuery.isNotEmpty() -> R.string.omnio_no_contact_matches
+                else -> R.string.no_contacts_found
+            }
+        )
+        binding.fragmentPlaceholder2.text = context.getString(if (allowed) R.string.create_new_contact else R.string.request_access)
+        binding.fragmentPlaceholder2.visibility = if (searchQuery.isEmpty()) View.VISIBLE else View.GONE
+    }
+
+    // ---- favourites row ----
 
     private fun dp(value: Int) = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, value.toFloat(), resources.displayMetrics).toInt()
 
-    /** Omnio One: "New" button plus a scrolling row of favourite contacts above the list. */
+    private fun isFavourite(person: OmnioPeople.Person) =
+        if (OmnioFavourites.isLoaded) OmnioFavourites.isFavourite(person.contactId) else person.starred
+
+    /** "New" button plus a scrolling row of favourites; redraws the moment favourites change. */
     private fun showFavouritesStrip() {
+        val host = activity as? SimpleActivity ?: return
         val holder = outerBinding.omnioFavouritesHolder
         holder.removeAllViews()
-        val favourites = allContacts.filter { contact ->
-            if (contact.isPrivate() || !com.omnioone.app.helpers.OmnioFavourites.isLoaded) {
-                contact.starred == 1
-            } else {
-                com.omnioone.app.helpers.OmnioFavourites.isFavourite(contact.contactId)
-            }
-        }.distinctBy { it.contactId }
-        outerBinding.omnioFavouritesLabel.beVisibleIf(favourites.isNotEmpty())
-
-        holder.addView(makeTile(context.getString(R.string.omnio_new), null) {
-            activity?.launchCreateNewContactIntent()
-        })
-        favourites.forEach { contact ->
-            holder.addView(makeTile(contact.getNameToDisplay().substringBefore(" "), contact) {
-                activity?.startContactDetailsIntent(contact)
-            })
-        }
+        val favourites = everyone.filter { isFavourite(it) }
+        outerBinding.omnioFavouritesLabel.visibility = if (favourites.isEmpty()) View.GONE else View.VISIBLE
+        holder.addView(tile(context.getString(R.string.omnio_new), null) { host.launchCreateNewContactIntent() })
+        favourites.forEach { person -> holder.addView(tile(person.firstName, person) { OmnioContactActions.open(host, person) }) }
     }
 
-    private fun makeTile(label: String, contact: Contact?, onClick: () -> Unit): LinearLayout {
+    private fun tile(label: String, person: OmnioPeople.Person?, onClick: () -> Unit): LinearLayout {
         val size = dp(56)
         return LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_HORIZONTAL
             layoutParams = LinearLayout.LayoutParams(dp(72), ViewGroup.LayoutParams.WRAP_CONTENT)
             setOnClickListener { onClick() }
-
+            if (person != null) setOnLongClickListener {
+                (activity as? SimpleActivity)?.let { OmnioContactActions.showMenu(it, person) }
+                true
+            }
             addView(ImageView(context).apply {
                 layoutParams = LinearLayout.LayoutParams(size, size)
-                if (contact == null) {
+                if (person == null) {
                     setImageResource(com.omnioone.commons.R.drawable.ic_plus_vector)
                     imageTintList = ColorStateList.valueOf(OmnioColors.ON_ACCENT)
                     setPadding(dp(14), dp(14), dp(14), dp(14))
                     background = context.getDrawable(R.drawable.omnio_circle_bg)
                     backgroundTintList = ColorStateList.valueOf(OmnioColors.CONTACTS)
                 } else {
-                    SimpleContactsHelper(context).loadContactImage(contact.photoUri, this, contact.getNameToDisplay())
+                    OmnioDisplay.loadAvatar(this, person.photo, person.name, size / 2)
                 }
             })
-
             addView(TextView(context).apply {
                 text = label
-                setTextColor(if (contact == null) OmnioColors.CONTACTS else omnioTextColor)
+                setTextColor(if (person == null) OmnioColors.CONTACTS else textColor)
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
                 gravity = Gravity.CENTER
                 maxLines = 1
                 ellipsize = TextUtils.TruncateAt.END
                 setPadding(dp(4), dp(6), dp(4), 0)
             })
-        }
-    }
-
-    private fun gotContacts(contacts: ArrayList<Contact>) {
-        setupLetterFastScroller(contacts)
-        if (contacts.isEmpty()) {
-            binding.apply {
-                fragmentPlaceholder.beVisible()
-                fragmentPlaceholder2.beVisible()
-                fragmentList.beGone()
-            }
-        } else {
-            binding.apply {
-                fragmentPlaceholder.beGone()
-                fragmentPlaceholder2.beGone()
-                fragmentList.beVisible()
-            }
-
-            if (binding.fragmentList.adapter == null) {
-                val style = OmnioDisplay.getStyle(context)
-                applyLayoutManager(style)
-                ContactsAdapter(
-                    activity = activity as SimpleActivity,
-                    contacts = contacts,
-                    recyclerView = binding.fragmentList,
-                    refreshItemsListener = this,
-                    itemClick = {
-                        // Omnio One: tapping a contact opens its contact page (Speed dial calls instead)
-                        if (style == OmnioDisplay.STYLE_SPEED_DIAL) {
-                            activity?.startCallWithConfirmationCheck(it as Contact)
-                        } else {
-                            activity?.startContactDetailsIntent(it as Contact)
-                        }
-                    },
-                    profileIconClick = {
-                        activity?.startContactDetailsIntent(it as Contact)
-                    },
-                    showLetterHeaders = OmnioDisplay.isList(style),
-                    omnioStyle = style
-                ).apply {
-                    appTags = this@ContactsFragment.appTags
-                    onSpanCountListener = { columns -> OmnioDisplay.setColumns(context, style, columns) }
-                    binding.fragmentList.adapter = this
-                }
-
-                if (context.areSystemAnimationsEnabled) {
-                    binding.fragmentList.scheduleLayoutAnimation()
-                }
-            } else {
-                (binding.fragmentList.adapter as ContactsAdapter).updateItems(contacts)
-            }
-        }
-    }
-
-    private fun applyLayoutManager(style: Int) {
-        if (OmnioDisplay.isGrid(style)) {
-            binding.letterFastscroller.beGone()
-            binding.letterFastscrollerThumb.beGone()
-            binding.fragmentList.layoutManager = MyGridLayoutManager(context, OmnioDisplay.getColumns(context, style))
-        } else {
-            binding.letterFastscroller.beVisible()
-            binding.letterFastscrollerThumb.beVisible()
-            binding.fragmentList.layoutManager = MyLinearLayoutManager(context)
-        }
-    }
-
-    /** Omnio One: rebuild the list after the display style dialog is closed. */
-    fun displayStyleChanged() {
-        binding.fragmentList.adapter = null
-        gotContacts(allContacts)
-    }
-
-    private fun setupLetterFastScroller(contacts: ArrayList<Contact>) {
-        binding.letterFastscroller.setupWithContacts(binding.fragmentList, contacts)
-    }
-
-    override fun onSearchClosed() {
-        outerBinding.omnioFavouritesStrip.beVisible()
-        binding.fragmentPlaceholder.beVisibleIf(allContacts.isEmpty())
-        (binding.fragmentList.adapter as? ContactsAdapter)?.updateItems(allContacts)
-        setupLetterFastScroller(allContacts)
-    }
-
-    override fun onSearchQueryChanged(text: String) {
-        outerBinding.omnioFavouritesStrip.beVisibleIf(text.isBlank())
-        if (text.isNotBlank()) outerBinding.contactsAppbar.setExpanded(true, false)
-        val fixedText = text.trim().replace("\\s+".toRegex(), " ")
-        val shouldNormalize = fixedText.normalizeString() == fixedText
-        val filtered = allContacts.filter { contact ->
-            getProperText(contact.getNameToDisplay(), shouldNormalize).contains(fixedText, true) ||
-                getProperText(contact.nickname, shouldNormalize).contains(fixedText, true) ||
-                (fixedText.toLongOrNull() != null && contact.doesContainPhoneNumber(fixedText, true)) ||
-                contact.emails.any { it.value.contains(fixedText, true) } ||
-                contact.addresses.any { getProperText(it.value, shouldNormalize).contains(fixedText, true) } ||
-                contact.IMs.any { it.value.contains(fixedText, true) } ||
-                getProperText(contact.notes, shouldNormalize).contains(fixedText, true) ||
-                getProperText(contact.organization.company, shouldNormalize).contains(fixedText, true) ||
-                getProperText(contact.organization.jobPosition, shouldNormalize).contains(fixedText, true) ||
-                contact.websites.any { it.contains(fixedText, true) }
-        } as ArrayList
-
-        filtered.sortBy {
-            val nameToDisplay = it.getNameToDisplay()
-            !getProperText(nameToDisplay, shouldNormalize).startsWith(fixedText, true) && !nameToDisplay.contains(fixedText, true)
-        }
-
-        binding.fragmentPlaceholder.beVisibleIf(filtered.isEmpty())
-        (binding.fragmentList.adapter as? ContactsAdapter)?.updateItems(filtered, fixedText)
-        setupLetterFastScroller(filtered)
-    }
-
-    private fun requestReadContactsPermission() {
-        activity?.handlePermission(PERMISSION_READ_CONTACTS) {
-            if (it) {
-                binding.fragmentPlaceholder.text = context.getString(R.string.no_contacts_found)
-                binding.fragmentPlaceholder2.text = context.getString(R.string.create_new_contact)
-                ContactsHelper(context).getContacts(showOnlyContactsWithNumbers = true) { contacts ->
-                    activity?.runOnUiThread {
-                        gotContacts(contacts)
-                    }
-                }
-            }
         }
     }
 }

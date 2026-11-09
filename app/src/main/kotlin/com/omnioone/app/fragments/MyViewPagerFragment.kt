@@ -12,8 +12,6 @@ import com.omnioone.commons.helpers.SORT_BY_SURNAME
 import com.omnioone.commons.views.MyRecyclerView
 import com.omnioone.app.activities.MainActivity
 import com.omnioone.app.activities.SimpleActivity
-import com.omnioone.app.adapters.ContactsAdapter
-import com.omnioone.app.databinding.FragmentLettersLayoutBinding
 import com.omnioone.app.databinding.FragmentRecentsBinding
 import com.omnioone.app.extensions.config
 import com.omnioone.app.helpers.Config
@@ -36,10 +34,8 @@ abstract class MyViewPagerFragment<BINDING : MyViewPagerFragment.InnerBinding>(c
 
     fun startNameWithSurnameChanged(startNameWithSurname: Boolean) {
         if (this !is RecentsFragment) {
-            (innerBinding.fragmentList?.adapter as? ContactsAdapter)?.apply {
-                config.sorting = if (startNameWithSurname) SORT_BY_SURNAME else SORT_BY_FIRST_NAME
-                (this@MyViewPagerFragment.activity!! as MainActivity).refreshFragments()
-            }
+            config.sorting = if (startNameWithSurname) SORT_BY_SURNAME else SORT_BY_FIRST_NAME
+            (activity as? MainActivity)?.refreshFragments()
         }
     }
 
@@ -49,12 +45,7 @@ abstract class MyViewPagerFragment<BINDING : MyViewPagerFragment.InnerBinding>(c
     }
 
     fun fontSizeChanged() {
-        if (this !is RecentsFragment) {
-            (innerBinding.fragmentList?.adapter as? ContactsAdapter)?.apply {
-                fontSize = activity.getTextSize()
-                notifyDataSetChanged()
-            }
-        }
+        innerBinding.fragmentList?.adapter?.notifyDataSetChanged()
     }
 
     abstract fun setupFragment()
@@ -70,8 +61,7 @@ abstract class MyViewPagerFragment<BINDING : MyViewPagerFragment.InnerBinding>(c
         val recentsList: MyRecyclerView?
     }
 
-    class LettersInnerBinding(val binding: FragmentLettersLayoutBinding) : InnerBinding {
-        override val fragmentList: MyRecyclerView = binding.fragmentList
+    class ListInnerBinding(override val fragmentList: MyRecyclerView) : InnerBinding {
         override val recentsList = null
     }
 

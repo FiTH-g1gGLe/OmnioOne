@@ -4,6 +4,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <include layout="@layout/fragment_letters_layout" />
+    <include
+        android:id="@+id/favourites_list"
+        layout="@layout/omnio_contacts_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
 </com.omnioone.app.fragments.FavoritesFragment>

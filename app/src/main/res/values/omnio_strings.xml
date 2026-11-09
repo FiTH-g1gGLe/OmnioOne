@@ -381,4 +381,12 @@
     <string name="omnio_dialpad_delete">Delete</string>
     <string name="omnio_dialpad_no_voicemail">Couldn’t call voicemail. Check your voicemail number in your phone settings.</string>
     <string name="omnio_view">View</string>
+    <string name="omnio_no_favourites">No favourites yet. Tap the ☆ on a contact to add one.</string>
+    <string name="omnio_no_contact_matches">No contacts match your search</string>
+    <string name="omnio_add_favourite">Add to favourites</string>
+    <string name="omnio_remove_favourite">Remove from favourites</string>
+    <string name="omnio_share_contact">Share contact</string>
+    <string name="omnio_add_to_home">Add to home screen</string>
+    <string name="omnio_shortcut_unsupported">Your home screen doesn’t support shortcuts</string>
+    <string name="omnio_delete_contact_desc">This removes them from your phone’s contacts. It can’t be undone.</string>
 </resources>

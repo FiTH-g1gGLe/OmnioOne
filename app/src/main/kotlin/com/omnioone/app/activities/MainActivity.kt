@@ -62,7 +62,6 @@ class MainActivity : SimpleActivity() {
     private var storedShowTabs = 0
     private var storedFontSize = 0
     private var storedStartNameWithSurname = false
-    var cachedContacts = ArrayList<Contact>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         applyOmnioThemeOnce()
@@ -603,7 +602,6 @@ class MainActivity : SimpleActivity() {
     }
 
     fun refreshFragments() {
-        cacheContacts()
         getContactsFragment()?.refreshItems()
         getFavoritesFragment()?.refreshItems()
         getRecentsFragment()?.refreshItems()
@@ -708,25 +706,6 @@ class MainActivity : SimpleActivity() {
                 if (binding.mainMenu.isSearchOpen) {
                     getCurrentFragment()?.onSearchQueryChanged(binding.mainMenu.getCurrentQuery())
                 }
-            }
-        }
-    }
-
-    fun cacheContacts() {
-        val privateCursor = getMyContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
-        ContactsHelper(this).getContacts(getAll = true, showOnlyContactsWithNumbers = true) { contacts ->
-            if (SMT_PRIVATE !in config.ignoredContactSources) {
-                val privateContacts = MyContactsContentProvider.getContacts(this, privateCursor)
-                if (privateContacts.isNotEmpty()) {
-                    contacts.addAll(privateContacts)
-                    contacts.sort()
-                }
-            }
-
-            try {
-                cachedContacts.clear()
-                cachedContacts.addAll(contacts)
-            } catch (ignored: Exception) {
             }
         }
     }
