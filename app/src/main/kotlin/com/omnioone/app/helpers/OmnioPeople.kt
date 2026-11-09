@@ -7,6 +7,7 @@ import android.provider.ContactsContract.CommonDataKinds.Nickname
 import android.provider.ContactsContract.CommonDataKinds.Organization
 import android.provider.ContactsContract.CommonDataKinds.Phone
 import android.provider.ContactsContract.Data
+import com.omnioone.app.extensions.config
 import com.omnioone.commons.helpers.SORT_BY_DATE_CREATED
 import com.omnioone.commons.helpers.SORT_BY_SURNAME
 import com.omnioone.commons.helpers.SORT_DESCENDING
@@ -136,6 +137,27 @@ object OmnioPeople {
 
     /** The name the list is sorted (and lettered) by. */
     fun sortName(person: Person, sorting: Int) = if (sorting and SORT_BY_SURNAME != 0) person.surnameFirst else person.name
+
+    /**
+     * Your favourites, in the same order everywhere (the Favourites tab and the row above
+     * Contacts): your dragged order if you've made one, otherwise the chosen sort order.
+     */
+    fun favourites(context: Context, people: List<Person>): List<Person> {
+        val config = context.config
+        val picked = people.filter { if (OmnioFavourites.isLoaded) OmnioFavourites.isFavourite(it.contactId) else it.starred }
+        if (config.isCustomOrderSelected) {
+            val order = try {
+                com.google.gson.Gson().fromJson(config.favoritesContactsOrder, Array<String>::class.java)?.toList().orEmpty()
+            } catch (e: Exception) {
+                emptyList()
+            }
+            if (order.isNotEmpty()) {
+                val rank = order.withIndex().associate { it.value to it.index }
+                return picked.sortedBy { rank[it.contactId.toString()] ?: Int.MAX_VALUE }
+            }
+        }
+        return sort(picked, config.sorting)
+    }
 
     /** Does this person match what's typed in search? */
     fun matches(person: Person, query: String): Boolean {

@@ -249,7 +249,7 @@ class ContactsFragment(context: Context, attributeSet: AttributeSet) :
         val host = activity as? SimpleActivity ?: return
         val holder = outerBinding.omnioFavouritesHolder
         holder.removeAllViews()
-        val favourites = everyone.filter { isFavourite(it) }
+        val favourites = OmnioPeople.favourites(context, everyone)
         outerBinding.omnioFavouritesLabel.visibility = if (favourites.isEmpty()) View.GONE else View.VISIBLE
         holder.addView(tile(context.getString(R.string.omnio_new), null) { host.launchCreateNewContactIntent() })
         favourites.forEach { person -> holder.addView(tile(person.firstName, person) { OmnioContactActions.open(host, person) }) }

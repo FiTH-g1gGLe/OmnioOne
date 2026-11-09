@@ -138,21 +138,7 @@ class FavoritesFragment(context: Context, attributeSet: AttributeSet) :
         dragHelper.attachToRecyclerView(list)
     }
 
-    private fun favourites(): List<OmnioPeople.Person> {
-        val picked = everyone.filter { if (OmnioFavourites.isLoaded) OmnioFavourites.isFavourite(it.contactId) else it.starred }
-        if (context.config.isCustomOrderSelected) {
-            val order = try {
-                Gson().fromJson(context.config.favoritesContactsOrder, Array<String>::class.java)?.toList().orEmpty()
-            } catch (e: Exception) {
-                emptyList()
-            }
-            if (order.isNotEmpty()) {
-                val rank = order.withIndex().associate { it.value to it.index }
-                return picked.sortedBy { rank[it.contactId.toString()] ?: Int.MAX_VALUE }
-            }
-        }
-        return OmnioPeople.sort(picked, context.config.sorting)
-    }
+    private fun favourites() = OmnioPeople.favourites(context, everyone)
 
     private fun show() {
         val current = adapter ?: return
@@ -174,6 +160,7 @@ class FavoritesFragment(context: Context, attributeSet: AttributeSet) :
         val ids = adapter?.people()?.map { it.contactId.toString() } ?: return
         context.config.favoritesContactsOrder = Gson().toJson(ids)
         context.config.isCustomOrderSelected = true
+        OmnioFavourites.notifyChanged()
     }
 
     /** Hold and drag to reorder; hold and let go without moving to open the menu. */
