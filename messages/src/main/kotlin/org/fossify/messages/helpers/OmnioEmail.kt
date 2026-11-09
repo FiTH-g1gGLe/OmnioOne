@@ -93,9 +93,7 @@ object OmnioEmail {
             context, contactId, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE,
             ContactsContract.CommonDataKinds.Email.ADDRESS to email.lowercase(),
             ContactsContract.CommonDataKinds.Email.TYPE to ContactsContract.CommonDataKinds.Email.TYPE_HOME
-        ) catch (e: Exception) {
-        false
-    }
+        )
 
     // ---- the choices ----
 

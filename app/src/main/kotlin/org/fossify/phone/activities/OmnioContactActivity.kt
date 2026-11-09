@@ -57,13 +57,13 @@ class OmnioContactActivity : SimpleActivity() {
     companion object {
         const val EXTRA_CONTACT_ID = "omnio_contact_id"
         const val EXTRA_SHARED_LINK = "omnio_shared_link"
-        private const val CALLS_BLUE = OmnioColors.CALLS
-        private const val MESSAGES_GREEN = OmnioColors.MESSAGES
-        private const val MAX_RECENT = 10
+        internal const val CALLS_BLUE = OmnioColors.CALLS
+        internal const val MESSAGES_GREEN = OmnioColors.MESSAGES
+        internal const val MAX_RECENT = 10
     }
 
-    private val binding by viewBinding(ActivityOmnioContactBinding::inflate)
-    private var contact: Contact? = null
+    internal val binding by viewBinding(ActivityOmnioContactBinding::inflate)
+    internal var contact: Contact? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -109,7 +109,7 @@ class OmnioContactActivity : SimpleActivity() {
         binding.contactVideo.compoundDrawablesRelative[1]?.mutate()?.setTint(OmnioColors.MESSAGES_SOFT)
     }
 
-    private fun showContact(contact: Contact) {
+    internal fun showContact(contact: Contact) {
         val name = contact.getNameToDisplay()
         binding.contactName.text = name
         SimpleContactsHelper(this).loadContactImage(contact.photoUri, binding.contactPhoto, name)
@@ -170,7 +170,7 @@ class OmnioContactActivity : SimpleActivity() {
         }
     }
 
-    private var firstResume = true
+    internal var firstResume = true
 
     override fun onPostResume() {
         super.onPostResume()
@@ -194,7 +194,7 @@ class OmnioContactActivity : SimpleActivity() {
         }
     }
 
-    private fun toggleFavourite() {
+    internal fun toggleFavourite() {
         val current = contact ?: return
         val makeFavourite: Boolean
         if (current.isPrivate()) {
@@ -213,14 +213,14 @@ class OmnioContactActivity : SimpleActivity() {
         showStar(makeFavourite)
     }
 
-    private fun showStar(favourite: Boolean) {
+    internal fun showStar(favourite: Boolean) {
         binding.contactFavourite.setImageResource(
             if (favourite) org.fossify.commons.R.drawable.ic_star_vector else org.fossify.commons.R.drawable.ic_star_outline_vector
         )
     }
 
     /** Keeps the star right if favourites change elsewhere while this page is open. */
-    private val favouritesListener: () -> Unit = {
+    internal val favouritesListener: () -> Unit = {
         contact?.takeIf { !it.isPrivate() }?.let { current ->
             val favourite = org.fossify.phone.helpers.OmnioFavourites.isFavourite(current.contactId)
             current.starred = if (favourite) 1 else 0
@@ -240,7 +240,7 @@ class OmnioContactActivity : SimpleActivity() {
     }
 
     /** Number type, plus "Always SIM 2" when a SIM has been remembered for this number. */
-    private fun getNumberSubtitle(number: String, type: Int, label: String): String {
+    internal fun getNumberSubtitle(number: String, type: Int, label: String): String {
         val typeLabel = getPhoneTypeLabel(type, label)
         val handle = config.getCustomSIM(number) ?: return typeLabel
         val sim = getAvailableSIMCardLabels().firstOrNull { it.handle == handle } ?: return typeLabel
@@ -249,553 +249,17 @@ class OmnioContactActivity : SimpleActivity() {
 
     // ---- Omnio One: chat apps + social profiles card ----
 
-    private fun loadApps(contact: Contact) {
-        ensureBackgroundThread {
-            val chats = OmnioSocials.findChats(this, contact.contactId)
-            val socials = OmnioSocials.findSocials(this, contact.contactId)
-            runOnUiThread { showApps(contact, chats, socials) }
-        }
-    }
-
-    private var currentSocials: List<OmnioSocials.FoundSocial> = emptyList()
-
-    private fun showApps(contact: Contact, chats: List<OmnioSocials.FoundChat>, socials: List<OmnioSocials.FoundSocial>) {
-        currentSocials = socials
-        // Big Video button: WhatsApp video first, then the other apps that can video call
-        val video = listOf("com.whatsapp", "com.whatsapp.w4b", "org.telegram.messenger", "com.google.android.apps.tachyon")
-            .firstNotNullOfOrNull { pkg -> chats.firstOrNull { it.app.pkg == pkg && it.action.kind == OmnioSocials.Kind.VIDEO } }
-        binding.contactVideo.apply {
-            beVisibleIf(video != null)
-            setOnClickListener { video?.let { openChat(it) } }
-        }
-
-        val holder = binding.contactAppsHolder
-        holder.removeAllViews()
-        var rows = 0
-        chats.groupBy { it.app }.forEach { (app, found) ->
-            val actions = found.sortedBy { it.action.kind.ordinal }
-            val primary = actions.first()
-            addAppRow(
-                holder = holder,
-                showDivider = rows++ > 0,
-                icon = appIcon(app.pkg, app.name, app.color),
-                title = app.name,
-                subtitle = null,
-                color = app.color,
-                onClick = { openChat(primary) },
-                onLongClick = null,
-                actions = actions.map { chat ->
-                    val iconRes = when (chat.action.kind) {
-                        OmnioSocials.Kind.CHAT -> R.drawable.ic_omnio_chat
-                        OmnioSocials.Kind.VOICE -> org.fossify.commons.R.drawable.ic_phone_vector
-                        OmnioSocials.Kind.VIDEO -> R.drawable.ic_omnio_video
-                    }
-                    iconRes to { openChat(chat) }
-                }
-            )
-        }
-        socials.forEach { social ->
-            val network = social.network
-            addAppRow(
-                holder = holder,
-                showDivider = rows++ > 0,
-                icon = appIcon(network.pkg, network.name, network.color),
-                title = network.name,
-                subtitle = network.displayHandle(social.url).ifEmpty { getString(R.string.omnio_profile_linked) },
-                color = network.color,
-                onClick = { openSocial(social) },
-                onLongClick = { confirmRemoveSocial(contact, social) },
-                actions = if (network.key == "messenger") {
-                    // like WhatsApp: message, voice call, video call
-                    listOf(
-                        R.drawable.ic_omnio_chat to { openSocial(social) },
-                        org.fossify.commons.R.drawable.ic_phone_vector to { messengerCall(social, OmnioSocials.AutoTap.VOICE) },
-                        R.drawable.ic_omnio_video to { messengerCall(social, OmnioSocials.AutoTap.VIDEO) },
-                    )
-                } else {
-                    listOf(org.fossify.commons.R.drawable.ic_arrow_right_vector to { openSocial(social) })
-                }
-            )
-        }
-        // "+ Add social" row
-        addAppRow(
-            holder = holder,
-            showDivider = rows > 0,
-            icon = getDrawable(org.fossify.commons.R.drawable.ic_plus_vector)?.mutate()?.apply { setTint(OmnioColors.CONTACTS) },
-            title = getString(R.string.omnio_add_social),
-            subtitle = null,
-            color = OmnioColors.CONTACTS,
-            onClick = { pickNetworkToAdd(contact) },
-            onLongClick = null,
-            actions = emptyList()
-        )
-    }
-
-    /** The app's real icon from the phone, or a coloured letter if it isn't installed. */
-    private fun appIcon(pkg: String, name: String, color: Int): android.graphics.drawable.Drawable? {
-        return try {
-            packageManager.getApplicationIcon(pkg)
-        } catch (e: Exception) {
-            val size = dp(36)
-            val bitmap = android.graphics.Bitmap.createBitmap(size, size, android.graphics.Bitmap.Config.ARGB_8888)
-            val canvas = android.graphics.Canvas(bitmap)
-            val radius = size * 0.24f
-            canvas.drawRoundRect(android.graphics.RectF(0f, 0f, size.toFloat(), size.toFloat()), radius, radius, android.graphics.Paint().apply { isAntiAlias = true; this.color = color })
-            val paint = android.graphics.Paint().apply {
-                isAntiAlias = true
-                this.color = if (androidx.core.graphics.ColorUtils.calculateLuminance(color) > 0.6) OmnioColors.ON_ACCENT else 0xFFFFFFFF.toInt()
-                textSize = size * 0.48f
-                textAlign = android.graphics.Paint.Align.CENTER
-                typeface = android.graphics.Typeface.DEFAULT_BOLD
-            }
-            canvas.drawText(name.take(1), size / 2f, size / 2f - (paint.descent() + paint.ascent()) / 2f, paint)
-            android.graphics.drawable.BitmapDrawable(resources, bitmap)
-        }
-    }
-
-    private fun addAppRow(
-        holder: LinearLayout,
-        showDivider: Boolean,
-        icon: android.graphics.drawable.Drawable?,
-        title: String,
-        subtitle: String?,
-        color: Int,
-        onClick: () -> Unit,
-        onLongClick: (() -> Unit)?,
-        actions: List<Pair<Int, () -> Unit>>
-    ) {
-        val textColor = getProperTextColor()
-        if (showDivider) {
-            holder.addView(View(this).apply {
-                setBackgroundColor(0x22FFFFFF)
-                layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(1))
-            })
-        }
-        val row = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-            minimumHeight = dp(60)
-            setPadding(0, dp(8), 0, dp(8))
-            setOnClickListener { onClick() }
-            if (onLongClick != null) setOnLongClickListener { onLongClick(); true }
-        }
-        row.addView(ImageView(this).apply {
-            setImageDrawable(icon)
-            layoutParams = LinearLayout.LayoutParams(dp(36), dp(36)).apply { marginEnd = dp(14) }
-        })
-        row.addView(LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-            addView(TextView(this@OmnioContactActivity).apply {
-                text = title
-                setTextColor(textColor)
-                setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
-            })
-            if (!subtitle.isNullOrEmpty()) {
-                addView(TextView(this@OmnioContactActivity).apply {
-                    text = subtitle
-                    setTextColor(textColor)
-                    alpha = 0.65f
-                    maxLines = 1
-                    ellipsize = android.text.TextUtils.TruncateAt.END
-                    setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
-                })
-            }
-        })
-        // light colours (Snapchat yellow, X white) are fine on the dark card; very dark ones get lifted
-        val actionColor = if (androidx.core.graphics.ColorUtils.calculateLuminance(color) < 0.08) OmnioColors.TEXT else color
-        actions.forEach { (iconRes, action) ->
-            row.addView(ImageView(this).apply {
-                setImageResource(iconRes)
-                imageTintList = ColorStateList.valueOf(actionColor)
-                setPadding(dp(12), dp(12), dp(12), dp(12))
-                layoutParams = LinearLayout.LayoutParams(dp(48), dp(48))
-                background = getDrawable(android.R.drawable.list_selector_background)
-                setOnClickListener { action() }
-            })
-        }
-        holder.addView(row)
-    }
-
-    private fun openChat(chat: OmnioSocials.FoundChat) {
-        OmnioSocials.clearPendingLink(this)
-        try {
-            startActivity(Intent(Intent.ACTION_VIEW).apply {
-                setDataAndType(Uri.parse("content://com.android.contacts/data/${chat.dataId}"), chat.action.mimeType)
-                setPackage(chat.app.pkg)
-            })
-        } catch (e: Exception) {
-            toast(org.fossify.commons.R.string.no_app_found)
-        }
-    }
-
-    private fun openSocial(social: OmnioSocials.FoundSocial) {
-        // using a linked profile ends any "Find on…": stop listening for links
-        OmnioSocials.clearPendingLink(this)
-        if (social.network.key == "discord" && OmnioSocials.discordId(social.url) == null) {
-            // an old username-only link: Discord can't open those
-            toast(R.string.omnio_discord_need_id, android.widget.Toast.LENGTH_LONG)
-            tryStart(packageManager.getLaunchIntentForPackage(social.network.pkg))
-            return
-        }
-        val uri = Uri.parse(if (social.url.contains("://")) social.url else "https://${social.url}")
-        // the app if it's installed, otherwise the browser
-        val inApp = Intent(Intent.ACTION_VIEW, uri).setPackage(social.network.pkg)
-        try {
-            startActivity(inApp)
-        } catch (e: Exception) {
-            try {
-                startActivity(Intent(Intent.ACTION_VIEW, uri))
-            } catch (e2: Exception) {
-                toast(org.fossify.commons.R.string.no_app_found)
-            }
-        }
-    }
-
-    /** Opens the Messenger chat; with Link helper on, it then taps Messenger's call / video button. */
-    private fun messengerCall(social: OmnioSocials.FoundSocial, tap: OmnioSocials.AutoTap) {
-        val helperOn = org.fossify.phone.services.OmnioLinkHelperService.isEnabled(this)
-        if (helperOn) {
-            OmnioSocials.setAutoTap(this, social.network.pkg, tap)
-        } else {
-            toast(R.string.omnio_messenger_call_manual, android.widget.Toast.LENGTH_LONG)
-        }
-        openSocial(social)
-    }
-
-    /** Omnio-styled bottom sheet listing the socials that can be linked. */
-    private fun pickNetworkToAdd(contact: Contact) {
-        val linked = currentSocials.map { it.network.key }.toSet()
-        OmnioSheet.list(
-            this,
-            title = getString(R.string.omnio_add_social_for, contact.getNameToDisplay().trim().substringBefore(" ")),
-            subtitle = getString(R.string.omnio_add_social_subtitle),
-            items = OmnioSocials.networks.map { network ->
-                OmnioSheet.Item(
-                    label = network.name,
-                    icon = appIcon(network.pkg, network.name, network.color),
-                    trailing = if (network.key in linked) getString(R.string.omnio_linked) else null
-                )
-            }
-        ) { picked -> onNetworkPicked(contact, OmnioSocials.networks[picked]) }
-    }
-
-    private fun onNetworkPicked(contact: Contact, network: OmnioSocials.Network) {
-            val facebook = currentSocials.firstOrNull { it.network.key == "facebook" }
-            if (network.key == "messenger" && facebook != null) {
-                // build Messenger straight from the Facebook profile that's already linked
-                offerMessengerFromFacebook(contact, facebook.url)
-            } else {
-                askUsername(contact, network)
-            }
-    }
-
-    private fun askUsername(contact: Contact, network: OmnioSocials.Network) {
-        val isDiscord = network.key == "discord"
-        // fill in something useful that's already been copied
-        var initial = ""
-        clipboardText()?.trim()?.let { clip ->
-            val url = OmnioSocials.firstUrl(clip)
-            when {
-                url != null && network.matches(url) -> initial = url
-                isDiscord && OmnioSocials.discordUrl(clip) != null -> initial = clip
-            }
-        }
-        OmnioSheet.input(
-            this,
-            title = if (isDiscord) getString(R.string.omnio_add_discord_id_title) else getString(R.string.omnio_add_network_title, network.name),
-            message = getString(if (isDiscord) R.string.omnio_discord_hint else R.string.omnio_username_hint),
-            hint = if (isDiscord) "123456789012345678" else "@username",
-            initial = initial,
-            inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_URI,
-            neutral = getString(R.string.omnio_find_on, network.name),
-            onNeutral = { startFinding(contact, network) }
-        ) { text ->
-            if (isDiscord) {
-                saveDiscord(contact, text, ask = false)
-                return@input
-            }
-            val url = OmnioSocials.buildUrl(network, text) ?: return@input
-            ensureBackgroundThread {
-                val ok = OmnioSocials.addSocial(this, contact.contactId, url)
-                runOnUiThread {
-                    if (ok) loadApps(contact) else toast(org.fossify.commons.R.string.unknown_error_occurred)
-                }
-            }
-        }
-    }
-
-    /** Opens the network's people search for this contact; the profile link is caught when they come back. */
-    private fun startFinding(contact: Contact, network: OmnioSocials.Network) {
-        val helperOn = org.fossify.phone.services.OmnioLinkHelperService.isEnabled(this)
-        val prefs = getSharedPreferences("omnio", MODE_PRIVATE)
-        if (!helperOn && !prefs.getBoolean("link_helper_dont_ask", false)) {
-            OmnioSheet.confirm(
-                this,
-                title = getString(R.string.omnio_link_helper_title),
-                message = getString(R.string.omnio_link_helper_explain, contact.getNameToDisplay()),
-                positive = getString(R.string.omnio_turn_on),
-                negative = getString(R.string.omnio_skip),
-                neutral = getString(R.string.omnio_dont_ask),
-                onNeutral = {
-                    prefs.edit().putBoolean("link_helper_dont_ask", true).apply()
-                    openFinding(contact, network)
-                },
-                onNegative = { openFinding(contact, network) },
-                mainColor = OmnioSheet.GREEN
-            ) {
-                OmnioSocials.setPendingLink(this, OmnioSocials.PendingLink(contact.contactId, contact.rawId, contact.getNameToDisplay(), network.key))
-                findAfterSettings = network
-                tryStart(Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS))
-                toast(R.string.omnio_link_helper_name)
-            }
-            return
-        }
-        openFinding(contact, network)
-    }
+    internal var currentSocials: List<OmnioSocials.FoundSocial> = emptyList()
 
     /** Network to search once they're back from switching Link helper on. */
-    private var findAfterSettings: OmnioSocials.Network? = null
+    internal var findAfterSettings: OmnioSocials.Network? = null
 
-    private fun openFinding(contact: Contact, network: OmnioSocials.Network) {
-        val name = contact.getNameToDisplay()
-        OmnioSocials.setPendingLink(this, OmnioSocials.PendingLink(contact.contactId, contact.rawId, name, network.key))
-        val search = network.searchUrl(name)
-        val opened = search != null && tryStart(Intent(Intent.ACTION_VIEW, Uri.parse(search)).setPackage(network.pkg)) ||
-            tryStart(packageManager.getLaunchIntentForPackage(network.pkg)) ||
-            search != null && tryStart(Intent(Intent.ACTION_VIEW, Uri.parse(search)))
-        if (opened) {
-            val helperOn = org.fossify.phone.services.OmnioLinkHelperService.isEnabled(this)
-            val tip = when {
-                network.key == "discord" -> R.string.omnio_find_instructions_discord
-                helperOn -> R.string.omnio_find_instructions_helper
-                else -> R.string.omnio_find_instructions
-            }
-            toast(getString(tip, name), android.widget.Toast.LENGTH_LONG)
-        } else {
-            OmnioSocials.clearPendingLink(this)
-            toast(org.fossify.commons.R.string.no_app_found)
-        }
-    }
-
-    private fun tryStart(intent: Intent?): Boolean {
-        if (intent == null) return false
-        return try {
-            startActivity(intent)
-            true
-        } catch (e: Exception) {
-            false
-        }
-    }
-
-    private var linkDialogShowing = false
+    internal var linkDialogShowing = false
 
     /** Back from "Find on …": if a profile link was copied, offer to add it. */
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         if (hasFocus) checkCopiedLink()
-    }
-
-    private fun checkCopiedLink() {
-        if (linkDialogShowing || !hasWindowFocus()) return
-        val current = contact ?: return
-        val pending = OmnioSocials.getPendingLink(this) ?: return
-        if (pending.contactId != current.contactId) return
-        val clip = try {
-            (getSystemService(CLIPBOARD_SERVICE) as android.content.ClipboardManager).primaryClip?.getItemAt(0)?.coerceToText(this)
-        } catch (e: Exception) {
-            null
-        }
-        val url = OmnioSocials.firstUrl(clip)
-        if (url == null) {
-            // Discord's "Copy ID" / "Copy username" copy plain text, not a link
-            val text = clip?.toString()?.trim().orEmpty()
-            if (pending.networkKey == "discord" && OmnioSocials.discordUrl(text) != null) {
-                saveDiscord(current, text, ask = true)
-            }
-            return
-        }
-        handleIncomingLink(current, pending.networkKey, url)
-    }
-
-    private fun clipboardText(): String? = try {
-        (getSystemService(CLIPBOARD_SERVICE) as android.content.ClipboardManager).primaryClip?.getItemAt(0)?.coerceToText(this)?.toString()
-    } catch (e: Exception) {
-        null
-    }
-
-    /** A copied or shared link: work out what it's for and offer it once. */
-    private fun handleIncomingLink(contact: Contact, wantedKey: String?, url: String) {
-        val network = OmnioSocials.networkFor(url) ?: return
-        if (wantedKey == "messenger" && network.key == "facebook") {
-            OmnioSocials.clearPendingLink(this)
-            offerMessengerFromFacebook(contact, url)
-            return
-        }
-        // already on this contact: nothing to ask
-        if (currentSocials.any { it.url.equals(url, true) }) {
-            OmnioSocials.clearPendingLink(this)
-            return
-        }
-        offerLink(contact, network, url)
-    }
-
-    private fun offerMessengerFromFacebook(contact: Contact, facebookUrl: String) {
-        toast(R.string.omnio_checking_profile)
-        ensureBackgroundThread {
-            val resolved = OmnioSocials.resolveFacebook(facebookUrl)
-            val messengerUrl = resolved?.let { OmnioSocials.messengerFromFacebook(it) }
-            runOnUiThread {
-                if (messengerUrl == null) {
-                    // Facebook hid the address: ask for the username shown under "profile link"
-                    askFacebookUsername(contact, facebookUrl)
-                    return@runOnUiThread
-                }
-                if (currentSocials.any { it.url.equals(messengerUrl, true) }) return@runOnUiThread
-                OmnioSheet.confirm(
-                    this,
-                    title = getString(R.string.omnio_add_messenger_title, contact.getNameToDisplay()),
-                    message = messengerUrl,
-                    positive = getString(org.fossify.commons.R.string.yes),
-                    negative = getString(org.fossify.commons.R.string.no)
-                ) {
-                    ensureBackgroundThread {
-                        OmnioSocials.addSocial(this, contact.contactId, messengerUrl)
-                        // swap an opaque facebook.com/share link for the real profile address
-                        val oldFacebook = currentSocials.firstOrNull { it.url.equals(facebookUrl, true) && it.network.key == "facebook" }
-                        if (oldFacebook != null && resolved != null && resolved != facebookUrl &&
-                            OmnioSocials.network("facebook").usernameFrom(facebookUrl).isEmpty()
-                        ) {
-                            OmnioSocials.addSocial(this, contact.contactId, resolved)
-                            OmnioSocials.removeSocial(this, oldFacebook.dataId)
-                        }
-                        runOnUiThread { loadApps(contact) }
-                    }
-                }
-            }
-        }
-    }
-
-    /** Saves a Discord ID (replacing any older Discord link on the contact). */
-    private fun saveDiscord(contact: Contact, input: String, ask: Boolean) {
-        val existing = currentSocials.filter { it.network.key == "discord" }
-        val url = OmnioSocials.discordUrl(input) ?: run {
-            toast(R.string.omnio_discord_bad_input, android.widget.Toast.LENGTH_LONG)
-            return
-        }
-        if (existing.any { it.url.equals(url, true) }) {
-            OmnioSocials.clearPendingLink(this)
-            return
-        }
-        val save = {
-            OmnioSocials.clearPendingLink(this)
-            ensureBackgroundThread {
-                val ok = OmnioSocials.addSocial(this, contact.contactId, url)
-                if (ok) existing.forEach { OmnioSocials.removeSocial(this, it.dataId) }
-                runOnUiThread { if (ok) loadApps(contact) else toast(org.fossify.commons.R.string.unknown_error_occurred) }
-            }
-        }
-        if (!ask) {
-            save()
-            return
-        }
-        linkDialogShowing = true
-        OmnioSheet.confirm(
-            this,
-            title = getString(R.string.omnio_add_discord_title, contact.getNameToDisplay()),
-            message = OmnioSocials.discordId(url) ?: "",
-            positive = getString(org.fossify.commons.R.string.ok),
-            onNegative = { linkDialogShowing = false }
-        ) {
-            linkDialogShowing = false
-            save()
-        }
-        binding.root.postDelayed({ linkDialogShowing = false }, 1500)
-    }
-
-    /** Called with a link that was copied or shared to Omnio One. */
-    fun offerLink(contact: Contact, network: OmnioSocials.Network, url: String) {
-        linkDialogShowing = true
-        OmnioSocials.clearPendingLink(this)
-        OmnioSheet.confirm(
-            this,
-            title = getString(R.string.omnio_add_link_title, network.name, contact.getNameToDisplay()),
-            message = url,
-            positive = getString(org.fossify.commons.R.string.ok),
-            onNegative = { linkDialogShowing = false }
-        ) {
-            ensureBackgroundThread {
-                val existing = OmnioSocials.findSocials(this, contact.contactId)
-                // facebook.com/share/… links hide the username, so look up the real profile address
-                val saveUrl = if (network.key == "facebook") OmnioSocials.resolveFacebook(url) ?: url else url
-                val ok = existing.any { it.url.equals(saveUrl, true) } || OmnioSocials.addSocial(this, contact.contactId, saveUrl)
-                val messengerHandle = if (network.key == "facebook") network.usernameFrom(saveUrl) else ""
-                val hasMessenger = existing.any { it.network.key == "messenger" }
-                runOnUiThread {
-                    linkDialogShowing = false
-                    if (!ok) {
-                        toast(org.fossify.commons.R.string.unknown_error_occurred)
-                        return@runOnUiThread
-                    }
-                    loadApps(contact)
-                    if (!hasMessenger && network.key == "facebook") {
-                        if (messengerHandle.isNotEmpty()) offerMessenger(contact, messengerHandle) else askFacebookUsername(contact, saveUrl)
-                    }
-                }
-            }
-        }
-        // if the dialog is cancelled, let a later copy be offered again
-        binding.root.postDelayed({ linkDialogShowing = false }, 1500)
-    }
-
-    /**
-     * Facebook's "Copy link" gives facebook.com/share/…, so ask for the username it shows above the
-     * button (e.g. jones388). Sets up Messenger and swaps the share link for the real address.
-     */
-    private fun askFacebookUsername(contact: Contact, facebookUrl: String?) {
-        val name = contact.getNameToDisplay()
-        OmnioSheet.input(
-            this,
-            title = getString(R.string.omnio_facebook_username_title, name),
-            message = getString(R.string.omnio_facebook_username_help, name),
-            hint = "jones388",
-            inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_URI,
-            negative = getString(R.string.omnio_not_now)
-        ) { typedRaw ->
-            val facebook = OmnioSocials.network("facebook")
-            val typed = typedRaw.trim()
-            val username = (if (facebook.matches(typed)) facebook.usernameFrom(typed) else typed.removePrefix("@")).replace(" ", "")
-            if (username.isEmpty()) return@input
-            ensureBackgroundThread {
-                val existing = OmnioSocials.findSocials(this, contact.contactId)
-                val messengerUrl = OmnioSocials.network("messenger").urlFor(username)
-                if (existing.none { it.url.equals(messengerUrl, true) }) OmnioSocials.addSocial(this, contact.contactId, messengerUrl)
-                val profileUrl = facebook.urlFor(username)
-                if (existing.none { it.url.equals(profileUrl, true) }) {
-                    OmnioSocials.addSocial(this, contact.contactId, profileUrl)
-                    // drop the opaque share link now we have the real address
-                    existing.filter { it.network.key == "facebook" && facebook.usernameFrom(it.url).isEmpty() }
-                        .forEach { OmnioSocials.removeSocial(this, it.dataId) }
-                }
-                runOnUiThread { loadApps(contact) }
-            }
-        }
-    }
-
-    private fun offerMessenger(contact: Contact, handle: String) {
-        val messenger = OmnioSocials.network("messenger")
-        OmnioSheet.confirm(
-            this,
-            title = getString(R.string.omnio_add_messenger_title, contact.getNameToDisplay()),
-            message = getString(R.string.omnio_add_messenger_help),
-            positive = getString(org.fossify.commons.R.string.yes),
-            negative = getString(org.fossify.commons.R.string.no)
-        ) {
-            ensureBackgroundThread {
-                OmnioSocials.addSocial(this, contact.contactId, messenger.urlFor(handle))
-                runOnUiThread { loadApps(contact) }
-            }
-        }
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -806,261 +270,7 @@ class OmnioContactActivity : SimpleActivity() {
         handleIncomingLink(current, OmnioSocials.getPendingLink(this)?.networkKey, url)
     }
 
-    private fun confirmRemoveSocial(contact: Contact, social: OmnioSocials.FoundSocial) {
-        OmnioSheet.confirm(
-            this,
-            title = getString(R.string.omnio_remove_social, social.network.name),
-            message = social.url,
-            positive = getString(R.string.omnio_remove),
-            mainColor = OmnioSheet.RED
-        ) {
-            ensureBackgroundThread {
-                OmnioSocials.removeSocial(this, social.dataId)
-                runOnUiThread { loadApps(contact) }
-            }
-        }
-    }
-
-    /** One line in the contact's Recent list: a call or a text. */
-    private data class ActivityItem(
-        val time: Long,
-        val title: String,
-        val subtitle: String,
-        val icon: Int,
-        val color: Int,
-        val onClick: (() -> Unit)?
-    )
-
-    /** Recent calls and texts with this contact, newest first. */
-    private fun loadRecentCalls(contact: Contact) {
-        val numbers = contact.phoneNumbers.map { it.normalizedNumber.ifEmpty { it.value } }
-        if (numbers.isEmpty()) return
-        RecentsHelper(this).getRecentCalls(queryLimit = 300) { calls ->
-            val now = System.currentTimeMillis()
-            val items = ArrayList<ActivityItem>()
-            calls.filter { call -> numbers.any { PhoneNumberUtils.compare(it, call.phoneNumber) } }
-                .sortedByDescending { it.startTS }
-                .take(MAX_RECENT)
-                .forEach { call ->
-                    val (title, icon, color) = when (call.type) {
-                        Calls.MISSED_TYPE -> Triple(R.string.omnio_missed_call, R.drawable.ic_call_missed_vector, OmnioColors.MISSED_SOFT)
-                        Calls.REJECTED_TYPE, Calls.BLOCKED_TYPE -> Triple(R.string.omnio_declined_call, R.drawable.ic_call_missed_vector, OmnioColors.MISSED_SOFT)
-                        Calls.OUTGOING_TYPE -> Triple(R.string.omnio_outgoing_call, R.drawable.ic_call_made_vector, CALLS_BLUE)
-                        else -> Triple(R.string.omnio_incoming_call, R.drawable.ic_call_received_vector, MESSAGES_GREEN)
-                    }
-                    val whenText = DateUtils.getRelativeTimeSpanString(call.startTS, now, DateUtils.MINUTE_IN_MILLIS).toString()
-                    val subtitle = if (call.duration > 0) "$whenText · ${call.duration.getFormattedDuration()}" else whenText
-                    items.add(ActivityItem(call.startTS, getString(title), subtitle, icon, color, null))
-                }
-            items.addAll(loadRecentTexts(numbers, now))
-            val newest = items.sortedByDescending { it.time }.take(MAX_RECENT)
-            runOnUiThread { showRecentActivity(newest) }
-        }
-    }
-
-    /** Last few SMS with any of these numbers (needs Omnio One to be allowed to read texts). */
-    private fun loadRecentTexts(numbers: List<String>, now: Long): List<ActivityItem> {
-        if (!hasPermission(org.fossify.commons.helpers.PERMISSION_READ_SMS)) return emptyList()
-        val found = ArrayList<ActivityItem>()
-        try {
-            contentResolver.query(
-                android.provider.Telephony.Sms.CONTENT_URI,
-                arrayOf(
-                    android.provider.Telephony.Sms.ADDRESS,
-                    android.provider.Telephony.Sms.BODY,
-                    android.provider.Telephony.Sms.DATE,
-                    android.provider.Telephony.Sms.TYPE
-                ),
-                null,
-                null,
-                "${android.provider.Telephony.Sms.DATE} DESC"
-            )?.use { cursor ->
-                var scanned = 0
-                while (cursor.moveToNext() && found.size < MAX_RECENT && scanned++ < 1500) {
-                    val address = cursor.getString(0) ?: continue
-                    if (numbers.none { PhoneNumberUtils.compare(it, address) }) continue
-                    val rawBody = (cursor.getString(1) ?: "").replace(Regex("\\s+"), " ").trim()
-                    val body = org.fossify.messages.helpers.OmnioReactions.describe(rawBody) ?: rawBody
-                    val date = cursor.getLong(2)
-                    val received = cursor.getInt(3) == android.provider.Telephony.Sms.MESSAGE_TYPE_INBOX
-                    val whenText = DateUtils.getRelativeTimeSpanString(date, now, DateUtils.MINUTE_IN_MILLIS).toString()
-                    val label = getString(if (received) R.string.omnio_text_received else R.string.omnio_text_sent)
-                    val snippet = if (body.length > 60) body.take(60).trimEnd() + "…" else body
-                    found.add(ActivityItem(date, snippet.ifEmpty { label }, "$label · $whenText", R.drawable.ic_omnio_chat, MESSAGES_GREEN) {
-                        launchSendSMSIntent(address)
-                    })
-                }
-            }
-        } catch (ignored: Exception) {
-        }
-        return found
-    }
-
-    private fun showRecentActivity(items: List<ActivityItem>) {
-        val holder = binding.contactRecentHolder
-        holder.removeAllViews()
-        if (items.isEmpty()) {
-            holder.beGone()
-            binding.contactRecentLabel.beGone()
-            return
-        }
-        holder.beVisible()
-        binding.contactRecentLabel.beVisible()
-        items.forEachIndexed { index, item ->
-            addRow(holder, item.title, item.subtitle, index > 0, item.icon, item.color, item.onClick, null, 0, null)
-        }
-    }
-
-    /** Number(s) then email(s) under the name: tap to call / email, small Copy and Share buttons. */
-    private fun showContactInfo(contact: Contact, name: String) {
-        val holder = binding.contactInfoHolder
-        holder.removeAllViews()
-        val showTypes = contact.phoneNumbers.size > 1
-        contact.phoneNumbers.forEach { number ->
-            val label = if (showTypes) "${number.value}  ·  ${getPhoneTypeLabel(number.type, number.label)}" else number.value
-            addInfoLine(holder, label, number.value) { startCallWithConfirmationCheck(number.value, name) }
-        }
-        contact.emails.forEach { email ->
-            val address = email.value.trim().lowercase()
-            addInfoLine(holder, address, address) { sendEmailIntent(address) }
-        }
-        if (contact.emails.isEmpty()) {
-            holder.addView(LinearLayout(this).apply {
-                orientation = LinearLayout.HORIZONTAL
-                gravity = Gravity.CENTER_VERTICAL
-                addView(TextView(this@OmnioContactActivity).apply {
-                    text = "+ " + getString(R.string.omnio_add_email)
-                    setTextColor(OmnioColors.CONTACTS)
-                    setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
-                    setPadding(dp(12), dp(6), dp(12), dp(6))
-                    background = getDrawable(android.R.drawable.list_selector_background)
-                    setOnClickListener { askEmail(contact) }
-                })
-                // Omnio One: text them asking for their email
-                val number = (contact.phoneNumbers.firstOrNull { it.isPrimary } ?: contact.phoneNumbers.firstOrNull())?.value
-                if (number != null) {
-                    addView(TextView(this@OmnioContactActivity).apply {
-                        text = getString(R.string.omnio_ask)
-                        setTextColor(OmnioColors.ON_ACCENT)
-                        setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
-                        setTypeface(typeface, android.graphics.Typeface.BOLD)
-                        setPadding(dp(14), dp(5), dp(14), dp(5))
-                        background = getDrawable(R.drawable.omnio_round_bg)
-                        backgroundTintList = ColorStateList.valueOf(MESSAGES_GREEN)
-                        layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
-                            marginStart = dp(4)
-                        }
-                        setOnClickListener { askForEmailByText(contact, number) }
-                    })
-                }
-            })
-        }
-    }
-
-    private fun addInfoLine(holder: LinearLayout, label: String, value: String, onClick: () -> Unit) {
-        val textColor = getProperTextColor()
-        val iconColor = OmnioColors.TEXT_MUTED
-        holder.addView(LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
-            addView(TextView(this@OmnioContactActivity).apply {
-                text = label
-                setTextColor(textColor)
-                alpha = 0.8f
-                setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
-                maxLines = 1
-                ellipsize = android.text.TextUtils.TruncateAt.END
-                setPadding(dp(4), dp(4), dp(6), dp(4))
-                setOnClickListener { onClick() }
-            })
-            listOf(
-                org.fossify.commons.R.drawable.ic_copy_vector to { copyToClipboard(value) },
-                org.fossify.commons.R.drawable.ic_share_vector to { shareText(value) }
-            ).forEach { (icon, action) ->
-                addView(ImageView(this@OmnioContactActivity).apply {
-                    setImageResource(icon)
-                    imageTintList = ColorStateList.valueOf(iconColor)
-                    setPadding(dp(8), dp(8), dp(8), dp(8))
-                    layoutParams = LinearLayout.LayoutParams(dp(36), dp(36))
-                    background = getDrawable(android.R.drawable.list_selector_background)
-                    setOnClickListener { action() }
-                })
-            }
-        })
-    }
-
-    /** Sends them a text asking for their email; their reply gets offered for saving in Messages. */
-    private fun askForEmailByText(contact: Contact, number: String) {
-        val firstName = contact.getNameToDisplay().trim().substringBefore(" ")
-        OmnioSheet.input(
-            this,
-            title = getString(R.string.omnio_ask_email_title, firstName),
-            message = getString(R.string.omnio_ask_email_help),
-            initial = getString(R.string.omnio_ask_email_text, firstName),
-            positive = getString(R.string.omnio_send),
-            inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES,
-            multiLine = true
-        ) { typed ->
-            val text = typed.trim()
-            if (text.isEmpty()) return@input
-            try {
-                sendOmnioText(text, number)
-                org.fossify.messages.helpers.OmnioEmail.markAsked(this, number)
-                toast(getString(R.string.omnio_ask_sent, firstName))
-            } catch (e: Exception) {
-                showErrorToast(e)
-            }
-        }
-    }
-
-    private fun sendOmnioText(text: String, number: String) {
-        sendMessageCompat(text, listOf(number), null, emptyList())
-    }
-
-    private fun shareText(text: String) {
-        try {
-            startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).apply {
-                type = "text/plain"
-                putExtra(Intent.EXTRA_TEXT, text)
-            }, getString(org.fossify.commons.R.string.share)))
-        } catch (e: Exception) {
-            toast(org.fossify.commons.R.string.no_app_found)
-        }
-    }
-
-    /** Adds an email address to the contact without leaving Omnio. */
-    private fun askEmail(contact: Contact) {
-        OmnioSheet.input(
-            this,
-            title = getString(R.string.omnio_add_email),
-            hint = "name@example.com",
-            inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
-        ) { typed ->
-            val email = typed.trim().lowercase()
-            if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                toast(R.string.omnio_invalid_email)
-                return@input
-            }
-            ensureBackgroundThread {
-                val ok = OmnioSocials.addData(
-                    this, contact.contactId, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE,
-                    ContactsContract.CommonDataKinds.Email.ADDRESS to email,
-                    ContactsContract.CommonDataKinds.Email.TYPE to ContactsContract.CommonDataKinds.Email.TYPE_HOME
-                )
-                val reloaded = ContactsHelper(this).getContactWithId(contact.rawId, false)
-                runOnUiThread {
-                    if (!ok) toast(org.fossify.commons.R.string.unknown_error_occurred)
-                    if (reloaded != null) {
-                        this.contact = reloaded
-                        showContact(reloaded)
-                    }
-                }
-            }
-        }
-    }
-
-    private fun getPhoneTypeLabel(type: Int, label: String): String {
+    internal fun getPhoneTypeLabel(type: Int, label: String): String {
         return if (type == Phone.TYPE_CUSTOM && label.isNotEmpty()) {
             label
         } else {
@@ -1068,9 +278,9 @@ class OmnioContactActivity : SimpleActivity() {
         }
     }
 
-    private fun dp(value: Int) = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, value.toFloat(), resources.displayMetrics).toInt()
+    internal fun dp(value: Int) = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, value.toFloat(), resources.displayMetrics).toInt()
 
-    private fun addRow(
+    internal fun addRow(
         holder: LinearLayout,
         title: String,
         subtitle: String,
@@ -1078,7 +288,7 @@ class OmnioContactActivity : SimpleActivity() {
         onClick: (() -> Unit)?
     ) = addRow(holder, title, subtitle, showDivider, null, 0, onClick, null, 0, null)
 
-    private fun addRow(
+    internal fun addRow(
         holder: LinearLayout,
         title: String,
         subtitle: String,

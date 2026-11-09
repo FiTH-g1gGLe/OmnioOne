@@ -33,7 +33,7 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          ./gradlew assembleFossDebug --no-daemon --stacktrace 2>&1 | tee build.log
+          ./gradlew testFossDebugUnitTest :messages:testDebugUnitTest assembleFossDebug --no-daemon --stacktrace 2>&1 | tee build.log
 
       - name: Save the error log if the build failed
         if: failure()

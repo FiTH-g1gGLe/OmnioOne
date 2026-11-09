@@ -9,6 +9,10 @@ plugins {
 }
 
 android {
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
+
     namespace = "org.fossify.messages"
     compileSdk = libs.versions.app.build.compileSDKVersion.get().toInt()
 
@@ -45,6 +49,7 @@ android {
 
 dependencies {
     implementation(project(":commons"))
+    testImplementation("junit:junit:4.13.2")
     implementation(libs.eventbus)
     implementation(libs.indicator.fast.scroll)
     implementation(libs.mmslib)

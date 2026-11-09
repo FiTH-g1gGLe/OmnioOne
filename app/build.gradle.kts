@@ -28,6 +28,10 @@ base {
 }
 
 android {
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
+
     compileSdk = project.libs.versions.app.build.compileSDKVersion.get().toInt()
 
     defaultConfig {
@@ -147,6 +151,7 @@ detekt {
 
 dependencies {
     implementation(project(":commons"))
+    testImplementation("junit:junit:4.13.2")
     implementation(project(":messages"))
     // Omnio One: reads profile addresses from screenshots, on the phone (no internet needed)
     implementation("com.google.mlkit:text-recognition:16.0.1")
