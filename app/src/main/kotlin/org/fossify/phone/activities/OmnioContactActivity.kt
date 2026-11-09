@@ -59,7 +59,7 @@ class OmnioContactActivity : SimpleActivity() {
         const val EXTRA_SHARED_LINK = "omnio_shared_link"
         internal const val CALLS_BLUE = OmnioColors.CALLS
         internal const val MESSAGES_GREEN = OmnioColors.MESSAGES
-        internal const val MAX_RECENT = 10
+        internal const val MAX_RECENT = 5
     }
 
     internal val binding by viewBinding(ActivityOmnioContactBinding::inflate)

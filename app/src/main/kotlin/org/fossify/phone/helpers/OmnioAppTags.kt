@@ -21,6 +21,9 @@ object OmnioAppTags {
 
     private val iconCache = HashMap<String, Drawable>()
 
+    /** Not an app: shown as an @ when the contact has an email address. */
+    val EMAIL = Badge("@", "omnio:email", 0xFF38BDF8.toInt())
+
     /** Contact id -> badges, chat apps first, then socials. Run on a background thread. */
     fun load(context: Context): Map<Int, List<Badge>> {
         val found = HashMap<Int, LinkedHashSet<Badge>>()
@@ -56,6 +59,22 @@ object OmnioAppTags {
                     val url = cursor.getString(1) ?: continue
                     val network = OmnioSocials.networkFor(url) ?: continue
                     found.getOrPut(cursor.getInt(0)) { LinkedHashSet() }.add(Badge(network.name, network.pkg, network.color))
+                }
+            }
+        } catch (ignored: Exception) {
+        }
+
+        // an @ tag when we have their email
+        try {
+            context.contentResolver.query(
+                ContactsContract.Data.CONTENT_URI,
+                arrayOf(ContactsContract.Data.CONTACT_ID),
+                "${ContactsContract.Data.MIMETYPE} = ?",
+                arrayOf(ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE),
+                null
+            )?.use { cursor ->
+                while (cursor.moveToNext()) {
+                    found.getOrPut(cursor.getInt(0)) { LinkedHashSet() }.add(EMAIL)
                 }
             }
         } catch (ignored: Exception) {
