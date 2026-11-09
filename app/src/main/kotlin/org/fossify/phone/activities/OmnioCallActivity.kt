@@ -35,6 +35,7 @@ import org.fossify.phone.helpers.OmnioAppTags
 import org.fossify.phone.helpers.OmnioCallInfo
 import org.fossify.phone.helpers.OmnioCallStyle
 import org.fossify.phone.helpers.OmnioCalls
+import org.fossify.phone.helpers.OmnioCallScreen
 import org.fossify.phone.helpers.OmnioSheet
 
 /**
@@ -47,7 +48,10 @@ class OmnioCallActivity : SimpleActivity() {
 
     companion object {
         const val EXTRA_PREVIEW = "omnio_call_preview"
-        const val EXTRA_STYLE = "omnio_call_style"
+        /** Preview a saved style by key ("builtin:3" / "custom:…"). */
+        const val EXTRA_STYLE_KEY = "omnio_call_style_key"
+        /** Preview an unsaved design (JSON), used by the designer. */
+        const val EXTRA_DESIGN = "omnio_call_design"
 
         fun startIntent(context: Context): Intent = Intent(context, OmnioCallActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT or Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
@@ -56,7 +60,8 @@ class OmnioCallActivity : SimpleActivity() {
 
     private val handler = Handler(Looper.getMainLooper())
     private lateinit var root: FrameLayout
-    private var style = OmnioCallStyle.CONTEXT
+    private var design: OmnioCallStyle.Design = OmnioCallStyle.preset(OmnioCallStyle.CONTEXT)
+    private var previewDesign: OmnioCallStyle.Design? = null
     private var preview = false
     private var info: OmnioCallInfo? = null
     private var loadedNumber: String? = null
@@ -67,7 +72,7 @@ class OmnioCallActivity : SimpleActivity() {
     private var previewSpeaker = false
     private var statusText: TextView? = null
     private var proximityLock: PowerManager.WakeLock? = null
-    private var pulseAnimators = ArrayList<ObjectAnimator>()
+    private var pulseAnimators = ArrayList<android.animation.Animator>()
     private var finishing = false
 
     private val listener: () -> Unit = { render() }
@@ -86,7 +91,15 @@ class OmnioCallActivity : SimpleActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         preview = intent.getBooleanExtra(EXTRA_PREVIEW, false)
-        style = if (intent.hasExtra(EXTRA_STYLE)) intent.getIntExtra(EXTRA_STYLE, OmnioCallStyle.CONTEXT) else OmnioCallStyle.get(this)
+        if (preview) {
+            previewDesign = intent.getStringExtra(EXTRA_DESIGN)?.let {
+                try {
+                    OmnioCallStyle.Design.fromJson(org.json.JSONObject(it))
+                } catch (e: Exception) {
+                    null
+                }
+            } ?: OmnioCallStyle.design(this, intent.getStringExtra(EXTRA_STYLE_KEY) ?: OmnioCallStyle.defaultKey(this))
+        }
         if (!preview && !OmnioCalls.hasCalls()) {
             finish()
             return
@@ -161,6 +174,7 @@ class OmnioCallActivity : SimpleActivity() {
             root.removeAllViews()
             pulseAnimators.forEach { it.cancel() }
             pulseAnimators.clear()
+            design = previewDesign ?: OmnioCallStyle.resolve(this, info?.contactId)
             if (isRinging) buildRinging() else buildInCall()
         }
         shownState = state
@@ -259,7 +273,7 @@ class OmnioCallActivity : SimpleActivity() {
 
     // ---- shared pieces ----
 
-    private fun text(value: String, sizeSp: Float, bold: Boolean = false, alpha: Float = 1f, color: Int = OmnioColors.TEXT) =
+    private fun text(value: String, sizeSp: Float, bold: Boolean = false, alpha: Float = 1f, color: Int = design.textColor) =
         TextView(this).apply {
             text = value
             setTextColor(color)
@@ -282,15 +296,6 @@ class OmnioCallActivity : SimpleActivity() {
         this.gravity = gravity
     }
 
-    private fun subtitle(): String {
-        val who = info ?: return ""
-        return when {
-            !who.isSaved -> ""
-            who.label.isNotEmpty() -> "${who.number} · ${who.label}"
-            else -> who.number
-        }
-    }
-
     private fun statusLabel(alpha: Float = 0.7f) = text("", 16f, alpha = alpha).also { statusText = it }
 
     private fun roundButton(icon: Int, colour: Int, label: String?, sizeDp: Int = 72, onClick: () -> Unit) = column().apply {
@@ -306,42 +311,6 @@ class OmnioCallActivity : SimpleActivity() {
         if (label != null) addView(text(label, 14f, alpha = 0.85f).apply { setPadding(0, dp(8), 0, 0) })
     }
 
-    /** Message and Silence, shown on every incoming style. */
-    private fun quickActions() = LinearLayout(this).apply {
-        orientation = LinearLayout.HORIZONTAL
-        gravity = Gravity.CENTER
-        listOf(
-            Triple(R.drawable.ic_sms_vector, R.string.omnio_call_message) { replyWithText() },
-            Triple(R.drawable.ic_bell_vector, R.string.omnio_call_silence) { silence() },
-        ).forEach { (icon, label, action) ->
-            addView(LinearLayout(this@OmnioCallActivity).apply {
-                orientation = LinearLayout.HORIZONTAL
-                gravity = Gravity.CENTER
-                setPadding(dp(16), dp(10), dp(18), dp(10))
-                background = getDrawable(R.drawable.omnio_round_bg)
-                backgroundTintList = ColorStateList.valueOf(0x33FFFFFF)
-                layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
-                    marginStart = dp(6); marginEnd = dp(6)
-                }
-                addView(ImageView(this@OmnioCallActivity).apply {
-                    setImageResource(icon)
-                    imageTintList = ColorStateList.valueOf(OmnioColors.TEXT)
-                    layoutParams = LinearLayout.LayoutParams(dp(18), dp(18)).apply { marginEnd = dp(8) }
-                })
-                addView(text(getString(label), 14f))
-                setOnClickListener { action() }
-            })
-        }
-    }
-
-    private fun acceptDeclineRow() = LinearLayout(this).apply {
-        orientation = LinearLayout.HORIZONTAL
-        gravity = Gravity.CENTER
-        addView(roundButton(R.drawable.ic_call_end, 0xFFE5484D.toInt(), getString(R.string.omnio_call_decline)) { decline() })
-        addView(View(this@OmnioCallActivity), LinearLayout.LayoutParams(dp(110), 1))
-        addView(roundButton(R.drawable.ic_call_accept, OmnioColors.MESSAGES, getString(R.string.omnio_call_accept)) { answer() })
-    }
-
     /** Fills the screen: top content, flexible gap, bottom content. */
     private fun screen(top: View, bottom: View, padTop: Int = 72) = LinearLayout(this).apply {
         orientation = LinearLayout.VERTICAL
@@ -352,254 +321,31 @@ class OmnioCallActivity : SimpleActivity() {
         addView(bottom)
     }
 
-    // ---- incoming styles ----
+    // ---- incoming call: drawn from the chosen design ----
 
     private fun buildRinging() {
-        when (style) {
-            OmnioCallStyle.POSTER -> buildPoster()
-            OmnioCallStyle.MINIMAL -> buildMinimal()
-            OmnioCallStyle.PULSE -> buildPulse()
-            OmnioCallStyle.CLASSIC -> buildClassic()
-            else -> buildContext()
-        }
-    }
-
-    private fun nameAndNumber(nameSize: Float, into: LinearLayout) {
-        into.addView(text(info?.displayName.orEmpty(), nameSize, bold = true).apply { setPadding(0, dp(18), 0, 0) })
-        subtitle().takeIf { it.isNotEmpty() }?.let { into.addView(text(it, 16f, alpha = 0.75f).apply { setPadding(0, dp(6), 0, 0) }) }
-        into.addView(statusLabel().apply { setPadding(0, dp(6), 0, 0) })
-    }
-
-    private fun bottomBlock() = column().apply {
-        addView(quickActions())
-        addView(View(this@OmnioCallActivity), LinearLayout.LayoutParams(1, dp(32)))
-        addView(acceptDeclineRow())
-    }
-
-    /** 1. Classic: round photo, name, two big buttons. */
-    private fun buildClassic() {
-        val top = column().apply {
-            addView(photo(150))
-            nameAndNumber(32f, this)
-        }
-        root.addView(screen(top, bottomBlock()))
-    }
-
-    /** 2. Poster: photo fills the screen, swipe up to answer. */
-    private fun buildPoster() {
-        val who = info
-        val posterImage = ImageView(this).apply {
-            scaleType = ImageView.ScaleType.CENTER_CROP
-            layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
-        }
-        if (!who?.photoUri.isNullOrEmpty()) {
-            Glide.with(this).load(who?.photoUri).centerCrop().into(posterImage)
-        } else {
-            posterImage.background = GradientDrawable(GradientDrawable.Orientation.TL_BR, intArrayOf(0xFF2B3A67.toInt(), 0xFF101828.toInt()))
-            posterImage.setImageBitmap(null)
-        }
-        root.addView(posterImage)
-        root.addView(View(this).apply {
-            background = GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP, intArrayOf(0xEE0F1115.toInt(), 0x660F1115, 0x220F1115))
+        val screen = OmnioCallScreen(this, design, info, ::answer, ::decline, ::replyWithText, ::silence)
+        root.background = null
+        root.addView(screen.build().apply {
             layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
         })
-        if (who?.photoUri.isNullOrEmpty()) {
-            root.addView(text((who?.displayName ?: "?").take(1).uppercase(), 140f, bold = true, alpha = 0.18f).apply {
-                layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, dp(320)).apply { topMargin = dp(80) }
-            })
-        }
-        val top = column(Gravity.START).apply {
-            addView(statusLabel(0.85f).apply { gravity = Gravity.START })
-        }
-        val bottom = column(Gravity.START).apply {
-            addView(text(who?.displayName.orEmpty(), 42f, bold = true).apply { gravity = Gravity.START })
-            subtitle().takeIf { it.isNotEmpty() }?.let { addView(text(it, 16f, alpha = 0.8f).apply { gravity = Gravity.START; setPadding(0, dp(4), 0, dp(20)) }) }
-            addView(quickActions().apply { gravity = Gravity.START })
-            addView(View(this@OmnioCallActivity), LinearLayout.LayoutParams(1, dp(28)))
-            addView(swipeUpToAnswer())
-        }
-        root.addView(screen(top, bottom, padTop = 56))
-    }
-
-    @SuppressLint("ClickableViewAccessibility")
-    private fun swipeUpToAnswer() = LinearLayout(this).apply {
-        orientation = LinearLayout.HORIZONTAL
-        gravity = Gravity.CENTER_VERTICAL
-        layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
-        addView(roundButton(R.drawable.ic_call_end, 0xFFE5484D.toInt(), getString(R.string.omnio_call_decline), sizeDp = 60) { decline() })
-        addView(View(this@OmnioCallActivity), LinearLayout.LayoutParams(0, 1, 1f))
-        val hint = text(getString(R.string.omnio_call_swipe_up), 14f, alpha = 0.8f)
-        val handle = ImageView(this@OmnioCallActivity).apply {
-            setImageResource(R.drawable.ic_call_accept)
-            imageTintList = ColorStateList.valueOf(0xFFFFFFFF.toInt())
-            setPadding(dp(20), dp(20), dp(20), dp(20))
-            background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(OmnioColors.MESSAGES) }
-            layoutParams = LinearLayout.LayoutParams(dp(76), dp(76))
-            contentDescription = getString(R.string.omnio_call_accept)
-        }
-        var startY = 0f
-        handle.setOnTouchListener { view, event ->
-            when (event.action) {
-                MotionEvent.ACTION_DOWN -> { startY = event.rawY; true }
-                MotionEvent.ACTION_MOVE -> { view.translationY = (event.rawY - startY).coerceAtMost(0f); true }
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    if (view.translationY < -dp(110)) {
-                        answer()
-                    } else {
-                        view.animate().translationY(0f).setDuration(180).start()
-                        if (kotlin.math.abs(event.rawY - startY) < dp(8)) hint.animate().scaleX(1.12f).scaleY(1.12f).setDuration(120).withEndAction {
-                            hint.animate().scaleX(1f).scaleY(1f).setDuration(120).start()
-                        }.start()
-                    }
-                    true
-                }
-                else -> false
-            }
-        }
-        // screen readers: double tap answers
-        handle.setOnClickListener { answer() }
-        addView(column().apply {
-            addView(handle)
-            addView(hint.apply { setPadding(0, dp(8), 0, 0) })
-        })
-    }
-
-    /** 3. Minimal: big name on a plain colour, slide to answer or decline. */
-    @SuppressLint("ClickableViewAccessibility")
-    private fun buildMinimal() {
-        val top = column().apply {
-            addView(View(this@OmnioCallActivity), LinearLayout.LayoutParams(1, dp(60)))
-            addView(text(info?.displayName.orEmpty(), 46f, bold = true))
-            subtitle().takeIf { it.isNotEmpty() }?.let { addView(text(it, 17f, alpha = 0.7f).apply { setPadding(0, dp(8), 0, 0) }) }
-            addView(statusLabel().apply { setPadding(0, dp(8), 0, 0) })
-        }
-        val track = FrameLayout(this).apply {
-            background = getDrawable(R.drawable.omnio_round_bg)
-            backgroundTintList = ColorStateList.valueOf(OmnioColors.CARD)
-            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(76))
-        }
-        track.addView(text("‹  " + getString(R.string.omnio_call_decline), 14f, alpha = 0.6f, color = 0xFFFF8A8A.toInt()).apply {
-            layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.MATCH_PARENT, Gravity.START).apply { marginStart = dp(20) }
-        })
-        track.addView(text(getString(R.string.omnio_call_answer) + "  ›", 14f, alpha = 0.6f, color = OmnioColors.MESSAGES_SOFT).apply {
-            layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.MATCH_PARENT, Gravity.END).apply { marginEnd = dp(20) }
-        })
-        val knob = ImageView(this).apply {
-            setImageResource(R.drawable.ic_call_accept)
-            imageTintList = ColorStateList.valueOf(OmnioColors.ON_ACCENT)
-            setPadding(dp(18), dp(18), dp(18), dp(18))
-            background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(OmnioColors.TEXT) }
-            layoutParams = FrameLayout.LayoutParams(dp(64), dp(64), Gravity.CENTER)
-            contentDescription = getString(R.string.omnio_call_answer)
-        }
-        var startX = 0f
-        knob.setOnTouchListener { view, event ->
-            val limit = (track.width - view.width) / 2f
-            when (event.action) {
-                MotionEvent.ACTION_DOWN -> { startX = event.rawX; true }
-                MotionEvent.ACTION_MOVE -> { view.translationX = (event.rawX - startX).coerceIn(-limit, limit); true }
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    when {
-                        view.translationX > limit * 0.7f -> answer()
-                        view.translationX < -limit * 0.7f -> decline()
-                        else -> view.animate().translationX(0f).setDuration(180).start()
-                    }
-                    true
-                }
-                else -> false
-            }
-        }
-        knob.setOnClickListener { answer() }
-        track.addView(knob)
-        val bottom = column().apply {
-            addView(quickActions())
-            addView(View(this@OmnioCallActivity), LinearLayout.LayoutParams(1, dp(28)))
-            addView(track)
-        }
-        root.addView(screen(top, bottom))
-    }
-
-    /** 4. Context: who's calling plus your last text, a birthday and notes. */
-    private fun buildContext() {
-        val who = info
-        val top = column().apply {
-            addView(photo(104))
-            nameAndNumber(30f, this)
-            val lines = listOfNotNull(who?.lastText, who?.birthday, who?.notes?.let { "📝 $it" })
-            if (lines.isNotEmpty() || who?.apps?.isNotEmpty() == true) {
-                addView(column(Gravity.START).apply {
-                    background = getDrawable(R.drawable.omnio_round_bg)
-                    backgroundTintList = ColorStateList.valueOf(OmnioColors.CARD)
-                    setPadding(dp(18), dp(14), dp(18), dp(14))
-                    layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(26) }
-                    lines.forEachIndexed { index, line ->
-                        addView(text(line, 15f, alpha = 0.9f).apply {
-                            gravity = Gravity.START
-                            maxLines = 3
-                            if (index > 0) setPadding(0, dp(10), 0, 0)
-                        })
-                    }
-                    who?.apps?.takeIf { it.isNotEmpty() }?.let { apps ->
-                        addView(LinearLayout(this@OmnioCallActivity).apply {
-                            orientation = LinearLayout.HORIZONTAL
-                            setPadding(0, if (lines.isEmpty()) 0 else dp(12), 0, 0)
-                            apps.forEach { badge ->
-                                addView(ImageView(this@OmnioCallActivity).apply {
-                                    setImageDrawable(OmnioAppTags.icon(this@OmnioCallActivity, badge))
-                                    layoutParams = LinearLayout.LayoutParams(dp(22), dp(22)).apply { marginEnd = dp(8) }
-                                })
-                            }
-                        })
-                    }
-                })
-            }
-        }
-        root.addView(screen(top, bottomBlock(), padTop = 64))
-    }
-
-    /** 5. Pulse: photo with rings in Omnio's four colours on a soft gradient. */
-    private fun buildPulse() {
-        root.background = GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, intArrayOf(0xFF1B2450.toInt(), OmnioColors.BACKGROUND))
-        val ringBox = FrameLayout(this).apply {
-            layoutParams = LinearLayout.LayoutParams(dp(260), dp(260)).apply { gravity = Gravity.CENTER_HORIZONTAL }
-        }
-        listOf(OmnioColors.CALLS, OmnioColors.MESSAGES, OmnioColors.CONTACTS, OmnioColors.SOCIALS).forEachIndexed { index, colour ->
-            val ring = View(this).apply {
-                background = GradientDrawable().apply {
-                    shape = GradientDrawable.OVAL
-                    setStroke(dp(3), colour)
-                }
-                layoutParams = FrameLayout.LayoutParams(dp(150), dp(150), Gravity.CENTER)
-                alpha = 0f
-            }
-            ringBox.addView(ring)
-            val scaleX = android.animation.PropertyValuesHolder.ofFloat(View.SCALE_X, 1f, 1.7f)
-            val scaleY = android.animation.PropertyValuesHolder.ofFloat(View.SCALE_Y, 1f, 1.7f)
-            val fade = android.animation.PropertyValuesHolder.ofFloat(View.ALPHA, 0.9f, 0f)
-            ObjectAnimator.ofPropertyValuesHolder(ring, scaleX, scaleY, fade).apply {
-                duration = 2400
-                startDelay = index * 600L
-                repeatCount = android.animation.ValueAnimator.INFINITE
-                start()
-                pulseAnimators.add(this)
-            }
-        }
-        ringBox.addView(ImageView(this).apply {
-            layoutParams = FrameLayout.LayoutParams(dp(140), dp(140), Gravity.CENTER)
-            SimpleContactsHelper(this@OmnioCallActivity).loadContactImage(info?.photoUri.orEmpty(), this, info?.displayName ?: "?")
-        })
-        val top = column().apply {
-            addView(ringBox)
-            nameAndNumber(32f, this)
-        }
-        root.addView(screen(top, bottomBlock(), padTop = 40))
+        statusText = screen.statusView
+        pulseAnimators.addAll(screen.animators)
     }
 
     // ---- connected call (shared by every style) ----
 
     private fun buildInCall() {
+        // same background as the chosen design (a full photo is blurred so the buttons stay readable)
+        val inCallDesign = design.copy(
+            background = if (design.background == OmnioCallStyle.Background.PHOTO_FULL) OmnioCallStyle.Background.PHOTO_BLUR else design.background
+        )
+        val backdrop = FrameLayout(this).apply {
+            layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
+        }
+        OmnioCallScreen(this, inCallDesign, info, {}, {}, {}, {}).applyBackground(backdrop)
         root.background = null
-        root.setBackgroundColor(OmnioColors.BACKGROUND)
+        root.addView(backdrop)
         val who = info
         val top = column().apply {
             addView(photo(96))

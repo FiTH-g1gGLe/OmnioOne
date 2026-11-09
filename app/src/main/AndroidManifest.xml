@@ -92,6 +92,11 @@
             android:label="@string/omnio_settings" />
 
         <activity
+            android:name=".activities.OmnioCallDesignerActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <activity
             android:name=".activities.OmnioAboutActivity"
             android:exported="false"
             android:label="@string/omnio_about" />

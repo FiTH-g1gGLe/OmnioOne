@@ -77,10 +77,20 @@ class OmnioSettingsActivity : SimpleActivity() {
         )
 
         section("📲", R.string.omnio_settings_call_screen)
-        val callStyle = org.fossify.phone.helpers.OmnioCallStyle.get(this)
+        val styles = org.fossify.phone.helpers.OmnioCallStyle
+        val designs = styles.customDesigns(this)
         card(
-            action(R.string.omnio_settings_call_style, getString(org.fossify.phone.helpers.OmnioCallStyle.name(callStyle))) { pickCallStyle() },
-            action(R.string.omnio_settings_test_call, getString(R.string.omnio_settings_test_call_desc)) { testCall(callStyle) },
+            action(R.string.omnio_settings_call_style, styles.label(this, styles.defaultKey(this))) { pickCallStyle(false) },
+            action(R.string.omnio_settings_unknown_style, styles.label(this, styles.unknownKey(this))) { pickCallStyle(true) },
+            action(R.string.omnio_settings_design_own, getString(R.string.omnio_settings_design_own_desc)) {
+                startActivity(Intent(this, OmnioCallDesignerActivity::class.java))
+            },
+            *designs.map { saved ->
+                action(R.string.omnio_settings_edit_design, saved.name.ifEmpty { getString(R.string.omnio_call_style_custom) }) {
+                    startActivity(Intent(this, OmnioCallDesignerActivity::class.java).putExtra(OmnioCallDesignerActivity.EXTRA_EDIT_KEY, saved.id))
+                }
+            }.toTypedArray(),
+            action(R.string.omnio_settings_test_call, getString(R.string.omnio_settings_test_call_desc)) { testCall(styles.defaultKey(this)) },
         )
 
         section("📱", R.string.omnio_settings_default_apps)
@@ -147,30 +157,35 @@ class OmnioSettingsActivity : SimpleActivity() {
 
     // ---- actions ----
 
-    private fun pickCallStyle() {
-        val styles = org.fossify.phone.helpers.OmnioCallStyle.all
-        val current = org.fossify.phone.helpers.OmnioCallStyle.get(this)
+    private fun pickCallStyle(unknownCallers: Boolean) {
+        val styles = org.fossify.phone.helpers.OmnioCallStyle
+        val current = if (unknownCallers) styles.unknownKey(this) else styles.defaultKey(this)
+        val choices = (if (unknownCallers) listOf("" to getString(R.string.omnio_call_style_same)) else emptyList()) + styles.choices(this)
+        val items = choices.map { (key, label) ->
+            val desc = if (key.startsWith("builtin:")) key.removePrefix("builtin:").toIntOrNull()?.let { "  ·  " + getString(styles.description(it)) } ?: "" else ""
+            OmnioSheet.Item(label + desc, trailing = if (key == current) "✓" else null)
+        } + OmnioSheet.Item(getString(R.string.omnio_settings_design_own), labelColor = org.fossify.commons.helpers.OmnioColors.CONTACTS)
         OmnioSheet.list(
             this,
-            getString(R.string.omnio_settings_call_style),
+            getString(if (unknownCallers) R.string.omnio_settings_unknown_style else R.string.omnio_settings_call_style),
             getString(R.string.omnio_settings_call_style_help),
-            styles.map {
-                OmnioSheet.Item(
-                    getString(org.fossify.phone.helpers.OmnioCallStyle.name(it)) + "  ·  " + getString(org.fossify.phone.helpers.OmnioCallStyle.description(it)),
-                    trailing = if (it == current) "✓" else null
-                )
-            }
+            items
         ) { picked ->
-            org.fossify.phone.helpers.OmnioCallStyle.set(this, styles[picked])
+            if (picked >= choices.size) {
+                startActivity(Intent(this, OmnioCallDesignerActivity::class.java))
+                return@list
+            }
+            val key = choices[picked].first
+            if (unknownCallers) styles.setUnknownKey(this, key) else styles.setDefaultKey(this, key)
             buildRows()
-            testCall(styles[picked])
+            testCall(key.ifEmpty { styles.defaultKey(this) })
         }
     }
 
-    private fun testCall(style: Int) {
+    private fun testCall(key: String) {
         startActivity(Intent(this, OmnioCallActivity::class.java).apply {
             putExtra(OmnioCallActivity.EXTRA_PREVIEW, true)
-            putExtra(OmnioCallActivity.EXTRA_STYLE, style)
+            putExtra(OmnioCallActivity.EXTRA_STYLE_KEY, key)
         })
     }
 

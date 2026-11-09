@@ -61,6 +61,7 @@ class OmnioEditContactActivity : SimpleActivity() {
     private class Row(val holder: View, val input: EditText, var type: Int, var label: String)
 
     private var contact: Contact? = null
+    private var callStyleValue: TextView? = null
     private var photoUri: String = ""
     private var originalPhotoUri: String = ""
     private var birthday: String = ""
@@ -255,6 +256,20 @@ class OmnioEditContactActivity : SimpleActivity() {
         form.addView(section(R.string.omnio_notes, "📝"))
         notes = field(R.string.omnio_notes, InputType.TYPE_TEXT_FLAG_CAP_SENTENCES, multiLine = true)
         form.addView(labelled(notes, R.string.omnio_notes))
+
+        if (!isNew) {
+            form.addView(section(R.string.omnio_settings_call_screen, "📲"))
+            callStyleValue = TextView(this).apply {
+                setTextColor(OmnioSheet.TEXT)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
+                background = getDrawable(R.drawable.omnio_round_bg)
+                backgroundTintList = ColorStateList.valueOf(OmnioSheet.CARD)
+                setPadding(dp(16), dp(15), dp(16), dp(15))
+                text = getString(R.string.omnio_call_style_same)
+                setOnClickListener { pickCallStyle() }
+            }
+            form.addView(callStyleValue)
+        }
 
         // account (new contacts only)
         sourceValue = TextView(this).apply {
@@ -553,10 +568,34 @@ class OmnioEditContactActivity : SimpleActivity() {
         }
     }
 
+    private fun showCallStyle() {
+        val id = contact?.contactId?.toLong() ?: return
+        val styles = org.fossify.phone.helpers.OmnioCallStyle
+        callStyleValue?.text = styles.label(this, styles.personKey(this, id)) + " ▾"
+    }
+
+    /** A call screen just for this person; it's saved straight away. */
+    private fun pickCallStyle() {
+        val id = contact?.contactId?.toLong() ?: return
+        val styles = org.fossify.phone.helpers.OmnioCallStyle
+        val current = styles.personKey(this, id)
+        val choices = listOf("" to getString(R.string.omnio_call_style_same)) + styles.choices(this)
+        OmnioSheet.list(
+            this,
+            getString(R.string.omnio_settings_call_screen),
+            getString(R.string.omnio_call_style_person_help),
+            choices.map { (key, label) -> OmnioSheet.Item(label, trailing = if (key == current) "✓" else null) }
+        ) { picked ->
+            styles.setPersonKey(this, id, choices[picked].first)
+            showCallStyle()
+        }
+    }
+
     // ---- load / save / delete ----
 
     private fun fill(loaded: Contact) {
         contact = loaded
+        showCallStyle()
         firstName.setText(listOf(loaded.prefix, loaded.firstName, loaded.middleName).filter { it.isNotBlank() }.joinToString(" "))
         surname.setText(listOf(loaded.surname, loaded.suffix).filter { it.isNotBlank() }.joinToString(" "))
         loaded.phoneNumbers.forEach { addPhoneRow(it.value, it.type, it.label) }
