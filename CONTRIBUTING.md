@@ -1,8 +1,9 @@
-### Reporting
-Before you report something, read the reporting rules [here](https://github.com/FossifyOrg/General-Discussion#how-do-i-suggest-an-improvement-ask-a-question-or-report-an-issue) please.
+# Contributing to Omnio One
 
-### Contributing as a developer
-Some instructions about code style and everything that has to be done to increase the chance of your code getting accepted can be found at the [General Discussion](https://github.com/FossifyOrg/General-Discussion#contribution-rules-for-developers) section. 
+Thanks for your interest in Omnio One!
 
-### Contributing as a non developer
-In case you just want to for example improve a translation, you can find the way of doing it [here](https://github.com/FossifyOrg/General-Discussion#how-can-i-suggest-an-edit-to-a-file).
+- **Found a bug or have an idea?** [Open an issue](https://github.com/FiTH-g1gGLe/OmnioOne/issues) describing what happened, what you expected, and your phone and Android version.
+- **Want to change code?** Fork the repo, make your change on a branch, and open a pull request. Every push is built and tested automatically.
+- **Style:** Kotlin, small focused files, and new code written as Omnio's own (files starting with `Omnio…`).
+
+By contributing you agree your work is shared under the project's [GPL-3.0 licence](LICENSE).
