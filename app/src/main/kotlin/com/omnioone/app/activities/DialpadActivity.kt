@@ -368,6 +368,10 @@ class DialpadActivity : SimpleActivity() {
                     input.clear()
                     render()
                     call(speed.number, speed.getName(this))
+                } else if (char == '1') {
+                    input.clear()
+                    render()
+                    callVoicemail()
                 }
             }
         }
@@ -378,6 +382,17 @@ class DialpadActivity : SimpleActivity() {
     private fun call(number: String, name: String? = null) {
         startCallWithConfirmationCheck(number, name ?: number)
         handler.postDelayed({ clearAll() }, 1000)
+    }
+
+    /** Hold 1: rings your voicemail (unless you've put someone on speed dial 1). */
+    @SuppressLint("MissingPermission")
+    private fun callVoicemail() {
+        try {
+            getSystemService(android.telecom.TelecomManager::class.java)
+                .placeCall(Uri.fromParts("voicemail", "", null), Bundle())
+        } catch (e: Exception) {
+            toast(R.string.omnio_dialpad_no_voicemail)
+        }
     }
 
     private fun callTyped() {
@@ -499,6 +514,7 @@ class DialpadActivity : SimpleActivity() {
         val pad = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(28), dp(4), dp(28), 0)
+            clipChildren = false
         }
         keys.forEach { rowKeys ->
             pad.addView(LinearLayout(this).apply {
@@ -506,7 +522,13 @@ class DialpadActivity : SimpleActivity() {
                 rowKeys.forEach { (char, letters) ->
                     addView(FrameLayout(this@DialpadActivity).apply {
                         layoutParams = LinearLayout.LayoutParams(0, dp(78), 1f)
-                        addView(key(char, letters).apply { layoutParams = FrameLayout.LayoutParams(dp(74), dp(70), Gravity.CENTER) })
+                        clipChildren = false
+                        val ring = com.omnioone.app.helpers.OrbitRing(this@DialpadActivity, dp(3).toFloat()).apply {
+                            layoutParams = FrameLayout.LayoutParams(dp(78), dp(78), Gravity.CENTER)
+                            alpha = 0f
+                        }
+                        addView(key(char, letters, ring).apply { layoutParams = FrameLayout.LayoutParams(dp(70), dp(70), Gravity.CENTER) })
+                        addView(ring)
                     })
                 }
             })
@@ -534,7 +556,16 @@ class DialpadActivity : SimpleActivity() {
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    private fun key(char: Char, letters: String) = LinearLayout(this).apply {
+    /** One quick spin of the Omnio ring around a key. */
+    private fun spin(ring: View) {
+        ring.animate().cancel()
+        ring.rotation = 0f
+        ring.alpha = 1f
+        ring.animate().rotation(360f).setDuration(480).setInterpolator(android.view.animation.DecelerateInterpolator())
+            .withEndAction { ring.animate().alpha(0f).setDuration(160).start() }.start()
+    }
+
+    private fun key(char: Char, letters: String, ring: View) = LinearLayout(this).apply {
         orientation = LinearLayout.VERTICAL
         gravity = Gravity.CENTER
         background = GradientDrawable().apply {
@@ -547,6 +578,11 @@ class DialpadActivity : SimpleActivity() {
             setTextSize(TypedValue.COMPLEX_UNIT_SP, if (char == '*') 34f else 28f)
             gravity = Gravity.CENTER
             includeFontPadding = false
+        })
+        if (char == '1') addView(ImageView(this@DialpadActivity).apply {
+            setImageResource(R.drawable.omnio_ic_voicemail)
+            imageTintList = ColorStateList.valueOf(OmnioColors.TEXT_MUTED)
+            layoutParams = LinearLayout.LayoutParams(dp(16), dp(16))
         })
         if (letters.isNotEmpty()) addView(TextView(this@DialpadActivity).apply {
             text = letters
@@ -566,6 +602,7 @@ class DialpadActivity : SimpleActivity() {
                     (background as GradientDrawable).setColor(OmnioColors.CARD_SELECTED)
                     press(char, view)
                     tone(char, true)
+                    spin(ring)
                     if (char.isDigit()) handler.postDelayed(longPressRunnable, longTimeout)
                 }
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {

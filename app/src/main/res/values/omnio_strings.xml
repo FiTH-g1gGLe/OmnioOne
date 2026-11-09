@@ -379,4 +379,5 @@
     <string name="omnio_dialpad_needs_default">Make Omnio One your phone app to use codes</string>
     <string name="omnio_dialpad_nothing_to_redial">No number to call back yet</string>
     <string name="omnio_dialpad_delete">Delete</string>
+    <string name="omnio_dialpad_no_voicemail">Couldn’t call voicemail. Check your voicemail number in your phone settings.</string>
 </resources>
