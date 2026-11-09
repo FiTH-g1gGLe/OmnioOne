@@ -49,9 +49,6 @@
         <package android:name="com.instagram.barcelona" />
         <package android:name="com.linkedin.android" />
         <package android:name="com.discord" />
-        <package android:name="com.google.android.youtube" />
-        <package android:name="tv.twitch.android.app" />
-        <package android:name="com.kick.mobile" />
 
         <!-- open profile links in the browser when the app isn't installed -->
         <intent>

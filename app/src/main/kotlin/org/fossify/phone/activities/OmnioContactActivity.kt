@@ -322,7 +322,8 @@ class OmnioContactActivity : SimpleActivity() {
             val size = dp(36)
             val bitmap = android.graphics.Bitmap.createBitmap(size, size, android.graphics.Bitmap.Config.ARGB_8888)
             val canvas = android.graphics.Canvas(bitmap)
-            canvas.drawCircle(size / 2f, size / 2f, size / 2f, android.graphics.Paint().apply { isAntiAlias = true; this.color = color })
+            val radius = size * 0.24f
+            canvas.drawRoundRect(android.graphics.RectF(0f, 0f, size.toFloat(), size.toFloat()), radius, radius, android.graphics.Paint().apply { isAntiAlias = true; this.color = color })
             val paint = android.graphics.Paint().apply {
                 isAntiAlias = true
                 this.color = if (androidx.core.graphics.ColorUtils.calculateLuminance(color) > 0.6) 0xFF0F1115.toInt() else 0xFFFFFFFF.toInt()
@@ -445,37 +446,103 @@ class OmnioContactActivity : SimpleActivity() {
         openSocial(social)
     }
 
+    /** Omnio-styled bottom sheet listing the socials that can be linked. */
     private fun pickNetworkToAdd(contact: Contact) {
-        var dialog: androidx.appcompat.app.AlertDialog? = null
-        val list = LinearLayout(this).apply {
+        val sheet = com.google.android.material.bottomsheet.BottomSheetDialog(this)
+        val textColor = getProperTextColor()
+        val content = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(12), dp(4), dp(12), dp(4))
+            setPadding(dp(20), dp(10), dp(20), dp(28))
+            background = android.graphics.drawable.GradientDrawable().apply {
+                setColor(0xFF12151B.toInt())
+                cornerRadii = floatArrayOf(dp(28).toFloat(), dp(28).toFloat(), dp(28).toFloat(), dp(28).toFloat(), 0f, 0f, 0f, 0f)
+            }
         }
-        OmnioSocials.networks.forEach { network ->
-            list.addView(LinearLayout(this).apply {
+        // grab handle
+        content.addView(View(this).apply {
+            background = android.graphics.drawable.GradientDrawable().apply {
+                setColor(0x55FFFFFF)
+                cornerRadius = dp(3).toFloat()
+            }
+            layoutParams = LinearLayout.LayoutParams(dp(40), dp(5)).apply {
+                gravity = Gravity.CENTER_HORIZONTAL
+                bottomMargin = dp(18)
+            }
+        })
+        content.addView(TextView(this).apply {
+            text = getString(R.string.omnio_add_social_for, contact.getNameToDisplay().trim().substringBefore(" "))
+            setTextColor(textColor)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
+        })
+        content.addView(TextView(this).apply {
+            text = getString(R.string.omnio_add_social_subtitle)
+            setTextColor(textColor)
+            alpha = 0.6f
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+            setPadding(0, dp(4), 0, dp(16))
+        })
+        val card = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            background = getDrawable(R.drawable.omnio_round_bg)
+            backgroundTintList = ColorStateList.valueOf(0xFF1A1F27.toInt())
+            setPadding(dp(16), dp(4), dp(8), dp(4))
+        }
+        val linked = currentSocials.map { it.network.key }.toSet()
+        OmnioSocials.networks.forEachIndexed { index, network ->
+            if (index > 0) {
+                card.addView(View(this).apply {
+                    setBackgroundColor(0x1FFFFFFF)
+                    layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(1)).apply { marginStart = dp(50) }
+                })
+            }
+            card.addView(LinearLayout(this).apply {
                 orientation = LinearLayout.HORIZONTAL
                 gravity = Gravity.CENTER_VERTICAL
-                setPadding(dp(12), dp(10), dp(12), dp(10))
+                minimumHeight = dp(58)
                 background = getDrawable(android.R.drawable.list_selector_background)
                 addView(ImageView(this@OmnioContactActivity).apply {
                     setImageDrawable(appIcon(network.pkg, network.name, network.color))
-                    layoutParams = LinearLayout.LayoutParams(dp(30), dp(30)).apply { marginEnd = dp(16) }
+                    layoutParams = LinearLayout.LayoutParams(dp(34), dp(34)).apply { marginEnd = dp(16) }
                 })
                 addView(TextView(this@OmnioContactActivity).apply {
                     text = network.name
-                    setTextColor(getProperTextColor())
+                    setTextColor(textColor)
                     setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
+                    layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+                })
+                if (network.key in linked) {
+                    addView(TextView(this@OmnioContactActivity).apply {
+                        text = getString(R.string.omnio_linked)
+                        setTextColor(MESSAGES_GREEN)
+                        setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
+                        setPadding(0, 0, dp(6), 0)
+                    })
+                }
+                addView(ImageView(this@OmnioContactActivity).apply {
+                    setImageResource(org.fossify.commons.R.drawable.ic_chevron_right_vector)
+                    imageTintList = ColorStateList.valueOf(0x80FFFFFF.toInt())
+                    layoutParams = LinearLayout.LayoutParams(dp(28), dp(28))
                 })
                 setOnClickListener {
-                    dialog?.dismiss()
+                    sheet.dismiss()
                     onNetworkPicked(contact, network)
                 }
             })
         }
-        val scroll = android.widget.ScrollView(this).apply { addView(list) }
-        getAlertDialogBuilder()
-            .setNegativeButton(org.fossify.commons.R.string.cancel, null)
-            .apply { setupDialogStuff(scroll, this, R.string.omnio_add_social) { dialog = it } }
+        content.addView(card)
+        val scroll = androidx.core.widget.NestedScrollView(this).apply { addView(content) }
+        sheet.setContentView(scroll)
+        sheet.setOnShowListener {
+            sheet.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)?.apply {
+                setBackgroundColor(android.graphics.Color.TRANSPARENT)
+                com.google.android.material.bottomsheet.BottomSheetBehavior.from(this).apply {
+                    state = com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
+                    skipCollapsed = true
+                }
+            }
+        }
+        sheet.show()
     }
 
     private fun onNetworkPicked(contact: Contact, network: OmnioSocials.Network) {

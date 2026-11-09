@@ -133,9 +133,6 @@ object OmnioSocials {
         Network("threads", "Threads", "com.instagram.barcelona", 0xFFE7E9EA.toInt(), "https://threads.net/@{h}", listOf("threads.net", "threads.com"), searchTemplate = "https://www.threads.net/search?q={q}"),
         Network("linkedin", "LinkedIn", "com.linkedin.android", 0xFF0A66C2.toInt(), "https://linkedin.com/in/{h}", listOf("linkedin.com"), "in/", searchTemplate = "https://www.linkedin.com/search/results/people/?keywords={q}"),
         Network("discord", "Discord", "com.discord", 0xFF5865F2.toInt(), "https://discord.com/users/{h}", listOf("discord.com", "discordapp.com"), "users/"),
-        Network("youtube", "YouTube", "com.google.android.youtube", 0xFFFF0000.toInt(), "https://youtube.com/@{h}", listOf("youtube.com", "youtu.be"), searchTemplate = "https://www.youtube.com/results?search_query={q}"),
-        Network("twitch", "Twitch", "tv.twitch.android.app", 0xFF9146FF.toInt(), "https://twitch.tv/{h}", listOf("twitch.tv"), searchTemplate = "https://www.twitch.tv/search?term={q}"),
-        Network("kick", "Kick", "com.kick.mobile", 0xFF53FC18.toInt(), "https://kick.com/{h}", listOf("kick.com"), searchTemplate = "https://kick.com/search?query={q}"),
     )
 
     // ---- "Find on Facebook" linking: remember which contact we're finding, then catch the link ----

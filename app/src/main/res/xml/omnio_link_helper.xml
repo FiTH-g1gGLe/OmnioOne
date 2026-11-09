@@ -7,4 +7,4 @@
     android:canRetrieveWindowContent="true"
     android:description="@string/omnio_link_helper_description"
     android:notificationTimeout="400"
-    android:packageNames="com.facebook.katana,com.facebook.orca,com.facebook.lite,com.instagram.android,com.zhiliaoapp.musically,com.ss.android.ugc.trill,com.twitter.android,com.instagram.barcelona,com.linkedin.android,com.google.android.youtube,tv.twitch.android.app,com.kick.mobile,com.snapchat.android,com.discord,com.android.chrome,org.mozilla.firefox,com.sec.android.app.sbrowser,com.heytap.browser" />
+    android:packageNames="com.facebook.katana,com.facebook.orca,com.facebook.lite,com.instagram.android,com.zhiliaoapp.musically,com.ss.android.ugc.trill,com.twitter.android,com.instagram.barcelona,com.linkedin.android,com.snapchat.android,com.discord,com.android.chrome,org.mozilla.firefox,com.sec.android.app.sbrowser,com.heytap.browser" />

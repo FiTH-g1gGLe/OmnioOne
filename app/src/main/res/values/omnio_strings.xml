@@ -97,4 +97,7 @@
     <string name="omnio_ask_email_title">Ask %s for their email</string>
     <string name="omnio_ask_email_text">Hi %s, what\'s your email address? I\'d like to add it to your contact. Thanks!</string>
     <string name="omnio_ask_sent">Sent. When %s replies, Omnio will offer to save their email.</string>
+    <string name="omnio_add_social_for">Add social for %s</string>
+    <string name="omnio_add_social_subtitle">Pick an app to link to their contact</string>
+    <string name="omnio_linked">Linked</string>
 </resources>

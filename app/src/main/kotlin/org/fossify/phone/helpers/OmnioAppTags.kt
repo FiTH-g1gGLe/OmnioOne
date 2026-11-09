@@ -71,7 +71,8 @@ object OmnioAppTags {
             val size = (context.resources.displayMetrics.density * 36).toInt()
             val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
             val canvas = Canvas(bitmap)
-            canvas.drawCircle(size / 2f, size / 2f, size / 2f, Paint().apply { isAntiAlias = true; color = badge.color })
+            val radius = size * 0.24f
+            canvas.drawRoundRect(android.graphics.RectF(0f, 0f, size.toFloat(), size.toFloat()), radius, radius, Paint().apply { isAntiAlias = true; color = badge.color })
             val paint = Paint().apply {
                 isAntiAlias = true
                 color = if (androidx.core.graphics.ColorUtils.calculateLuminance(badge.color) > 0.6) 0xFF0F1115.toInt() else 0xFFFFFFFF.toInt()
