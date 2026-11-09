@@ -17,6 +17,7 @@ import android.util.TypedValue
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
+import android.view.animation.LinearInterpolator
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -155,7 +156,11 @@ class OmnioCallScreen(
             }
         }
         val box = FrameLayout(activity).apply {
-            val boxSize = if (design.pulse) (size * 1.8f).toInt() else size
+            val boxSize = when {
+                design.pulse -> (size * 1.8f).toInt()
+                design.orbit -> size + dp(40)
+                else -> size
+            }
             layoutParams = LinearLayout.LayoutParams(boxSize, boxSize).apply { gravity = Gravity.CENTER_HORIZONTAL }
         }
         if (design.pulse) {
@@ -182,6 +187,19 @@ class OmnioCallScreen(
                     start()
                     animators.add(this)
                 }
+            }
+        }
+        if (design.orbit) {
+            val ring = OrbitRing(activity, dp(6).toFloat()).apply {
+                layoutParams = FrameLayout.LayoutParams(size + dp(32), size + dp(32), Gravity.CENTER)
+            }
+            box.addView(ring)
+            ObjectAnimator.ofFloat(ring, View.ROTATION, 0f, 360f).apply {
+                duration = 3200
+                interpolator = LinearInterpolator()
+                repeatCount = ValueAnimator.INFINITE
+                start()
+                animators.add(this)
             }
         }
         box.addView(image)
@@ -387,7 +405,7 @@ class OmnioCallScreen(
             }
             addView(answerControl())
         }
-        return screen(top, bottom, padTop = if (design.pulse) 40 else 64)
+        return screen(top, bottom, padTop = if (design.pulse || design.orbit) 40 else 64)
     }
 
     private fun posterContent(): View {
@@ -404,5 +422,26 @@ class OmnioCallScreen(
             addView(answerControl())
         }
         return screen(top, bottom, padTop = 56)
+    }
+}
+
+/** The Omnio logo ring: four coloured arcs (calls, messages, contacts, socials) with small gaps. */
+@SuppressLint("ViewConstructor")
+class OrbitRing(context: android.content.Context, private val stroke: Float) : View(context) {
+    private val colours = intArrayOf(OmnioColors.CALLS, OmnioColors.MESSAGES, OmnioColors.CONTACTS, OmnioColors.SOCIALS)
+    private val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+        style = android.graphics.Paint.Style.STROKE
+        strokeWidth = stroke
+        strokeCap = android.graphics.Paint.Cap.ROUND
+    }
+    private val oval = android.graphics.RectF()
+
+    override fun onDraw(canvas: android.graphics.Canvas) {
+        val half = stroke / 2 + 1
+        oval.set(half, half, width - half, height - half)
+        colours.forEachIndexed { index, colour ->
+            paint.color = colour
+            canvas.drawArc(oval, -90f + index * 90f + 9f, 72f, false, paint)
+        }
     }
 }

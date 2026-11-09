@@ -20,8 +20,9 @@ object OmnioCallStyle {
     const val MINIMAL = 2
     const val CONTEXT = 3
     const val PULSE = 4
+    const val ORBIT = 5
 
-    val all = listOf(CLASSIC, POSTER, MINIMAL, CONTEXT, PULSE)
+    val all = listOf(CLASSIC, POSTER, MINIMAL, CONTEXT, PULSE, ORBIT)
 
     enum class Background { SOLID, GRADIENT, PHOTO_BLUR, PHOTO_FULL }
     enum class PhotoShape { CIRCLE, ROUNDED, HIDDEN }
@@ -36,6 +37,7 @@ object OmnioCallStyle {
         var photoShape: PhotoShape = PhotoShape.CIRCLE,
         var photoSize: Int = 140,
         var pulse: Boolean = false,
+        var orbit: Boolean = false,
         var answer: Answer = Answer.BUTTONS,
         var acceptColor: Int = OmnioColors.MESSAGES,
         var declineColor: Int = 0xFFE5484D.toInt(),
@@ -54,7 +56,7 @@ object OmnioCallStyle {
         fun toJson(): JSONObject = JSONObject().apply {
             put("id", id); put("name", name)
             put("background", background.name); put("backgroundColor", backgroundColor); put("gradientColor", gradientColor)
-            put("photoShape", photoShape.name); put("photoSize", photoSize); put("pulse", pulse)
+            put("photoShape", photoShape.name); put("photoSize", photoSize); put("pulse", pulse); put("orbit", orbit)
             put("answer", answer.name)
             put("acceptColor", acceptColor); put("declineColor", declineColor); put("textColor", textColor); put("nameSize", nameSize)
             put("showNumber", showNumber); put("showLastText", showLastText); put("showBirthday", showBirthday)
@@ -72,6 +74,7 @@ object OmnioCallStyle {
                 photoShape = enumOr(json.optString("photoShape"), PhotoShape.CIRCLE),
                 photoSize = json.optInt("photoSize", 140),
                 pulse = json.optBoolean("pulse", false),
+                orbit = json.optBoolean("orbit", false),
                 answer = enumOr(json.optString("answer"), Answer.BUTTONS),
                 acceptColor = json.optInt("acceptColor", OmnioColors.MESSAGES),
                 declineColor = json.optInt("declineColor", 0xFFE5484D.toInt()),
@@ -100,6 +103,7 @@ object OmnioCallStyle {
         )
         MINIMAL -> Design(id = "builtin:$MINIMAL", photoShape = PhotoShape.HIDDEN, answer = Answer.SLIDE, nameSize = 46)
         PULSE -> Design(id = "builtin:$PULSE", background = Background.GRADIENT, pulse = true)
+        ORBIT -> Design(id = "builtin:$ORBIT", background = Background.GRADIENT, gradientColor = 0xFF101828.toInt(), photoSize = 150, orbit = true)
         else -> Design(
             id = "builtin:$CONTEXT", photoSize = 104, nameSize = 30,
             showLastText = true, showBirthday = true, showNotes = true, showApps = true
@@ -111,6 +115,7 @@ object OmnioCallStyle {
         MINIMAL -> R.string.omnio_call_style_minimal
         CONTEXT -> R.string.omnio_call_style_context
         PULSE -> R.string.omnio_call_style_pulse
+        ORBIT -> R.string.omnio_call_style_orbit
         else -> R.string.omnio_call_style_classic
     }
 
@@ -119,6 +124,7 @@ object OmnioCallStyle {
         MINIMAL -> R.string.omnio_call_style_minimal_desc
         CONTEXT -> R.string.omnio_call_style_context_desc
         PULSE -> R.string.omnio_call_style_pulse_desc
+        ORBIT -> R.string.omnio_call_style_orbit_desc
         else -> R.string.omnio_call_style_classic_desc
     }
 

@@ -196,6 +196,7 @@ class OmnioCallDesignerActivity : SimpleActivity() {
                 val sizes = listOf(96, 120, 150, 180)
                 choose(R.string.omnio_designer_photo_size, sizes.map { sizeName(it) }) { design.photoSize = sizes[it] }
             },
+            switch(R.string.omnio_designer_orbit, design.orbit) { design.orbit = it },
             switch(R.string.omnio_designer_pulse, design.pulse) { design.pulse = it },
             action(R.string.omnio_designer_name_size, "${design.nameSize}") {
                 val sizes = listOf(26, 30, 34, 40, 46)

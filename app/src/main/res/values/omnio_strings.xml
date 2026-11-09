@@ -322,4 +322,7 @@
     <string name="omnio_designer_use_everyone">Use for everyone</string>
     <string name="omnio_designer_just_save">Just save</string>
     <string name="omnio_designer_saved">Call screen saved</string>
+    <string name="omnio_call_style_orbit">Orbit</string>
+    <string name="omnio_call_style_orbit_desc">The Omnio ring spinning round their photo</string>
+    <string name="omnio_designer_orbit">Spinning Omnio ring</string>
 </resources>
