@@ -759,11 +759,6 @@ class CustomizationActivity : BaseSimpleActivity() {
     }
 
     private fun pickPrimaryColor() {
-        if (!isOurPackage(packageName) && baseConfig.appRunCount > 50) {
-            finish()
-            return
-        }
-
         curPrimaryLineColorPicker = LineColorPickerDialog(
             activity = this,
             color = curPrimaryColor,

@@ -2,7 +2,7 @@ package org.fossify.commons.helpers
 
 /**
  * Omnio One: the Fossify code checks the app's package name in several places
- * (to unlock dialer features, skip the "fake version" warning, and so on).
+ * (to unlock dialer features and so on).
  * Omnio One installs as com.omnioone.app, so these helpers treat it as a genuine build.
  */
 const val OMNIO_PACKAGE = "com.omnioone.app"
