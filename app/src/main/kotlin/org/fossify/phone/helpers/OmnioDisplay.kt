@@ -61,6 +61,12 @@ object OmnioDisplay {
     fun isFirstNameOnly(context: Context) = prefs(context).getBoolean("contacts_first_name_only", false)
     fun setFirstNameOnly(context: Context, value: Boolean) = prefs(context).edit().putBoolean("contacts_first_name_only", value).apply()
 
+    /** Changes whenever any display option changes. */
+    fun signature(context: Context): String {
+        val style = getStyle(context)
+        return "$style/${getColumns(context, style)}/${getDensity(context)}/${isFirstNameOnly(context)}"
+    }
+
     /** Loads a contact photo as a circle, or as a rounded square when [cornerRadiusPx] is set. */
     fun loadAvatar(imageView: ImageView, path: String, name: String, cornerRadiusPx: Int) {
         val context = imageView.context

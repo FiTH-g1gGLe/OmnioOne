@@ -53,6 +53,7 @@ private const val OMNIO_MESSAGES_TAB = "omnio_messages"
 private const val OMNIO_MESSAGES_GREEN = OmnioColors.MESSAGES
 
 class MainActivity : SimpleActivity() {
+    private var lastDisplaySignature: String? = null
     override var isSearchBarEnabled = true
     
     private val binding by viewBinding(ActivityMainBinding::inflate)
@@ -114,6 +115,10 @@ class MainActivity : SimpleActivity() {
     override fun onResume() {
         super.onResume()
         org.fossify.phone.helpers.OmnioFavourites.reload(this)
+        // display style may have been changed from Omnio Settings
+        val displayNow = org.fossify.phone.helpers.OmnioDisplay.signature(this)
+        if (lastDisplaySignature != null && lastDisplaySignature != displayNow) getContactsFragment()?.displayStyleChanged()
+        lastDisplaySignature = displayNow
         if (storedShowTabs != config.showTabs) {
             config.lastUsedViewPagerPage = 0
             System.exit(0)
@@ -658,25 +663,12 @@ class MainActivity : SimpleActivity() {
 
     private fun launchSettings() {
         hideKeyboard()
-        startActivity(Intent(applicationContext, SettingsActivity::class.java))
+        startActivity(Intent(applicationContext, OmnioSettingsActivity::class.java))
     }
 
     private fun launchAbout() {
-        val licenses = LICENSE_GLIDE or LICENSE_INDICATOR_FAST_SCROLL or LICENSE_AUTOFITTEXTVIEW
-
-        val faqItems = arrayListOf(
-            FAQItem(R.string.faq_1_title, R.string.faq_1_text),
-            FAQItem(R.string.faq_2_title, R.string.faq_2_text),
-            FAQItem(R.string.faq_3_title, R.string.faq_3_text),
-            FAQItem(R.string.faq_9_title_commons, R.string.faq_9_text_commons)
-        )
-
-        if (resources.getBoolean(R.bool.is_google_play_build)) {
-            faqItems.add(FAQItem(R.string.faq_2_title_commons, R.string.faq_2_text_commons))
-            faqItems.add(FAQItem(R.string.faq_6_title_commons, R.string.faq_6_text_commons))
-        }
-
-        startAboutActivity(R.string.app_name, licenses, BuildConfig.VERSION_NAME, faqItems, true)
+        hideKeyboard()
+        startActivity(Intent(applicationContext, OmnioAboutActivity::class.java))
     }
 
     private fun showSortingDialog(showCustomSorting: Boolean) {

@@ -643,53 +643,13 @@ class MainActivity : SimpleActivity() {
 
     private fun launchSettings() {
         hideKeyboard()
-        startActivity(Intent(applicationContext, SettingsActivity::class.java))
+        // Omnio One: one settings page for the whole app
+        startActivity(Intent().setClassName(packageName, "org.fossify.phone.activities.OmnioSettingsActivity"))
     }
 
     private fun launchAbout() {
-        val licenses = LICENSE_EVENT_BUS or LICENSE_SMS_MMS or LICENSE_INDICATOR_FAST_SCROLL
-
-        val faqItems = arrayListOf(
-            FAQItem(
-                title = R.string.faq_2_title,
-                text = R.string.faq_2_text
-            ),
-            FAQItem(
-                title = R.string.faq_3_title,
-                text = R.string.faq_3_text
-            ),
-            FAQItem(
-                title = R.string.faq_4_title,
-                text = R.string.faq_4_text
-            ),
-            FAQItem(
-                title = org.fossify.commons.R.string.faq_9_title_commons,
-                text = org.fossify.commons.R.string.faq_9_text_commons
-            )
-        )
-
-        if (resources.getBoolean(org.fossify.commons.R.bool.is_google_play_build)) {
-            faqItems.add(
-                FAQItem(
-                    title = org.fossify.commons.R.string.faq_2_title_commons,
-                    text = org.fossify.commons.R.string.faq_2_text_commons
-                )
-            )
-            faqItems.add(
-                FAQItem(
-                    title = org.fossify.commons.R.string.faq_6_title_commons,
-                    text = org.fossify.commons.R.string.faq_6_text_commons
-                )
-            )
-        }
-
-        startAboutActivity(
-            appNameId = R.string.app_name,
-            licenseMask = licenses,
-            versionName = packageManager.getPackageInfo(packageName, 0).versionName ?: "",
-            faqItems = faqItems,
-            showFAQBeforeMail = true
-        )
+        hideKeyboard()
+        startActivity(Intent().setClassName(packageName, "org.fossify.phone.activities.OmnioAboutActivity"))
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

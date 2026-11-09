@@ -86,6 +86,16 @@
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
 
+        <activity
+            android:name=".activities.OmnioSettingsActivity"
+            android:exported="false"
+            android:label="@string/omnio_settings" />
+
+        <activity
+            android:name=".activities.OmnioAboutActivity"
+            android:exported="false"
+            android:label="@string/omnio_about" />
+
         <!-- Omnio One Link helper: reads a profile address on screen while you link a contact -->
         <service
             android:name=".services.OmnioLinkHelperService"
