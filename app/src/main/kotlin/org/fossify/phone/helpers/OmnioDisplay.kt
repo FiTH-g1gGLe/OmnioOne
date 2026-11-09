@@ -1,5 +1,6 @@
 package org.fossify.phone.helpers
 
+import org.fossify.commons.helpers.OmnioColors
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -74,7 +75,7 @@ object OmnioDisplay {
     }
 
     private val tileColors = intArrayOf(
-        0xFF4F7CFF.toInt(), 0xFF22C55E.toInt(), 0xFFFF8A3D.toInt(), 0xFFEC4899.toInt(),
+        OmnioColors.CALLS, OmnioColors.MESSAGES, OmnioColors.CONTACTS, OmnioColors.SOCIALS,
         0xFF8B5CF6.toInt(), 0xFF14B8A6.toInt(), 0xFFF59E0B.toInt(), 0xFFEF4444.toInt()
     )
 

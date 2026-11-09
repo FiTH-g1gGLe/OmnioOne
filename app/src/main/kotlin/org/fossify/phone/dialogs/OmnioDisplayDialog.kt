@@ -1,5 +1,6 @@
 package org.fossify.phone.dialogs
 
+import org.fossify.commons.helpers.OmnioColors
 import android.content.res.ColorStateList
 import android.util.TypedValue
 import android.view.Gravity
@@ -23,7 +24,7 @@ import org.fossify.phone.helpers.OmnioDisplay
  */
 class OmnioDisplayDialog(private val activity: SimpleActivity, private val callback: (surnameChanged: Boolean) -> Unit) {
 
-    private val orange = 0xFFFF8A3D.toInt()
+    private val orange = OmnioColors.CONTACTS
     private val textColor = activity.getProperTextColor()
     private var style = OmnioDisplay.getStyle(activity)
     private val columnsByStyle = HashMap<Int, Int>()
@@ -191,7 +192,7 @@ class OmnioDisplayDialog(private val activity: SimpleActivity, private val callb
 
     private fun stepButton(label: String, onClick: () -> Unit) = TextView(activity).apply {
         text = label
-        setTextColor(0xFF0F1115.toInt())
+        setTextColor(OmnioColors.ON_ACCENT)
         setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
         gravity = Gravity.CENTER
         background = activity.getDrawable(R.drawable.omnio_circle_bg)

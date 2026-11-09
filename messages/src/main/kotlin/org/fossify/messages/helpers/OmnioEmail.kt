@@ -1,7 +1,6 @@
 package org.fossify.messages.helpers
 
 import android.app.Activity
-import android.content.ContentProviderOperation
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -28,18 +27,8 @@ object OmnioEmail {
 
     /** Opens the sender's Omnio contact page (found by their number). */
     fun openContactPage(activity: Activity, number: String): Boolean {
-        val rawId = try {
-            val contactId = findContact(activity, number)?.contactId ?: return false
-            activity.contentResolver.query(
-                ContactsContract.RawContacts.CONTENT_URI,
-                arrayOf(ContactsContract.RawContacts._ID),
-                "${ContactsContract.RawContacts.CONTACT_ID} = ? AND ${ContactsContract.RawContacts.DELETED} = 0",
-                arrayOf(contactId.toString()),
-                null
-            )?.use { if (it.moveToFirst()) it.getInt(0) else null }
-        } catch (e: Exception) {
-            null
-        } ?: return false
+        val contactId = findContact(activity, number)?.contactId ?: return false
+        val rawId = org.fossify.commons.helpers.OmnioContactData.firstRawId(activity, contactId)?.toInt() ?: return false
         return try {
             activity.startActivity(Intent().apply {
                 setClassName(activity.packageName, "org.fossify.phone.activities.OmnioContactActivity")
@@ -99,27 +88,12 @@ object OmnioEmail {
         false
     }
 
-    fun addEmail(context: Context, contactId: Long, email: String): Boolean = try {
-        val rawId = context.contentResolver.query(
-            ContactsContract.RawContacts.CONTENT_URI,
-            arrayOf(ContactsContract.RawContacts._ID),
-            "${ContactsContract.RawContacts.CONTACT_ID} = ? AND ${ContactsContract.RawContacts.DELETED} = 0",
-            arrayOf(contactId.toString()),
-            null
-        )?.use { if (it.moveToFirst()) it.getLong(0) else null }
-        if (rawId == null) {
-            false
-        } else {
-            val op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-                .withValue(ContactsContract.Data.RAW_CONTACT_ID, rawId)
-                .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE)
-                .withValue(ContactsContract.CommonDataKinds.Email.ADDRESS, email)
-                .withValue(ContactsContract.CommonDataKinds.Email.TYPE, ContactsContract.CommonDataKinds.Email.TYPE_HOME)
-                .build()
-            context.contentResolver.applyBatch(ContactsContract.AUTHORITY, arrayListOf(op))
-            true
-        }
-    } catch (e: Exception) {
+    fun addEmail(context: Context, contactId: Long, email: String): Boolean =
+        org.fossify.commons.helpers.OmnioContactData.add(
+            context, contactId, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE,
+            ContactsContract.CommonDataKinds.Email.ADDRESS to email.lowercase(),
+            ContactsContract.CommonDataKinds.Email.TYPE to ContactsContract.CommonDataKinds.Email.TYPE_HOME
+        ) catch (e: Exception) {
         false
     }
 

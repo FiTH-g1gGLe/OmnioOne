@@ -1,5 +1,6 @@
 package org.fossify.messages.helpers
 
+import org.fossify.commons.helpers.OmnioColors
 import android.app.Activity
 import android.content.Intent
 import android.widget.ImageView
@@ -20,10 +21,10 @@ object OmnioTabBar {
     private data class Tab(val label: Int, val icon: Int, val color: Int)
 
     private val tabs = listOf(
-        Tab(org.fossify.commons.R.string.contacts_tab, org.fossify.commons.R.drawable.ic_person_vector, 0xFFFF8A3D.toInt()),
-        Tab(org.fossify.commons.R.string.favorites_tab, org.fossify.commons.R.drawable.ic_star_vector, 0xFFFFC85A.toInt()),
-        Tab(org.fossify.commons.R.string.call_history_tab, org.fossify.commons.R.drawable.ic_clock_filled_vector, 0xFF4F7CFF.toInt()),
-        Tab(R.string.omnio_messages_label, R.drawable.msg_ic_omnio_chat, 0xFF22C55E.toInt()),
+        Tab(org.fossify.commons.R.string.contacts_tab, org.fossify.commons.R.drawable.ic_person_vector, OmnioColors.CONTACTS),
+        Tab(org.fossify.commons.R.string.favorites_tab, org.fossify.commons.R.drawable.ic_star_vector, OmnioColors.FAVOURITES),
+        Tab(org.fossify.commons.R.string.call_history_tab, org.fossify.commons.R.drawable.ic_clock_filled_vector, OmnioColors.CALLS),
+        Tab(R.string.omnio_messages_label, R.drawable.msg_ic_omnio_chat, OmnioColors.MESSAGES),
     )
 
     fun attach(activity: Activity, tabLayout: TabLayout) {

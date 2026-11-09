@@ -1,5 +1,6 @@
 package org.fossify.phone.helpers
 
+import org.fossify.commons.helpers.OmnioColors
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -75,7 +76,7 @@ object OmnioAppTags {
             canvas.drawRoundRect(android.graphics.RectF(0f, 0f, size.toFloat(), size.toFloat()), radius, radius, Paint().apply { isAntiAlias = true; color = badge.color })
             val paint = Paint().apply {
                 isAntiAlias = true
-                color = if (androidx.core.graphics.ColorUtils.calculateLuminance(badge.color) > 0.6) 0xFF0F1115.toInt() else 0xFFFFFFFF.toInt()
+                color = if (androidx.core.graphics.ColorUtils.calculateLuminance(badge.color) > 0.6) OmnioColors.ON_ACCENT else 0xFFFFFFFF.toInt()
                 textSize = size * 0.5f
                 textAlign = Paint.Align.CENTER
                 typeface = Typeface.DEFAULT_BOLD

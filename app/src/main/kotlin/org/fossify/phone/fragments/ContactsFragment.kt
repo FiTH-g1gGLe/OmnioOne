@@ -1,5 +1,6 @@
 package org.fossify.phone.fragments
 
+import org.fossify.commons.helpers.OmnioColors
 import android.content.Context
 import android.content.res.ColorStateList
 import android.text.TextUtils
@@ -54,7 +55,7 @@ class ContactsFragment(context: Context, attributeSet: AttributeSet) : MyViewPag
     private lateinit var outerBinding: FragmentContactsBinding
     private var allContacts = ArrayList<Contact>()
     private var appTags: Map<Int, List<OmnioAppTags.Badge>> = emptyMap()
-    private var omnioTextColor = 0xFFECEFF4.toInt()
+    private var omnioTextColor = OmnioColors.TEXT
 
     override fun onFinishInflate() {
         super.onFinishInflate()
@@ -218,10 +219,10 @@ class ContactsFragment(context: Context, attributeSet: AttributeSet) : MyViewPag
                 layoutParams = LinearLayout.LayoutParams(size, size)
                 if (contact == null) {
                     setImageResource(org.fossify.commons.R.drawable.ic_plus_vector)
-                    imageTintList = ColorStateList.valueOf(0xFF0F1115.toInt())
+                    imageTintList = ColorStateList.valueOf(OmnioColors.ON_ACCENT)
                     setPadding(dp(14), dp(14), dp(14), dp(14))
                     background = context.getDrawable(R.drawable.omnio_circle_bg)
-                    backgroundTintList = ColorStateList.valueOf(0xFFFF8A3D.toInt())
+                    backgroundTintList = ColorStateList.valueOf(OmnioColors.CONTACTS)
                 } else {
                     SimpleContactsHelper(context).loadContactImage(contact.photoUri, this, contact.getNameToDisplay())
                 }
@@ -229,7 +230,7 @@ class ContactsFragment(context: Context, attributeSet: AttributeSet) : MyViewPag
 
             addView(TextView(context).apply {
                 text = label
-                setTextColor(if (contact == null) 0xFFFF8A3D.toInt() else omnioTextColor)
+                setTextColor(if (contact == null) OmnioColors.CONTACTS else omnioTextColor)
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
                 gravity = Gravity.CENTER
                 maxLines = 1

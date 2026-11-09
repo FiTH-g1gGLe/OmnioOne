@@ -1,5 +1,6 @@
 package org.fossify.phone.activities
 
+import org.fossify.commons.helpers.OmnioColors
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.net.Uri
@@ -56,8 +57,8 @@ class OmnioContactActivity : SimpleActivity() {
     companion object {
         const val EXTRA_CONTACT_ID = "omnio_contact_id"
         const val EXTRA_SHARED_LINK = "omnio_shared_link"
-        private const val CALLS_BLUE = 0xFF4F7CFF.toInt()
-        private const val MESSAGES_GREEN = 0xFF22C55E.toInt()
+        private const val CALLS_BLUE = OmnioColors.CALLS
+        private const val MESSAGES_GREEN = OmnioColors.MESSAGES
         private const val MAX_RECENT = 10
     }
 
@@ -100,12 +101,12 @@ class OmnioContactActivity : SimpleActivity() {
         binding.contactDetailsLabel.setTextColor(textColor)
         binding.contactRecentLabel.setTextColor(textColor)
         binding.contactBack.applyColorFilter(textColor)
-        binding.contactFavourite.applyColorFilter(0xFFFFC85A.toInt())
-        binding.contactCall.compoundDrawablesRelative[1]?.mutate()?.setTint(0xFF0F1115.toInt())
-        binding.contactText.compoundDrawablesRelative[1]?.mutate()?.setTint(0xFF0F1115.toInt())
+        binding.contactFavourite.applyColorFilter(OmnioColors.FAVOURITES)
+        binding.contactCall.compoundDrawablesRelative[1]?.mutate()?.setTint(OmnioColors.ON_ACCENT)
+        binding.contactText.compoundDrawablesRelative[1]?.mutate()?.setTint(OmnioColors.ON_ACCENT)
         binding.contactEdit.applyColorFilter(textColor)
         binding.contactAppsLabel.setTextColor(textColor)
-        binding.contactVideo.compoundDrawablesRelative[1]?.mutate()?.setTint(0xFF5DD39E.toInt())
+        binding.contactVideo.compoundDrawablesRelative[1]?.mutate()?.setTint(OmnioColors.MESSAGES_SOFT)
     }
 
     private fun showContact(contact: Contact) {
@@ -320,10 +321,10 @@ class OmnioContactActivity : SimpleActivity() {
         addAppRow(
             holder = holder,
             showDivider = rows > 0,
-            icon = getDrawable(org.fossify.commons.R.drawable.ic_plus_vector)?.mutate()?.apply { setTint(0xFFFF8A3D.toInt()) },
+            icon = getDrawable(org.fossify.commons.R.drawable.ic_plus_vector)?.mutate()?.apply { setTint(OmnioColors.CONTACTS) },
             title = getString(R.string.omnio_add_social),
             subtitle = null,
-            color = 0xFFFF8A3D.toInt(),
+            color = OmnioColors.CONTACTS,
             onClick = { pickNetworkToAdd(contact) },
             onLongClick = null,
             actions = emptyList()
@@ -342,7 +343,7 @@ class OmnioContactActivity : SimpleActivity() {
             canvas.drawRoundRect(android.graphics.RectF(0f, 0f, size.toFloat(), size.toFloat()), radius, radius, android.graphics.Paint().apply { isAntiAlias = true; this.color = color })
             val paint = android.graphics.Paint().apply {
                 isAntiAlias = true
-                this.color = if (androidx.core.graphics.ColorUtils.calculateLuminance(color) > 0.6) 0xFF0F1115.toInt() else 0xFFFFFFFF.toInt()
+                this.color = if (androidx.core.graphics.ColorUtils.calculateLuminance(color) > 0.6) OmnioColors.ON_ACCENT else 0xFFFFFFFF.toInt()
                 textSize = size * 0.48f
                 textAlign = android.graphics.Paint.Align.CENTER
                 typeface = android.graphics.Typeface.DEFAULT_BOLD
@@ -402,7 +403,7 @@ class OmnioContactActivity : SimpleActivity() {
             }
         })
         // light colours (Snapchat yellow, X white) are fine on the dark card; very dark ones get lifted
-        val actionColor = if (androidx.core.graphics.ColorUtils.calculateLuminance(color) < 0.08) 0xFFECEFF4.toInt() else color
+        val actionColor = if (androidx.core.graphics.ColorUtils.calculateLuminance(color) < 0.08) OmnioColors.TEXT else color
         actions.forEach { (iconRes, action) ->
             row.addView(ImageView(this).apply {
                 setImageResource(iconRes)
@@ -483,7 +484,7 @@ class OmnioContactActivity : SimpleActivity() {
             val facebook = currentSocials.firstOrNull { it.network.key == "facebook" }
             if (network.key == "messenger" && facebook != null) {
                 // build Messenger straight from the Facebook profile that's already linked
-                offerMessengerFromFacebook(contact, facebook.url) { askUsername(contact, network) }
+                offerMessengerFromFacebook(contact, facebook.url)
             } else {
                 askUsername(contact, network)
             }
@@ -628,7 +629,7 @@ class OmnioContactActivity : SimpleActivity() {
         val network = OmnioSocials.networkFor(url) ?: return
         if (wantedKey == "messenger" && network.key == "facebook") {
             OmnioSocials.clearPendingLink(this)
-            offerMessengerFromFacebook(contact, url, null)
+            offerMessengerFromFacebook(contact, url)
             return
         }
         // already on this contact: nothing to ask
@@ -639,7 +640,7 @@ class OmnioContactActivity : SimpleActivity() {
         offerLink(contact, network, url)
     }
 
-    private fun offerMessengerFromFacebook(contact: Contact, facebookUrl: String, onFail: (() -> Unit)?) {
+    private fun offerMessengerFromFacebook(contact: Contact, facebookUrl: String) {
         toast(R.string.omnio_checking_profile)
         ensureBackgroundThread {
             val resolved = OmnioSocials.resolveFacebook(facebookUrl)
@@ -842,8 +843,8 @@ class OmnioContactActivity : SimpleActivity() {
                 .take(MAX_RECENT)
                 .forEach { call ->
                     val (title, icon, color) = when (call.type) {
-                        Calls.MISSED_TYPE -> Triple(R.string.omnio_missed_call, R.drawable.ic_call_missed_vector, 0xFFFF8A8A.toInt())
-                        Calls.REJECTED_TYPE, Calls.BLOCKED_TYPE -> Triple(R.string.omnio_declined_call, R.drawable.ic_call_missed_vector, 0xFFFF8A8A.toInt())
+                        Calls.MISSED_TYPE -> Triple(R.string.omnio_missed_call, R.drawable.ic_call_missed_vector, OmnioColors.MISSED_SOFT)
+                        Calls.REJECTED_TYPE, Calls.BLOCKED_TYPE -> Triple(R.string.omnio_declined_call, R.drawable.ic_call_missed_vector, OmnioColors.MISSED_SOFT)
                         Calls.OUTGOING_TYPE -> Triple(R.string.omnio_outgoing_call, R.drawable.ic_call_made_vector, CALLS_BLUE)
                         else -> Triple(R.string.omnio_incoming_call, R.drawable.ic_call_received_vector, MESSAGES_GREEN)
                     }
@@ -929,7 +930,7 @@ class OmnioContactActivity : SimpleActivity() {
                 gravity = Gravity.CENTER_VERTICAL
                 addView(TextView(this@OmnioContactActivity).apply {
                     text = "+ " + getString(R.string.omnio_add_email)
-                    setTextColor(0xFFFF8A3D.toInt())
+                    setTextColor(OmnioColors.CONTACTS)
                     setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
                     setPadding(dp(12), dp(6), dp(12), dp(6))
                     background = getDrawable(android.R.drawable.list_selector_background)
@@ -940,7 +941,7 @@ class OmnioContactActivity : SimpleActivity() {
                 if (number != null) {
                     addView(TextView(this@OmnioContactActivity).apply {
                         text = getString(R.string.omnio_ask)
-                        setTextColor(0xFF0F1115.toInt())
+                        setTextColor(OmnioColors.ON_ACCENT)
                         setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
                         setTypeface(typeface, android.graphics.Typeface.BOLD)
                         setPadding(dp(14), dp(5), dp(14), dp(5))
@@ -958,7 +959,7 @@ class OmnioContactActivity : SimpleActivity() {
 
     private fun addInfoLine(holder: LinearLayout, label: String, value: String, onClick: () -> Unit) {
         val textColor = getProperTextColor()
-        val iconColor = 0xFF9AA3AF.toInt()
+        val iconColor = OmnioColors.TEXT_MUTED
         holder.addView(LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL

@@ -1,5 +1,6 @@
 package org.fossify.phone.adapters
 
+import org.fossify.commons.helpers.OmnioColors
 import android.annotation.SuppressLint
 import android.graphics.drawable.Drawable
 import android.provider.CallLog.Calls
@@ -204,11 +205,11 @@ class RecentCallsAdapter(
     fun initDrawables() {
         val theme = activity.theme
         // Omnio One colours: outgoing blue, incoming green, missed red
-        missedCallColor = 0xFFFF6B6B.toInt()
+        missedCallColor = OmnioColors.MISSED
         secondaryTextColor = textColor.adjustAlpha(0.6f)
 
-        val outgoingCallColor = 0xFF4F7CFF.toInt()
-        val incomingCallColor = 0xFF22C55E.toInt()
+        val outgoingCallColor = OmnioColors.CALLS
+        val incomingCallColor = OmnioColors.MESSAGES
         outgoingCallIcon = resources.getColoredDrawableWithColor(R.drawable.ic_call_made_vector, outgoingCallColor)
         incomingCallIcon = resources.getColoredDrawableWithColor(R.drawable.ic_call_received_vector, incomingCallColor)
         incomingMissedCallIcon = resources.getColoredDrawableWithColor(R.drawable.ic_call_missed_vector, missedCallColor)
@@ -619,7 +620,7 @@ class RecentCallsAdapter(
     private inner class RecentCallDateViewHolder(val binding: ItemRecentsDateBinding) : ViewHolder(binding.root) {
         fun bind(date: CallLogItem.Date) {
             binding.dateTextView.apply {
-                setTextColor(0xFF4F7CFF.toInt())
+                setTextColor(OmnioColors.CALLS)
                 setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * 0.76f)
 
                 val now = DateTime.now()

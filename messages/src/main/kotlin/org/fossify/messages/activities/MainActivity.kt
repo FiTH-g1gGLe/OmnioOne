@@ -1,5 +1,6 @@
 package org.fossify.messages.activities
 
+import org.fossify.commons.helpers.OmnioColors
 import android.annotation.SuppressLint
 import android.app.role.RoleManager
 import android.content.Intent
@@ -125,8 +126,8 @@ class MainActivity : SimpleActivity() {
     override fun onResume() {
         super.onResume()
         binding.omnioTabs.setBackgroundColor(getBottomNavigationBackgroundColor())
-        binding.conversationsFab.backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF22C55E.toInt())
-        binding.conversationsFab.imageTintList = android.content.res.ColorStateList.valueOf(0xFF0F1115.toInt())
+        binding.conversationsFab.backgroundTintList = android.content.res.ColorStateList.valueOf(OmnioColors.MESSAGES)
+        binding.conversationsFab.imageTintList = android.content.res.ColorStateList.valueOf(OmnioColors.ON_ACCENT)
         updateMenuColors()
         refreshMenuItems()
 

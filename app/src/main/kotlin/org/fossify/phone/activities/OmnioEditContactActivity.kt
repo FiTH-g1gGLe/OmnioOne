@@ -1,5 +1,6 @@
 package org.fossify.phone.activities
 
+import org.fossify.commons.helpers.OmnioColors
 import android.app.DatePickerDialog
 import android.content.res.ColorStateList
 import android.graphics.Typeface
@@ -139,7 +140,7 @@ class OmnioEditContactActivity : SimpleActivity() {
     private fun buildScreen() {
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setBackgroundColor(0xFF0F1115.toInt())
+            setBackgroundColor(OmnioColors.ON_ACCENT)
         }
 
         // top bar: ✕  title  Save
@@ -166,7 +167,7 @@ class OmnioEditContactActivity : SimpleActivity() {
             })
             addView(TextView(this@OmnioEditContactActivity).apply {
                 text = getString(org.fossify.commons.R.string.save)
-                setTextColor(0xFF0F1115.toInt())
+                setTextColor(OmnioColors.ON_ACCENT)
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
                 setTypeface(typeface, Typeface.BOLD)
                 gravity = Gravity.CENTER
@@ -193,7 +194,7 @@ class OmnioEditContactActivity : SimpleActivity() {
             addView(photoView)
             addView(ImageView(this@OmnioEditContactActivity).apply {
                 setImageResource(org.fossify.commons.R.drawable.ic_camera_vector)
-                imageTintList = ColorStateList.valueOf(0xFF0F1115.toInt())
+                imageTintList = ColorStateList.valueOf(OmnioColors.ON_ACCENT)
                 setPadding(dp(7), dp(7), dp(7), dp(7))
                 background = getDrawable(R.drawable.omnio_circle_bg)
                 backgroundTintList = ColorStateList.valueOf(OmnioSheet.BLUE)
@@ -275,7 +276,7 @@ class OmnioEditContactActivity : SimpleActivity() {
                 setTypeface(typeface, Typeface.BOLD)
                 gravity = Gravity.CENTER
                 background = getDrawable(R.drawable.omnio_round_bg)
-                backgroundTintList = ColorStateList.valueOf(0xFF2A1A1D.toInt())
+                backgroundTintList = ColorStateList.valueOf(OmnioColors.DANGER_CARD)
                 layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(52)).apply { topMargin = dp(32) }
                 setOnClickListener { confirmDelete() }
             })

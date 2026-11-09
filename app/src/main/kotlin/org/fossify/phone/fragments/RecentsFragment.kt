@@ -1,5 +1,6 @@
 package org.fossify.phone.fragments
 
+import org.fossify.commons.helpers.OmnioColors
 import android.content.Context
 import android.util.AttributeSet
 import org.fossify.commons.extensions.baseConfig
@@ -44,7 +45,7 @@ class RecentsFragment(
     // Omnio One: All / Missed / Unknown filter
     private enum class Filter { ALL, MISSED, UNKNOWN }
     private var filter = Filter.ALL
-    private var omnioTextColor = 0xFFECEFF4.toInt()
+    private var omnioTextColor = OmnioColors.TEXT
 
     private fun matchesFilter(call: RecentCall) = when (filter) {
         Filter.ALL -> true
@@ -92,9 +93,9 @@ class RecentsFragment(
             binding.recentsFilterUnknown to Filter.UNKNOWN
         ).forEach { (chip, chipFilter) ->
             val selected = chipFilter == filter
-            val accent = if (chipFilter == Filter.MISSED) 0xFFFF6B6B.toInt() else 0xFF4F7CFF.toInt()
-            chip.backgroundTintList = android.content.res.ColorStateList.valueOf(if (selected) accent else 0xFF1B1F27.toInt())
-            chip.setTextColor(if (selected) 0xFF0F1115.toInt() else omnioTextColor)
+            val accent = if (chipFilter == Filter.MISSED) OmnioColors.MISSED else OmnioColors.CALLS
+            chip.backgroundTintList = android.content.res.ColorStateList.valueOf(if (selected) accent else OmnioColors.CARD)
+            chip.setTextColor(if (selected) OmnioColors.ON_ACCENT else omnioTextColor)
         }
     }
     private var recentsHelper = RecentsHelper(context)

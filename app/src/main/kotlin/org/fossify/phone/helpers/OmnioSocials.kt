@@ -1,6 +1,5 @@
 package org.fossify.phone.helpers
 
-import android.content.ContentProviderOperation
 import android.content.Context
 import android.provider.ContactsContract
 import android.provider.ContactsContract.CommonDataKinds.Website
@@ -367,60 +366,19 @@ object OmnioSocials {
     }
 
     /** Adds one data row (email, website, …) to the contact's first raw contact. */
-    fun addData(context: Context, contactId: Int, mimeType: String, vararg values: Pair<String, Any>): Boolean {
-        return try {
-            val rawId = context.contentResolver.query(
-                ContactsContract.RawContacts.CONTENT_URI,
-                arrayOf(ContactsContract.RawContacts._ID),
-                "${ContactsContract.RawContacts.CONTACT_ID} = ? AND ${ContactsContract.RawContacts.DELETED} = 0",
-                arrayOf(contactId.toString()),
-                null
-            )?.use { if (it.moveToFirst()) it.getLong(0) else null } ?: return false
-            val builder = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-                .withValue(ContactsContract.Data.RAW_CONTACT_ID, rawId)
-                .withValue(ContactsContract.Data.MIMETYPE, mimeType)
-            values.forEach { (key, value) -> builder.withValue(key, value) }
-            context.contentResolver.applyBatch(ContactsContract.AUTHORITY, arrayListOf(builder.build()))
-            true
-        } catch (e: Exception) {
-            false
-        }
-    }
+    fun addData(context: Context, contactId: Int, mimeType: String, vararg values: Pair<String, Any>): Boolean =
+        org.fossify.commons.helpers.OmnioContactData.add(context, contactId.toLong(), mimeType, *values)
 
     /** Saves a profile link on the contact. Returns true when it worked. */
     fun addSocial(context: Context, contactId: Int, url: String): Boolean {
-        return try {
-            val rawId = context.contentResolver.query(
-                ContactsContract.RawContacts.CONTENT_URI,
-                arrayOf(ContactsContract.RawContacts._ID),
-                "${ContactsContract.RawContacts.CONTACT_ID} = ? AND ${ContactsContract.RawContacts.DELETED} = 0",
-                arrayOf(contactId.toString()),
-                null
-            )?.use { if (it.moveToFirst()) it.getLong(0) else null } ?: return false
-
-            val operation = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-                .withValue(ContactsContract.Data.RAW_CONTACT_ID, rawId)
-                .withValue(ContactsContract.Data.MIMETYPE, Website.CONTENT_ITEM_TYPE)
-                .withValue(Website.URL, url)
-                .withValue(Website.TYPE, Website.TYPE_PROFILE)
-                .build()
-            context.contentResolver.applyBatch(ContactsContract.AUTHORITY, arrayListOf(operation))
-            clearPendingLink(context)
-            true
-        } catch (e: Exception) {
-            false
-        }
+        val ok = org.fossify.commons.helpers.OmnioContactData.add(
+            context, contactId.toLong(), Website.CONTENT_ITEM_TYPE,
+            Website.URL to url,
+            Website.TYPE to Website.TYPE_PROFILE
+        )
+        if (ok) clearPendingLink(context)
+        return ok
     }
 
-    fun removeSocial(context: Context, dataId: Long): Boolean {
-        return try {
-            val operation = ContentProviderOperation.newDelete(
-                android.content.ContentUris.withAppendedId(ContactsContract.Data.CONTENT_URI, dataId)
-            ).build()
-            context.contentResolver.applyBatch(ContactsContract.AUTHORITY, arrayListOf(operation))
-            true
-        } catch (e: Exception) {
-            false
-        }
-    }
+    fun removeSocial(context: Context, dataId: Long): Boolean = org.fossify.commons.helpers.OmnioContactData.remove(context, dataId)
 }

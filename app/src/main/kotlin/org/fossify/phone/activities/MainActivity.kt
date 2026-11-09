@@ -1,5 +1,6 @@
 package org.fossify.phone.activities
 
+import org.fossify.commons.helpers.OmnioColors
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
@@ -49,7 +50,7 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
 private const val OMNIO_MESSAGES_TAB = "omnio_messages"
-private const val OMNIO_MESSAGES_GREEN = 0xFF22C55E.toInt()
+private const val OMNIO_MESSAGES_GREEN = OmnioColors.MESSAGES
 
 class MainActivity : SimpleActivity() {
     override var isSearchBarEnabled = true
@@ -336,9 +337,9 @@ class MainActivity : SimpleActivity() {
     private fun applyOmnioThemeOnce() {
         val omnioPrefs = getSharedPreferences("omnio", MODE_PRIVATE)
         if (omnioPrefs.getBoolean("omnio_theme_v1", false)) return
-        val text = 0xFFECEFF4.toInt()
-        val background = 0xFF0F1115.toInt()
-        val primary = 0xFF4F7CFF.toInt()
+        val text = OmnioColors.TEXT
+        val background = OmnioColors.ON_ACCENT
+        val primary = OmnioColors.CALLS
         config.isSystemThemeEnabled = false
         config.isGlobalThemeEnabled = false
         config.textColor = text
@@ -356,9 +357,9 @@ class MainActivity : SimpleActivity() {
     private fun tintOmnioTab(view: android.view.View?, position: Int, selected: Boolean = true) {
         val visibleTabs = tabsList.filter { config.showTabs and it != 0 }
         val color = when (visibleTabs.getOrNull(position)) {
-            TAB_CONTACTS -> 0xFFFF8A3D.toInt()
-            TAB_FAVORITES -> 0xFFFFC85A.toInt()
-            TAB_CALL_HISTORY -> 0xFF4F7CFF.toInt()
+            TAB_CONTACTS -> OmnioColors.CONTACTS
+            TAB_FAVORITES -> OmnioColors.FAVOURITES
+            TAB_CALL_HISTORY -> OmnioColors.CALLS
             else -> return
         }
         view?.findViewById<ImageView>(R.id.tab_item_icon)?.apply {
@@ -449,26 +450,6 @@ class MainActivity : SimpleActivity() {
 
     // Omnio One: always use the flat, filled icons so the tab bar looks like a matching set
     private fun getDeselectedTabDrawableIds(): ArrayList<Int> = ArrayList(getSelectedTabDrawableIds())
-
-    @Suppress("unused")
-    private fun getFossifyDeselectedTabDrawableIds(): ArrayList<Int> {
-        val showTabs = config.showTabs
-        val icons = ArrayList<Int>()
-
-        if (showTabs and TAB_CONTACTS != 0) {
-            icons.add(R.drawable.ic_person_outline_vector)
-        }
-
-        if (showTabs and TAB_FAVORITES != 0) {
-            icons.add(R.drawable.ic_star_outline_vector)
-        }
-
-        if (showTabs and TAB_CALL_HISTORY != 0) {
-            icons.add(R.drawable.ic_clock_vector)
-        }
-
-        return icons
-    }
 
     private fun initFragments() {
         binding.viewPager.offscreenPageLimit = 2

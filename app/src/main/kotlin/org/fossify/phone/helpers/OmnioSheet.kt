@@ -1,5 +1,6 @@
 package org.fossify.phone.helpers
 
+import org.fossify.commons.helpers.OmnioColors
 import android.app.Activity
 import android.content.res.ColorStateList
 import android.graphics.Color
@@ -26,13 +27,13 @@ import org.fossify.phone.R
  */
 object OmnioSheet {
 
-    const val BACKGROUND = 0xFF12151B.toInt()
-    const val CARD = 0xFF1A1F27.toInt()
-    const val TEXT = 0xFFECEFF4.toInt()
-    const val ORANGE = 0xFFFF8A3D.toInt()
-    const val GREEN = 0xFF22C55E.toInt()
-    const val BLUE = 0xFF4F7CFF.toInt()
-    const val RED = 0xFFFF6B6B.toInt()
+    const val BACKGROUND = OmnioColors.SHEET
+    const val CARD = OmnioColors.CARD
+    const val TEXT = OmnioColors.TEXT
+    const val ORANGE = OmnioColors.CONTACTS
+    const val GREEN = OmnioColors.MESSAGES
+    const val BLUE = OmnioColors.CALLS
+    const val RED = OmnioColors.MISSED
 
     data class Item(val label: String, val icon: Drawable? = null, val trailing: String? = null, val trailingColor: Int = GREEN, val labelColor: Int = TEXT)
 
@@ -81,7 +82,7 @@ object OmnioSheet {
                         setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
                         setTypeface(typeface, Typeface.BOLD)
                         setPadding(dp(18), 0, dp(18), 0)
-                        setTextColor(if (main) 0xFF0F1115.toInt() else TEXT)
+                        setTextColor(if (main) OmnioColors.ON_ACCENT else TEXT)
                         background = getDrawable(R.drawable.omnio_round_bg)
                         backgroundTintList = ColorStateList.valueOf(if (main) mainColor else CARD)
                         layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, dp(46)).apply {

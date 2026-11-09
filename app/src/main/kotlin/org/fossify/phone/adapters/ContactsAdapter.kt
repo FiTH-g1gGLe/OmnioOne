@@ -1,5 +1,6 @@
 package org.fossify.phone.adapters
 
+import org.fossify.commons.helpers.OmnioColors
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.ShortcutInfo
@@ -17,7 +18,6 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
 import com.bumptech.glide.Glide
 import org.fossify.commons.adapters.MyRecyclerViewAdapter
-import org.fossify.commons.databinding.ItemContactWithoutNumberBinding
 import org.fossify.commons.databinding.ItemContactWithoutNumberGridBinding
 import org.fossify.commons.dialogs.ConfirmationDialog
 import org.fossify.commons.extensions.*
@@ -212,7 +212,7 @@ class ContactsAdapter(
         if (style == OmnioDisplay.STYLE_CARDS) {
             binding.itemContactName.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * 1.02f)
             binding.itemContactFrame.backgroundTintList = android.content.res.ColorStateList.valueOf(
-                if (selectedKeys.contains(contact.rawId)) 0xFF22304F.toInt() else 0xFF171B22.toInt()
+                if (selectedKeys.contains(contact.rawId)) OmnioColors.CARD_SELECTED else OmnioColors.CARD_DEEP
             )
             val number = (contact.phoneNumbers.firstOrNull { it.isPrimary } ?: contact.phoneNumbers.firstOrNull())?.value
             binding.itemContactCall?.apply {
@@ -722,12 +722,4 @@ class ContactsAdapter(
         override fun getRoot(): View = binding.root
     }
 
-    private class ItemContactBindingAdapter(val binding: ItemContactWithoutNumberBinding) : ItemViewBinding {
-        override val itemContactName = binding.itemContactName
-        override val itemContactImage = binding.itemContactImage
-        override val itemContactFrame = binding.itemContactFrame
-        override val dragHandleIcon = binding.dragHandleIcon
-
-        override fun getRoot(): View = binding.root
-    }
 }

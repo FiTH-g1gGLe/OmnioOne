@@ -1,5 +1,6 @@
 package org.fossify.messages.adapters
 
+import org.fossify.commons.helpers.OmnioColors
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Color
@@ -483,7 +484,7 @@ class ThreadAdapter(
                 text = emoji
                 gravity = android.view.Gravity.CENTER
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, if (emoji == "+") 22f else 26f)
-                if (emoji == "+") setTextColor(0xFFECEFF4.toInt())
+                if (emoji == "+") setTextColor(OmnioColors.TEXT)
                 layoutParams = android.widget.LinearLayout.LayoutParams(dp(44), dp(44))
                 background = androidx.core.content.ContextCompat.getDrawable(activity, org.fossify.commons.R.drawable.ripple_all_corners)
                 setOnClickListener {
@@ -565,8 +566,8 @@ class ThreadAdapter(
             }
 
             // Omnio One: sent texts are Messages green
-            val primaryColor = 0xFF22C55E.toInt()
-            val contrastColor = 0xFF0F1115.toInt()
+            val primaryColor = OmnioColors.MESSAGES
+            val contrastColor = OmnioColors.ON_ACCENT
 
             threadMessageBody.apply {
                 updateLayoutParams<RelativeLayout.LayoutParams> {
