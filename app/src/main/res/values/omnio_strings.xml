@@ -372,4 +372,11 @@
     <string name="omnio_block_failed">Couldn’t block this number. Omnio One needs to be your phone app.</string>
     <string name="omnio_delete_recents_question">Delete from Recents?</string>
     <string name="omnio_delete_recents_desc">Removes %1$d call(s) with %2$s from your call history.</string>
+    <string name="omnio_dialpad_recent">RECENT</string>
+    <string name="omnio_dialpad_matches">%d MATCHES</string>
+    <string name="omnio_dialpad_paste">Paste number</string>
+    <string name="omnio_dialpad_no_number">No phone number to paste</string>
+    <string name="omnio_dialpad_needs_default">Make Omnio One your phone app to use codes</string>
+    <string name="omnio_dialpad_nothing_to_redial">No number to call back yet</string>
+    <string name="omnio_dialpad_delete">Delete</string>
 </resources>

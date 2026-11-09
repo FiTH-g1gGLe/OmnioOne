@@ -63,11 +63,11 @@ internal data class ActivityItem(
 internal fun OmnioContactActivity.loadRecentCalls(contact: Contact) {
     val numbers = contact.phoneNumbers.map { it.normalizedNumber.ifEmpty { it.value } }
     if (numbers.isEmpty()) return
-    RecentsHelper(this).getRecentCalls(queryLimit = 300) { calls ->
+    com.omnioone.commons.helpers.ensureBackgroundThread {
+        val calls = com.omnioone.app.helpers.OmnioCallLog.load(this, limit = 400, group = false).map { it.latest }
         val now = System.currentTimeMillis()
         val items = ArrayList<ActivityItem>()
-        calls.filter { call -> numbers.any { PhoneNumberUtils.compare(it, call.phoneNumber) } }
-            .sortedByDescending { it.startTS }
+        calls.filter { call -> numbers.any { PhoneNumberUtils.compare(it, call.number) } }
             .take(OmnioContactActivity.MAX_RECENT)
             .forEach { call ->
                 val (title, icon, color) = when (call.type) {
@@ -76,9 +76,9 @@ internal fun OmnioContactActivity.loadRecentCalls(contact: Contact) {
                     Calls.OUTGOING_TYPE -> Triple(R.string.omnio_outgoing_call, R.drawable.ic_call_made_vector, OmnioColors.CALLS)
                     else -> Triple(R.string.omnio_incoming_call, R.drawable.ic_call_received_vector, OmnioColors.MESSAGES)
                 }
-                val whenText = DateUtils.getRelativeTimeSpanString(call.startTS, now, DateUtils.MINUTE_IN_MILLIS).toString()
-                val subtitle = if (call.duration > 0) "$whenText · ${call.duration.getFormattedDuration()}" else whenText
-                items.add(ActivityItem(call.startTS, getString(title), subtitle, icon, color, null))
+                val whenText = DateUtils.getRelativeTimeSpanString(call.date, now, DateUtils.MINUTE_IN_MILLIS).toString()
+                val subtitle = if (call.duration > 0) "$whenText · ${com.omnioone.app.adapters.OmnioRecentsAdapter.duration(call.duration)}" else whenText
+                items.add(ActivityItem(call.date, getString(title), subtitle, icon, color, null))
             }
         items.addAll(loadRecentTexts(numbers, now))
         val newest = items.sortedByDescending { it.time }.take(OmnioContactActivity.MAX_RECENT)

@@ -13,7 +13,6 @@ import com.omnioone.commons.views.MyRecyclerView
 import com.omnioone.app.activities.MainActivity
 import com.omnioone.app.activities.SimpleActivity
 import com.omnioone.app.adapters.ContactsAdapter
-import com.omnioone.app.adapters.RecentCallsAdapter
 import com.omnioone.app.databinding.FragmentLettersLayoutBinding
 import com.omnioone.app.databinding.FragmentRecentsBinding
 import com.omnioone.app.extensions.config
@@ -50,12 +49,7 @@ abstract class MyViewPagerFragment<BINDING : MyViewPagerFragment.InnerBinding>(c
     }
 
     fun fontSizeChanged() {
-        if (this is RecentsFragment) {
-            (innerBinding.recentsList.adapter as? RecentCallsAdapter)?.apply {
-                fontSize = activity.getTextSize()
-                notifyDataSetChanged()
-            }
-        } else {
+        if (this !is RecentsFragment) {
             (innerBinding.fragmentList?.adapter as? ContactsAdapter)?.apply {
                 fontSize = activity.getTextSize()
                 notifyDataSetChanged()
