@@ -13,7 +13,7 @@ android {
         unitTests.isReturnDefaultValues = true
     }
 
-    namespace = "org.fossify.messages"
+    namespace = "com.omnioone.messages"
     compileSdk = libs.versions.app.build.compileSDKVersion.get().toInt()
 
     defaultConfig {

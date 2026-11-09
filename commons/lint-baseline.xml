@@ -24,7 +24,7 @@
         errorLine1="            prefs.edit().putBoolean(USE_ENGLISH, useEnglish).commit()"
         errorLine2="                                                             ~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="227"
             column="62"/>
     </issue>
@@ -35,7 +35,7 @@
         errorLine1="import android.media.ExifInterface"
         errorLine2="       ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/Int.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/Int.kt"
             line="6"
             column="8"/>
     </issue>
@@ -46,7 +46,7 @@
         errorLine1="    PERMISSION_POST_NOTIFICATIONS -> Manifest.permission.POST_NOTIFICATIONS"
         errorLine2="                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/Context.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/Context.kt"
             line="346"
             column="38"/>
     </issue>
@@ -57,7 +57,7 @@
         errorLine1="    PERMISSION_READ_MEDIA_IMAGES -> Manifest.permission.READ_MEDIA_IMAGES"
         errorLine2="                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/Context.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/Context.kt"
             line="347"
             column="37"/>
     </issue>
@@ -68,7 +68,7 @@
         errorLine1="    PERMISSION_READ_MEDIA_VIDEO -> Manifest.permission.READ_MEDIA_VIDEO"
         errorLine2="                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/Context.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/Context.kt"
             line="348"
             column="36"/>
     </issue>
@@ -79,7 +79,7 @@
         errorLine1="    PERMISSION_READ_MEDIA_AUDIO -> Manifest.permission.READ_MEDIA_AUDIO"
         errorLine2="                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/Context.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/Context.kt"
             line="349"
             column="36"/>
     </issue>
@@ -90,7 +90,7 @@
         errorLine1="    PERMISSION_READ_MEDIA_VISUAL_USER_SELECTED -> Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED"
         errorLine2="                                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/Context.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/Context.kt"
             line="352"
             column="51"/>
     </issue>
@@ -101,7 +101,7 @@
         errorLine1="    val id = getIdentifier(&quot;navigation_bar_height&quot;, &quot;dimen&quot;, &quot;android&quot;)"
         errorLine2="             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/Resources.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/Resources.kt"
             line="35"
             column="14"/>
     </issue>
@@ -112,7 +112,7 @@
         errorLine1="                                    activity.contentResolver.delete(uri, null)"
         errorLine2="                                                             ~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/views/RenamePatternTab.kt"
+            file="src/main/kotlin/com/omnioone/commons/views/RenamePatternTab.kt"
             line="217"
             column="62"/>
     </issue>
@@ -123,7 +123,7 @@
         errorLine1="                                    activity.contentResolver.delete(uri, null)"
         errorLine2="                                                             ~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/views/RenameSimpleTab.kt"
+            file="src/main/kotlin/com/omnioone/commons/views/RenameSimpleTab.kt"
             line="166"
             column="62"/>
     </issue>
@@ -200,7 +200,7 @@
         errorLine1="    &quot;/mnt/extsdcard&quot;, &quot;/mnt/sdcard/external_sd&quot;, // Samsung galaxy family"
         errorLine2="                       ~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/Context-storage.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/Context-storage.kt"
             line="926"
             column="24"/>
     </issue>
@@ -211,7 +211,7 @@
         errorLine1="    &quot;/data/sdext&quot;, &quot;/data/sdext2&quot;, &quot;/data/sdext3&quot;, &quot;/data/sdext4&quot;, &quot;/sdcard1&quot;, // Sony Xperia Z"
         errorLine2="                                                                    ~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/Context-storage.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/Context-storage.kt"
             line="932"
             column="69"/>
     </issue>
@@ -222,7 +222,7 @@
         errorLine1="    &quot;/sdcard2&quot;, // HTC One M8s"
         errorLine2="     ~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/Context-storage.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/Context-storage.kt"
             line="933"
             column="6"/>
     </issue>
@@ -244,7 +244,7 @@
         errorLine1="        conf.locale = Locale.ENGLISH"
         errorLine2="             ~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/App.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/App.kt"
             line="10"
             column="14"/>
     </issue>
@@ -255,7 +255,7 @@
         errorLine1="abstract class BaseSplashActivity : AppCompatActivity() {"
         errorLine2="               ~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/activities/BaseSplashActivity.kt"
+            file="src/main/kotlin/com/omnioone/commons/activities/BaseSplashActivity.kt"
             line="10"
             column="16"/>
     </issue>
@@ -266,7 +266,7 @@
         errorLine1="                actBarTextView = layoutInflater.inflate(R.layout.actionbar_title, null) as TextView"
         errorLine2="                                                                                  ~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/adapters/MyRecyclerViewAdapter.kt"
+            file="src/main/kotlin/com/omnioone/commons/adapters/MyRecyclerViewAdapter.kt"
             line="69"
             column="83"/>
     </issue>
@@ -277,7 +277,7 @@
         errorLine1="                actBarTextView = layoutInflater.inflate(R.layout.actionbar_title, null) as TextView"
         errorLine2="                                                                                  ~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/adapters/MyRecyclerViewListAdapter.kt"
+            file="src/main/kotlin/com/omnioone/commons/adapters/MyRecyclerViewListAdapter.kt"
             line="77"
             column="83"/>
     </issue>
@@ -288,7 +288,7 @@
         errorLine1="                val radioButton = (activity.layoutInflater.inflate(R.layout.radio_button, null) as RadioButton).apply {"
         errorLine2="                                                                                          ~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/dialogs/RadioGroupDialog.kt"
+            file="src/main/kotlin/com/omnioone/commons/dialogs/RadioGroupDialog.kt"
             line="55"
             column="91"/>
     </issue>
@@ -299,7 +299,7 @@
         errorLine1="        val radioButton = (activity.layoutInflater.inflate(R.layout.item_select_alarm_sound, null) as MyCompatRadioButton).apply {"
         errorLine2="                                                                                             ~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/dialogs/SelectAlarmSoundDialog.kt"
+            file="src/main/kotlin/com/omnioone/commons/dialogs/SelectAlarmSoundDialog.kt"
             line="75"
             column="94"/>
     </issue>
@@ -365,7 +365,7 @@
         errorLine1="open class MyAutoCompleteTextView : AutoCompleteTextView {"
         errorLine2="                                    ~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/views/MyAutoCompleteTextView.kt"
+            file="src/main/kotlin/com/omnioone/commons/views/MyAutoCompleteTextView.kt"
             line="10"
             column="37"/>
     </issue>
@@ -376,7 +376,7 @@
         errorLine1="open class MyButton : Button {"
         errorLine2="                      ~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/views/MyButton.kt"
+            file="src/main/kotlin/com/omnioone/commons/views/MyButton.kt"
             line="8"
             column="23"/>
     </issue>
@@ -387,7 +387,7 @@
         errorLine1="open class MySeekBar : SeekBar {"
         errorLine2="                       ~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/views/MySeekBar.kt"
+            file="src/main/kotlin/com/omnioone/commons/views/MySeekBar.kt"
             line="8"
             column="24"/>
     </issue>
@@ -398,7 +398,7 @@
         errorLine1="open class MyTextView : TextView {"
         errorLine2="                        ~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/views/MyTextView.kt"
+            file="src/main/kotlin/com/omnioone/commons/views/MyTextView.kt"
             line="8"
             column="25"/>
     </issue>
@@ -739,7 +739,7 @@
         errorLine1="        animateChildTo(0, ENTER_ANIMATION_DURATION.toLong(), AnimationUtils.LINEAR_OUT_SLOW_IN_INTERPOLATOR, true)"
         errorLine2="                                                                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/views/bottomactionmenu/BottomActionMenuView.kt"
+            file="src/main/kotlin/com/omnioone/commons/views/bottomactionmenu/BottomActionMenuView.kt"
             line="70"
             column="77"/>
     </issue>
@@ -750,7 +750,7 @@
         errorLine1="            AnimationUtils.FAST_OUT_LINEAR_IN_INTERPOLATOR"
         errorLine2="                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/views/bottomactionmenu/BottomActionMenuView.kt"
+            file="src/main/kotlin/com/omnioone/commons/views/bottomactionmenu/BottomActionMenuView.kt"
             line="81"
             column="28"/>
     </issue>
@@ -761,7 +761,7 @@
         errorLine1="        supportButtonTintList = colorStateList"
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/views/MyAppCompatCheckbox.kt"
+            file="src/main/kotlin/com/omnioone/commons/views/MyAppCompatCheckbox.kt"
             line="36"
             column="9"/>
     </issue>
@@ -772,7 +772,7 @@
         errorLine1="        supportButtonTintList = colorStateList"
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/views/MyAppCompatCheckbox.kt"
+            file="src/main/kotlin/com/omnioone/commons/views/MyAppCompatCheckbox.kt"
             line="36"
             column="9"/>
     </issue>
@@ -783,7 +783,7 @@
         errorLine1="        supportButtonTintList = colorStateList"
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/views/MyCompatRadioButton.kt"
+            file="src/main/kotlin/com/omnioone/commons/views/MyCompatRadioButton.kt"
             line="36"
             column="9"/>
     </issue>
@@ -794,7 +794,7 @@
         errorLine1="        supportButtonTintList = colorStateList"
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/views/MyCompatRadioButton.kt"
+            file="src/main/kotlin/com/omnioone/commons/views/MyCompatRadioButton.kt"
             line="36"
             column="9"/>
     </issue>
@@ -805,7 +805,7 @@
         errorLine1="            val resources = context.resources"
         errorLine2="                            ~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/activities/AboutActivity.kt"
+            file="src/main/kotlin/com/omnioone/commons/activities/AboutActivity.kt"
             line="67"
             column="29"/>
     </issue>
@@ -871,7 +871,7 @@
         errorLine1="    val id = getIdentifier(&quot;config_showNavigationBar&quot;, &quot;bool&quot;, &quot;android&quot;)"
         errorLine2="             ~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/Resources.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/Resources.kt"
             line="30"
             column="14"/>
     </issue>
@@ -882,7 +882,7 @@
         errorLine1="    val id = getIdentifier(&quot;navigation_bar_height&quot;, &quot;dimen&quot;, &quot;android&quot;)"
         errorLine2="             ~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/Resources.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/Resources.kt"
             line="35"
             column="14"/>
     </issue>
@@ -904,7 +904,7 @@
         errorLine1="@TargetApi(Build.VERSION_CODES.N)"
         errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/Context-contacts.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/Context-contacts.kt"
             line="372"
             column="1"/>
     </issue>
@@ -915,7 +915,7 @@
         errorLine1="@TargetApi(Build.VERSION_CODES.N)"
         errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/Context-contacts.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/Context-contacts.kt"
             line="385"
             column="1"/>
     </issue>
@@ -926,7 +926,7 @@
         errorLine1="@TargetApi(Build.VERSION_CODES.N)"
         errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/ExifInterface.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/ExifInterface.kt"
             line="125"
             column="1"/>
     </issue>
@@ -937,7 +937,7 @@
         errorLine1="    @TargetApi(Build.VERSION_CODES.N)"
         errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/MyContextWrapper.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/MyContextWrapper.kt"
             line="40"
             column="5"/>
     </issue>
@@ -948,7 +948,7 @@
         errorLine1="    @TargetApi(Build.VERSION_CODES.N)"
         errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/MyContextWrapper.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/MyContextWrapper.kt"
             line="47"
             column="5"/>
     </issue>
@@ -959,7 +959,7 @@
         errorLine1="                isBlackAndWhiteTheme() -> resources.getDrawable(R.drawable.black_dialog_background, theme)"
         errorLine2="                                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/Activity.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/Activity.kt"
             line="1628"
             column="43"/>
     </issue>
@@ -970,7 +970,7 @@
         errorLine1="                isDynamicTheme() -> resources.getDrawable(R.drawable.dialog_you_background, theme)"
         errorLine2="                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/Activity.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/Activity.kt"
             line="1629"
             column="37"/>
     </issue>
@@ -981,7 +981,7 @@
         errorLine1="        getDrawable(R.drawable.ic_camera_vector)"
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/Activity.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/Activity.kt"
             line="1787"
             column="9"/>
     </issue>
@@ -992,7 +992,7 @@
         errorLine1="        fileDrawables[key] = context.resources.getDrawable(value)"
         errorLine2="                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/Constants.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/Constants.kt"
             line="664"
             column="30"/>
     </issue>
@@ -1003,7 +1003,7 @@
         errorLine1="        fileDrawable = resources.getDrawable(R.drawable.ic_file_generic)"
         errorLine2="                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/adapters/FilepickerItemsAdapter.kt"
+            file="src/main/kotlin/com/omnioone/commons/adapters/FilepickerItemsAdapter.kt"
             line="146"
             column="24"/>
     </issue>
@@ -1014,7 +1014,7 @@
         errorLine1="                setDrawable(resources.getDrawable(R.drawable.divider))"
         errorLine2="                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/adapters/MyRecyclerViewAdapter.kt"
+            file="src/main/kotlin/com/omnioone/commons/adapters/MyRecyclerViewAdapter.kt"
             line="274"
             column="29"/>
     </issue>
@@ -1025,7 +1025,7 @@
         errorLine1="                setDrawable(resources.getDrawable(R.drawable.divider))"
         errorLine2="                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/adapters/MyRecyclerViewListAdapter.kt"
+            file="src/main/kotlin/com/omnioone/commons/adapters/MyRecyclerViewListAdapter.kt"
             line="291"
             column="29"/>
     </issue>
@@ -1036,7 +1036,7 @@
         errorLine1="    val drawable = getDrawable(resourceId)"
         errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/Resources.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/Resources.kt"
             line="11"
             column="20"/>
     </issue>
@@ -1047,7 +1047,7 @@
         errorLine1="    val drawable = getDrawable(drawableId)"
         errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/Resources.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/Resources.kt"
             line="23"
             column="20"/>
     </issue>
@@ -1058,7 +1058,7 @@
         errorLine1="        val icon = context.resources.getDrawable(R.drawable.ic_group_circle_bg)"
         errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/SimpleContactsHelper.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/SimpleContactsHelper.kt"
             line="333"
             column="20"/>
     </issue>
@@ -1069,7 +1069,7 @@
         errorLine1="        resources.getDrawable(R.drawable.selector_clickable_you)"
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/View.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/View.kt"
             line="68"
             column="9"/>
     </issue>
@@ -1080,7 +1080,7 @@
         errorLine1="        resources.getDrawable(R.drawable.selector_clickable_you)"
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/View.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/View.kt"
             line="68"
             column="9"/>
     </issue>
@@ -1091,7 +1091,7 @@
         errorLine1="        resources.getDrawable(R.drawable.selector_clickable)"
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/View.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/View.kt"
             line="70"
             column="9"/>
     </issue>
@@ -1102,7 +1102,7 @@
         errorLine1="        resources.getDrawable(R.drawable.selector_clickable)"
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/View.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/View.kt"
             line="70"
             column="9"/>
     </issue>
@@ -13015,7 +13015,7 @@
         errorLine1="        notifyDataSetChanged()"
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/adapters/MyRecyclerViewAdapter.kt"
+            file="src/main/kotlin/com/omnioone/commons/adapters/MyRecyclerViewAdapter.kt"
             line="286"
             column="9"/>
     </issue>
@@ -13026,7 +13026,7 @@
         errorLine1="                    context.contentResolver.openInputStream(Uri.parse(path))?.available()?.toLong() ?: 0L"
         errorLine2="                                            ~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/models/FileDirItem.kt"
+            file="src/main/kotlin/com/omnioone/commons/models/FileDirItem.kt"
             line="86"
             column="45"/>
     </issue>
@@ -13037,7 +13037,7 @@
         errorLine1="fun isNougatPlus() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N"
         errorLine2="                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/Constants.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/Constants.kt"
             line="539"
             column="22"/>
     </issue>
@@ -13048,7 +13048,7 @@
         errorLine1="fun isNougatMR1Plus() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1"
         errorLine2="                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/Constants.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/Constants.kt"
             line="542"
             column="25"/>
     </issue>
@@ -13059,7 +13059,7 @@
         errorLine1="fun isOreoPlus() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O"
         errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/Constants.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/Constants.kt"
             line="545"
             column="20"/>
     </issue>
@@ -13070,7 +13070,7 @@
         errorLine1="@TargetApi(Build.VERSION_CODES.N)"
         errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/Context-contacts.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/Context-contacts.kt"
             line="372"
             column="1"/>
     </issue>
@@ -13081,7 +13081,7 @@
         errorLine1="@TargetApi(Build.VERSION_CODES.N)"
         errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/Context-contacts.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/Context-contacts.kt"
             line="385"
             column="1"/>
     </issue>
@@ -13092,7 +13092,7 @@
         errorLine1="@RequiresApi(Build.VERSION_CODES.O)"
         errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/Context-storage.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/Context-storage.kt"
             line="536"
             column="1"/>
     </issue>
@@ -13103,7 +13103,7 @@
         errorLine1="@RequiresApi(Build.VERSION_CODES.O)"
         errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/Context.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/Context.kt"
             line="436"
             column="1"/>
     </issue>
@@ -13114,7 +13114,7 @@
         errorLine1="@TargetApi(Build.VERSION_CODES.N)"
         errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/ExifInterface.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/ExifInterface.kt"
             line="125"
             column="1"/>
     </issue>
@@ -13125,7 +13125,7 @@
         errorLine1="    @TargetApi(Build.VERSION_CODES.N)"
         errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/MyContextWrapper.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/MyContextWrapper.kt"
             line="40"
             column="5"/>
     </issue>
@@ -13136,7 +13136,7 @@
         errorLine1="    @TargetApi(Build.VERSION_CODES.N)"
         errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/MyContextWrapper.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/MyContextWrapper.kt"
             line="47"
             column="5"/>
     </issue>
@@ -13147,7 +13147,7 @@
         errorLine1="    val activity: BaseSimpleActivity, val copyOnly: Boolean, val copyMediaOnly: Boolean, val conflictResolutions: LinkedHashMap&lt;String, Int>,"
         errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/asynctasks/CopyMoveTask.kt"
+            file="src/main/kotlin/com/omnioone/commons/asynctasks/CopyMoveTask.kt"
             line="27"
             column="5"/>
     </issue>
@@ -13235,7 +13235,7 @@
         errorLine1="    var previousIndex by remember(this) { mutableStateOf(firstVisibleItemIndex) }"
         errorLine2="                                          ~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/compose/extensions/DragHandler.kt"
+            file="src/main/kotlin/com/omnioone/commons/compose/extensions/DragHandler.kt"
             line="78"
             column="43"/>
     </issue>
@@ -13246,7 +13246,7 @@
         errorLine1="    var previousScrollOffset by remember(this) { mutableStateOf(firstVisibleItemScrollOffset) }"
         errorLine2="                                                 ~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/compose/extensions/DragHandler.kt"
+            file="src/main/kotlin/com/omnioone/commons/compose/extensions/DragHandler.kt"
             line="79"
             column="50"/>
     </issue>
@@ -13684,7 +13684,7 @@
         errorLine1="    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uriString))"
         errorLine2="                                            ~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/Activity.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/Activity.kt"
             line="685"
             column="45"/>
     </issue>
@@ -13695,7 +13695,7 @@
         errorLine1="        set(appRunCount) = prefs.edit().putInt(APP_RUN_COUNT, appRunCount).apply()"
         errorLine2="                           ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="30"
             column="28"/>
     </issue>
@@ -13706,7 +13706,7 @@
         errorLine1="        set(lastVersion) = prefs.edit().putInt(LAST_VERSION, lastVersion).apply()"
         errorLine2="                           ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="34"
             column="28"/>
     </issue>
@@ -13717,7 +13717,7 @@
         errorLine1="        set(uri) = prefs.edit().putString(PRIMARY_ANDROID_DATA_TREE_URI, uri).apply()"
         errorLine2="                   ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="38"
             column="20"/>
     </issue>
@@ -13728,7 +13728,7 @@
         errorLine1="        set(uri) = prefs.edit().putString(SD_ANDROID_DATA_TREE_URI, uri).apply()"
         errorLine2="                   ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="42"
             column="20"/>
     </issue>
@@ -13739,7 +13739,7 @@
         errorLine1="        set(uri) = prefs.edit().putString(OTG_ANDROID_DATA_TREE_URI, uri).apply()"
         errorLine2="                   ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="46"
             column="20"/>
     </issue>
@@ -13750,7 +13750,7 @@
         errorLine1="        set(uri) = prefs.edit().putString(PRIMARY_ANDROID_OBB_TREE_URI, uri).apply()"
         errorLine2="                   ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="50"
             column="20"/>
     </issue>
@@ -13761,7 +13761,7 @@
         errorLine1="        set(uri) = prefs.edit().putString(SD_ANDROID_OBB_TREE_URI, uri).apply()"
         errorLine2="                   ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="54"
             column="20"/>
     </issue>
@@ -13772,7 +13772,7 @@
         errorLine1="        set(uri) = prefs.edit().putString(OTG_ANDROID_OBB_TREE_URI, uri).apply()"
         errorLine2="                   ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="58"
             column="20"/>
     </issue>
@@ -13783,7 +13783,7 @@
         errorLine1="        set(uri) = prefs.edit().putString(SD_TREE_URI, uri).apply()"
         errorLine2="                   ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="62"
             column="20"/>
     </issue>
@@ -13794,7 +13794,7 @@
         errorLine1="        set(OTGTreeUri) = prefs.edit().putString(OTG_TREE_URI, OTGTreeUri).apply()"
         errorLine2="                          ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="66"
             column="27"/>
     </issue>
@@ -13805,7 +13805,7 @@
         errorLine1="        set(OTGPartition) = prefs.edit().putString(OTG_PARTITION, OTGPartition).apply()"
         errorLine2="                            ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="70"
             column="29"/>
     </issue>
@@ -13816,7 +13816,7 @@
         errorLine1="        set(OTGPath) = prefs.edit().putString(OTG_REAL_PATH, OTGPath).apply()"
         errorLine2="                       ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="74"
             column="24"/>
     </issue>
@@ -13827,7 +13827,7 @@
         errorLine1="        set(sdCardPath) = prefs.edit().putString(SD_CARD_PATH, sdCardPath).apply()"
         errorLine2="                          ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="78"
             column="27"/>
     </issue>
@@ -13838,7 +13838,7 @@
         errorLine1="        set(internalStoragePath) = prefs.edit().putString(INTERNAL_STORAGE_PATH, internalStoragePath).apply()"
         errorLine2="                                   ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="84"
             column="36"/>
     </issue>
@@ -13849,7 +13849,7 @@
         errorLine1="        set(textColor) = prefs.edit().putInt(TEXT_COLOR, textColor).apply()"
         errorLine2="                         ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="90"
             column="26"/>
     </issue>
@@ -13860,7 +13860,7 @@
         errorLine1="        set(backgroundColor) = prefs.edit().putInt(BACKGROUND_COLOR, backgroundColor).apply()"
         errorLine2="                               ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="94"
             column="32"/>
     </issue>
@@ -13871,7 +13871,7 @@
         errorLine1="        set(primaryColor) = prefs.edit().putInt(PRIMARY_COLOR, primaryColor).apply()"
         errorLine2="                            ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="98"
             column="29"/>
     </issue>
@@ -13882,7 +13882,7 @@
         errorLine1="        set(accentColor) = prefs.edit().putInt(ACCENT_COLOR, accentColor).apply()"
         errorLine2="                           ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="102"
             column="28"/>
     </issue>
@@ -13893,7 +13893,7 @@
         errorLine1="        set(lastHandledShortcutColor) = prefs.edit().putInt(LAST_HANDLED_SHORTCUT_COLOR, lastHandledShortcutColor).apply()"
         errorLine2="                                        ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="106"
             column="41"/>
     </issue>
@@ -13904,7 +13904,7 @@
         errorLine1="            prefs.edit().putInt(APP_ICON_COLOR, appIconColor).apply()"
         errorLine2="            ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="112"
             column="13"/>
     </issue>
@@ -13915,7 +13915,7 @@
         errorLine1="        set(lastIconColor) = prefs.edit().putInt(LAST_ICON_COLOR, lastIconColor).apply()"
         errorLine2="                             ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="117"
             column="30"/>
     </issue>
@@ -13926,7 +13926,7 @@
         errorLine1="        set(customTextColor) = prefs.edit().putInt(CUSTOM_TEXT_COLOR, customTextColor).apply()"
         errorLine2="                               ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="121"
             column="32"/>
     </issue>
@@ -13937,7 +13937,7 @@
         errorLine1="        set(customBackgroundColor) = prefs.edit().putInt(CUSTOM_BACKGROUND_COLOR, customBackgroundColor).apply()"
         errorLine2="                                     ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="125"
             column="38"/>
     </issue>
@@ -13948,7 +13948,7 @@
         errorLine1="        set(customPrimaryColor) = prefs.edit().putInt(CUSTOM_PRIMARY_COLOR, customPrimaryColor).apply()"
         errorLine2="                                  ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="129"
             column="35"/>
     </issue>
@@ -13959,7 +13959,7 @@
         errorLine1="        set(customAccentColor) = prefs.edit().putInt(CUSTOM_ACCENT_COLOR, customAccentColor).apply()"
         errorLine2="                                 ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="133"
             column="34"/>
     </issue>
@@ -13970,7 +13970,7 @@
         errorLine1="        set(customAppIconColor) = prefs.edit().putInt(CUSTOM_APP_ICON_COLOR, customAppIconColor).apply()"
         errorLine2="                                  ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="137"
             column="35"/>
     </issue>
@@ -13981,7 +13981,7 @@
         errorLine1="        set(widgetBgColor) = prefs.edit().putInt(WIDGET_BG_COLOR, widgetBgColor).apply()"
         errorLine2="                             ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="141"
             column="30"/>
     </issue>
@@ -13992,7 +13992,7 @@
         errorLine1="        set(widgetTextColor) = prefs.edit().putInt(WIDGET_TEXT_COLOR, widgetTextColor).apply()"
         errorLine2="                               ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="145"
             column="32"/>
     </issue>
@@ -14003,7 +14003,7 @@
         errorLine1="        set(isHiddenPasswordProtectionOn) = prefs.edit().putBoolean(PASSWORD_PROTECTION, isHiddenPasswordProtectionOn).apply()"
         errorLine2="                                            ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="150"
             column="45"/>
     </issue>
@@ -14014,7 +14014,7 @@
         errorLine1="        set(hiddenPasswordHash) = prefs.edit().putString(PASSWORD_HASH, hiddenPasswordHash).apply()"
         errorLine2="                                  ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="154"
             column="35"/>
     </issue>
@@ -14025,7 +14025,7 @@
         errorLine1="        set(hiddenProtectionType) = prefs.edit().putInt(PROTECTION_TYPE, hiddenProtectionType).apply()"
         errorLine2="                                    ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="158"
             column="37"/>
     </issue>
@@ -14036,7 +14036,7 @@
         errorLine1="        set(isAppPasswordProtectionOn) = prefs.edit().putBoolean(APP_PASSWORD_PROTECTION, isAppPasswordProtectionOn).apply()"
         errorLine2="                                         ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="163"
             column="42"/>
     </issue>
@@ -14047,7 +14047,7 @@
         errorLine1="        set(appPasswordHash) = prefs.edit().putString(APP_PASSWORD_HASH, appPasswordHash).apply()"
         errorLine2="                               ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="167"
             column="32"/>
     </issue>
@@ -14058,7 +14058,7 @@
         errorLine1="        set(appProtectionType) = prefs.edit().putInt(APP_PROTECTION_TYPE, appProtectionType).apply()"
         errorLine2="                                 ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="171"
             column="34"/>
     </issue>
@@ -14069,7 +14069,7 @@
         errorLine1="        set(value) = prefs.edit().putLong(LAST_UNLOCK_TIMESTAMP_MS, value).apply()"
         errorLine2="                     ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="175"
             column="22"/>
     </issue>
@@ -14080,7 +14080,7 @@
         errorLine1="        set(value) = prefs.edit().putLong(UNLOCK_TIMEOUT_DURATION_MS, value).apply()"
         errorLine2="                     ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="179"
             column="22"/>
     </issue>
@@ -14091,7 +14091,7 @@
         errorLine1="        set(isDeletePasswordProtectionOn) = prefs.edit().putBoolean(DELETE_PASSWORD_PROTECTION, isDeletePasswordProtectionOn).apply()"
         errorLine2="                                            ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="184"
             column="45"/>
     </issue>
@@ -14102,7 +14102,7 @@
         errorLine1="        set(deletePasswordHash) = prefs.edit().putString(DELETE_PASSWORD_HASH, deletePasswordHash).apply()"
         errorLine2="                                  ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="188"
             column="35"/>
     </issue>
@@ -14113,7 +14113,7 @@
         errorLine1="        set(deleteProtectionType) = prefs.edit().putInt(DELETE_PROTECTION_TYPE, deleteProtectionType).apply()"
         errorLine2="                                    ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="192"
             column="37"/>
     </issue>
@@ -14124,7 +14124,7 @@
         errorLine1="        prefs.edit()"
         errorLine2="        ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="196"
             column="9"/>
     </issue>
@@ -14135,7 +14135,7 @@
         errorLine1="        prefs.edit()"
         errorLine2="        ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="203"
             column="9"/>
     </issue>
@@ -14146,7 +14146,7 @@
         errorLine1="        set(lastCopyPath) = prefs.edit().putString(LAST_COPY_PATH, lastCopyPath).apply()"
         errorLine2="                            ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="217"
             column="29"/>
     </issue>
@@ -14157,7 +14157,7 @@
         errorLine1="        set(keepLastModified) = prefs.edit().putBoolean(KEEP_LAST_MODIFIED, keepLastModified).apply()"
         errorLine2="                                ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="221"
             column="33"/>
     </issue>
@@ -14168,7 +14168,7 @@
         errorLine1="            prefs.edit().putBoolean(USE_ENGLISH, useEnglish).commit()"
         errorLine2="            ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="227"
             column="13"/>
     </issue>
@@ -14179,7 +14179,7 @@
         errorLine1="        set(wasUseEnglishToggled) = prefs.edit().putBoolean(WAS_USE_ENGLISH_TOGGLED, wasUseEnglishToggled).apply()"
         errorLine2="                                    ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="234"
             column="37"/>
     </issue>
@@ -14190,7 +14190,7 @@
         errorLine1="        set(isGlobalThemeEnabled) = prefs.edit().putBoolean(IS_GLOBAL_THEME_ENABLED, isGlobalThemeEnabled).apply()"
         errorLine2="                                    ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="240"
             column="37"/>
     </issue>
@@ -14201,7 +14201,7 @@
         errorLine1="        set(isSystemThemeEnabled) = prefs.edit().putBoolean(IS_SYSTEM_THEME_ENABLED, isSystemThemeEnabled).apply()"
         errorLine2="                                    ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="244"
             column="37"/>
     </issue>
@@ -14212,7 +14212,7 @@
         errorLine1="        set(wasCustomThemeSwitchDescriptionShown) = prefs.edit().putBoolean(WAS_CUSTOM_THEME_SWITCH_DESCRIPTION_SHOWN, wasCustomThemeSwitchDescriptionShown)"
         errorLine2="                                                    ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="248"
             column="53"/>
     </issue>
@@ -14223,7 +14223,7 @@
         errorLine1="        set(showInfoBubble) = prefs.edit().putBoolean(SHOW_INFO_BUBBLE, showInfoBubble).apply()"
         errorLine2="                              ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="253"
             column="31"/>
     </issue>
@@ -14234,7 +14234,7 @@
         errorLine1="        set(lastConflictApplyToAll) = prefs.edit().putBoolean(LAST_CONFLICT_APPLY_TO_ALL, lastConflictApplyToAll).apply()"
         errorLine2="                                      ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="257"
             column="39"/>
     </issue>
@@ -14245,7 +14245,7 @@
         errorLine1="        set(lastConflictResolution) = prefs.edit().putInt(LAST_CONFLICT_RESOLUTION, lastConflictResolution).apply()"
         errorLine2="                                      ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="261"
             column="39"/>
     </issue>
@@ -14256,7 +14256,7 @@
         errorLine1="        set(sorting) = prefs.edit().putInt(SORT_ORDER, sorting).apply()"
         errorLine2="                       ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="265"
             column="24"/>
     </issue>
@@ -14267,7 +14267,7 @@
         errorLine1="            prefs.edit().putInt(SORT_FOLDER_PREFIX + path.lowercase(Locale.getDefault()), value).apply()"
         errorLine2="            ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="271"
             column="13"/>
     </issue>
@@ -14278,7 +14278,7 @@
         errorLine1="        prefs.edit().remove(SORT_FOLDER_PREFIX + path.lowercase(Locale.getDefault())).apply()"
         errorLine2="        ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="278"
             column="9"/>
     </issue>
@@ -14289,7 +14289,7 @@
         errorLine1="        set(hadThankYouInstalled) = prefs.edit().putBoolean(HAD_THANK_YOU_INSTALLED, hadThankYouInstalled).apply()"
         errorLine2="                                    ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="285"
             column="37"/>
     </issue>
@@ -14300,7 +14300,7 @@
         errorLine1="        set(skipDeleteConfirmation) = prefs.edit().putBoolean(SKIP_DELETE_CONFIRMATION, skipDeleteConfirmation).apply()"
         errorLine2="                                      ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="289"
             column="39"/>
     </issue>
@@ -14311,7 +14311,7 @@
         errorLine1="        set(enablePullToRefresh) = prefs.edit().putBoolean(ENABLE_PULL_TO_REFRESH, enablePullToRefresh).apply()"
         errorLine2="                                   ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="293"
             column="36"/>
     </issue>
@@ -14322,7 +14322,7 @@
         errorLine1="        set(scrollHorizontally) = prefs.edit().putBoolean(SCROLL_HORIZONTALLY, scrollHorizontally).apply()"
         errorLine2="                                  ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="297"
             column="35"/>
     </issue>
@@ -14333,7 +14333,7 @@
         errorLine1="        set(preventPhoneFromSleeping) = prefs.edit().putBoolean(PREVENT_PHONE_FROM_SLEEPING, preventPhoneFromSleeping).apply()"
         errorLine2="                                        ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="301"
             column="41"/>
     </issue>
@@ -14344,7 +14344,7 @@
         errorLine1="        set(lastUsedViewPagerPage) = prefs.edit().putInt(LAST_USED_VIEW_PAGER_PAGE, lastUsedViewPagerPage).apply()"
         errorLine2="                                     ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="305"
             column="38"/>
     </issue>
@@ -14355,7 +14355,7 @@
         errorLine1="        set(use24HourFormat) = prefs.edit().putBoolean(USE_24_HOUR_FORMAT, use24HourFormat).apply()"
         errorLine2="                               ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="309"
             column="32"/>
     </issue>
@@ -14366,7 +14366,7 @@
         errorLine1="        set(sundayFirst) = prefs.edit().putBoolean(SUNDAY_FIRST, sundayFirst).apply()"
         errorLine2="                           ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="316"
             column="28"/>
     </issue>
@@ -14377,7 +14377,7 @@
         errorLine1="        set(wasAlarmWarningShown) = prefs.edit().putBoolean(WAS_ALARM_WARNING_SHOWN, wasAlarmWarningShown).apply()"
         errorLine2="                                    ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="320"
             column="37"/>
     </issue>
@@ -14388,7 +14388,7 @@
         errorLine1="        set(wasReminderWarningShown) = prefs.edit().putBoolean(WAS_REMINDER_WARNING_SHOWN, wasReminderWarningShown).apply()"
         errorLine2="                                       ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="324"
             column="40"/>
     </issue>
@@ -14399,7 +14399,7 @@
         errorLine1="        set(useSameSnooze) = prefs.edit().putBoolean(USE_SAME_SNOOZE, useSameSnooze).apply()"
         errorLine2="                             ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="328"
             column="30"/>
     </issue>
@@ -14410,7 +14410,7 @@
         errorLine1="        set(snoozeDelay) = prefs.edit().putInt(SNOOZE_TIME, snoozeDelay).apply()"
         errorLine2="                           ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="332"
             column="28"/>
     </issue>
@@ -14421,7 +14421,7 @@
         errorLine1="        set(vibrateOnButton) = prefs.edit().putBoolean(VIBRATE_ON_BUTTON_PRESS, vibrateOnButton).apply()"
         errorLine2="                               ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="336"
             column="32"/>
     </issue>
@@ -14432,7 +14432,7 @@
         errorLine1="        set(yourAlarmSounds) = prefs.edit().putString(YOUR_ALARM_SOUNDS, yourAlarmSounds).apply()"
         errorLine2="                               ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="340"
             column="32"/>
     </issue>
@@ -14443,7 +14443,7 @@
         errorLine1="        set(isUsingModifiedAppIcon) = prefs.edit().putBoolean(IS_USING_MODIFIED_APP_ICON, isUsingModifiedAppIcon).apply()"
         errorLine2="                                      ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="344"
             column="39"/>
     </issue>
@@ -14454,7 +14454,7 @@
         errorLine1="        set(appId) = prefs.edit().putString(APP_ID, appId).apply()"
         errorLine2="                     ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="348"
             column="22"/>
     </issue>
@@ -14465,7 +14465,7 @@
         errorLine1="        set(initialWidgetHeight) = prefs.edit().putInt(INITIAL_WIDGET_HEIGHT, initialWidgetHeight).apply()"
         errorLine2="                                   ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="352"
             column="36"/>
     </issue>
@@ -14476,7 +14476,7 @@
         errorLine1="        set(widgetIdToMeasure) = prefs.edit().putInt(WIDGET_ID_TO_MEASURE, widgetIdToMeasure).apply()"
         errorLine2="                                 ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="356"
             column="34"/>
     </issue>
@@ -14487,7 +14487,7 @@
         errorLine1="        set(wasOrangeIconChecked) = prefs.edit().putBoolean(WAS_ORANGE_ICON_CHECKED, wasOrangeIconChecked).apply()"
         errorLine2="                                    ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="360"
             column="37"/>
     </issue>
@@ -14498,7 +14498,7 @@
         errorLine1="        set(wasAppOnSDShown) = prefs.edit().putBoolean(WAS_APP_ON_SD_SHOWN, wasAppOnSDShown).apply()"
         errorLine2="                               ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="364"
             column="32"/>
     </issue>
@@ -14509,7 +14509,7 @@
         errorLine1="        set(wasBeforeAskingShown) = prefs.edit().putBoolean(WAS_BEFORE_ASKING_SHOWN, wasBeforeAskingShown).apply()"
         errorLine2="                                    ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="368"
             column="37"/>
     </issue>
@@ -14520,7 +14520,7 @@
         errorLine1="        set(wasInitialUpgradeToProShown) = prefs.edit().putBoolean(WAS_INITIAL_UPGRADE_TO_PRO_SHOWN, wasInitialUpgradeToProShown).apply()"
         errorLine2="                                           ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="372"
             column="44"/>
     </issue>
@@ -14531,7 +14531,7 @@
         errorLine1="        set(wasAppIconCustomizationWarningShown) = prefs.edit().putBoolean(WAS_APP_ICON_CUSTOMIZATION_WARNING_SHOWN, wasAppIconCustomizationWarningShown)"
         errorLine2="                                                   ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="376"
             column="52"/>
     </issue>
@@ -14542,7 +14542,7 @@
         errorLine1="        set(appSideloadingStatus) = prefs.edit().putInt(APP_SIDELOADING_STATUS, appSideloadingStatus).apply()"
         errorLine2="                                    ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="381"
             column="37"/>
     </issue>
@@ -14553,7 +14553,7 @@
         errorLine1="        set(dateFormat) = prefs.edit().putString(DATE_FORMAT, dateFormat).apply()"
         errorLine2="                          ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="385"
             column="27"/>
     </issue>
@@ -14564,7 +14564,7 @@
         errorLine1="        set(wasOTGHandled) = prefs.edit().putBoolean(WAS_OTG_HANDLED, wasOTGHandled).apply()"
         errorLine2="                             ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="405"
             column="30"/>
     </issue>
@@ -14575,7 +14575,7 @@
         errorLine1="        set(wasUpgradedFromFreeShown) = prefs.edit().putBoolean(WAS_UPGRADED_FROM_FREE_SHOWN, wasUpgradedFromFreeShown).apply()"
         errorLine2="                                        ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="409"
             column="41"/>
     </issue>
@@ -14586,7 +14586,7 @@
         errorLine1="        set(wasSortingByNumericValueAdded) = prefs.edit().putBoolean(WAS_SORTING_BY_NUMERIC_VALUE_ADDED, wasSortingByNumericValueAdded).apply()"
         errorLine2="                                             ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="413"
             column="46"/>
     </issue>
@@ -14597,7 +14597,7 @@
         errorLine1="        set(wasFolderLockingNoticeShown) = prefs.edit().putBoolean(WAS_FOLDER_LOCKING_NOTICE_SHOWN, wasFolderLockingNoticeShown).apply()"
         errorLine2="                                           ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="417"
             column="44"/>
     </issue>
@@ -14608,7 +14608,7 @@
         errorLine1="        set(lastRenameUsed) = prefs.edit().putInt(LAST_RENAME_USED, lastRenameUsed).apply()"
         errorLine2="                              ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="421"
             column="31"/>
     </issue>
@@ -14619,7 +14619,7 @@
         errorLine1="        set(lastRenamePatternUsed) = prefs.edit().putString(LAST_RENAME_PATTERN_USED, lastRenamePatternUsed).apply()"
         errorLine2="                                     ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="425"
             column="38"/>
     </issue>
@@ -14630,7 +14630,7 @@
         errorLine1="        set(lastExportedSettingsFolder) = prefs.edit().putString(LAST_EXPORTED_SETTINGS_FOLDER, lastExportedSettingsFolder).apply()"
         errorLine2="                                          ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="429"
             column="43"/>
     </issue>
@@ -14641,7 +14641,7 @@
         errorLine1="        set(lastBlockedNumbersExportPath) = prefs.edit().putString(LAST_BLOCKED_NUMBERS_EXPORT_PATH, lastBlockedNumbersExportPath).apply()"
         errorLine2="                                            ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="433"
             column="45"/>
     </issue>
@@ -14652,7 +14652,7 @@
         errorLine1="        set(blockUnknownNumbers) = prefs.edit().putBoolean(BLOCK_UNKNOWN_NUMBERS, blockUnknownNumbers).apply()"
         errorLine2="                                   ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="437"
             column="36"/>
     </issue>
@@ -14663,7 +14663,7 @@
         errorLine1="        set(blockHiddenNumbers) = prefs.edit().putBoolean(BLOCK_HIDDEN_NUMBERS, blockHiddenNumbers).apply()"
         errorLine2="                                  ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="443"
             column="35"/>
     </issue>
@@ -14674,7 +14674,7 @@
         errorLine1="        set(size) = prefs.edit().putInt(FONT_SIZE, size).apply()"
         errorLine2="                    ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="449"
             column="21"/>
     </issue>
@@ -14685,7 +14685,7 @@
         errorLine1="        set(wasMessengerRecorderShown) = prefs.edit().putBoolean(WAS_MESSENGER_RECORDER_SHOWN, wasMessengerRecorderShown).apply()"
         errorLine2="                                         ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="454"
             column="42"/>
     </issue>
@@ -14696,7 +14696,7 @@
         errorLine1="        set(defaultTab) = prefs.edit().putInt(DEFAULT_TAB, defaultTab).apply()"
         errorLine2="                          ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="458"
             column="27"/>
     </issue>
@@ -14707,7 +14707,7 @@
         errorLine1="        set(startNameWithSurname) = prefs.edit().putBoolean(START_NAME_WITH_SURNAME, startNameWithSurname).apply()"
         errorLine2="                                    ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="462"
             column="37"/>
     </issue>
@@ -14718,7 +14718,7 @@
         errorLine1="        set(favorites) = prefs.edit().remove(FAVORITES).putStringSet(FAVORITES, favorites).apply()"
         errorLine2="                         ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="466"
             column="26"/>
     </issue>
@@ -14729,7 +14729,7 @@
         errorLine1="        set(showCallConfirmation) = prefs.edit().putBoolean(SHOW_CALL_CONFIRMATION, showCallConfirmation).apply()"
         errorLine2="                                    ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="470"
             column="37"/>
     </issue>
@@ -14740,7 +14740,7 @@
         errorLine1="        set(recentColors) = prefs.edit().putString(COLOR_PICKER_RECENT_COLORS, recentColors.joinToString(separator = &quot;\n&quot;)).apply()"
         errorLine2="                            ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="484"
             column="29"/>
     </issue>
@@ -14751,7 +14751,7 @@
         errorLine1="        set(ignoreContactSources) = prefs.edit().remove(IGNORED_CONTACT_SOURCES).putStringSet(IGNORED_CONTACT_SOURCES, ignoreContactSources).apply()"
         errorLine2="                                    ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="490"
             column="37"/>
     </issue>
@@ -14762,7 +14762,7 @@
         errorLine1="        set(showContactThumbnails) = prefs.edit().putBoolean(SHOW_CONTACT_THUMBNAILS, showContactThumbnails).apply()"
         errorLine2="                                     ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="494"
             column="38"/>
     </issue>
@@ -14773,7 +14773,7 @@
         errorLine1="        set(showPhoneNumbers) = prefs.edit().putBoolean(SHOW_PHONE_NUMBERS, showPhoneNumbers).apply()"
         errorLine2="                                ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="498"
             column="33"/>
     </issue>
@@ -14784,7 +14784,7 @@
         errorLine1="        set(formatPhoneNumbers) = prefs.edit().putBoolean(FORMAT_PHONE_NUMBERS, formatPhoneNumbers).apply()"
         errorLine2="                                  ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="502"
             column="35"/>
     </issue>
@@ -14795,7 +14795,7 @@
         errorLine1="        set(showOnlyContactsWithNumbers) = prefs.edit().putBoolean(SHOW_ONLY_CONTACTS_WITH_NUMBERS, showOnlyContactsWithNumbers).apply()"
         errorLine2="                                           ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="506"
             column="44"/>
     </issue>
@@ -14806,7 +14806,7 @@
         errorLine1="        set(lastUsedContactSource) = prefs.edit().putString(LAST_USED_CONTACT_SOURCE, lastUsedContactSource).apply()"
         errorLine2="                                     ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="510"
             column="38"/>
     </issue>
@@ -14817,7 +14817,7 @@
         errorLine1="        set(onContactClick) = prefs.edit().putInt(ON_CONTACT_CLICK, onContactClick).apply()"
         errorLine2="                              ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="514"
             column="31"/>
     </issue>
@@ -14828,7 +14828,7 @@
         errorLine1="        set(showContactFields) = prefs.edit().putInt(SHOW_CONTACT_FIELDS, showContactFields).apply()"
         errorLine2="                                 ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="522"
             column="34"/>
     </issue>
@@ -14839,7 +14839,7 @@
         errorLine1="        set(showDialpadButton) = prefs.edit().putBoolean(SHOW_DIALPAD_BUTTON, showDialpadButton).apply()"
         errorLine2="                                 ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="525"
             column="34"/>
     </issue>
@@ -14850,7 +14850,7 @@
         errorLine1="        set(wasLocalAccountInitialized) = prefs.edit().putBoolean(WAS_LOCAL_ACCOUNT_INITIALIZED, wasLocalAccountInitialized).apply()"
         errorLine2="                                          ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="529"
             column="43"/>
     </issue>
@@ -14861,7 +14861,7 @@
         errorLine1="        set(lastExportPath) = prefs.edit().putString(LAST_EXPORT_PATH, lastExportPath).apply()"
         errorLine2="                              ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="533"
             column="31"/>
     </issue>
@@ -14872,7 +14872,7 @@
         errorLine1="        set(speedDial) = prefs.edit().putString(SPEED_DIAL, speedDial).apply()"
         errorLine2="                         ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="537"
             column="26"/>
     </issue>
@@ -14883,7 +14883,7 @@
         errorLine1="        set(showPrivateContacts) = prefs.edit().putBoolean(SHOW_PRIVATE_CONTACTS, showPrivateContacts).apply()"
         errorLine2="                                   ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="541"
             column="36"/>
     </issue>
@@ -14894,7 +14894,7 @@
         errorLine1="        set(mergeDuplicateContacts) = prefs.edit().putBoolean(MERGE_DUPLICATE_CONTACTS, mergeDuplicateContacts).apply()"
         errorLine2="                                      ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="545"
             column="39"/>
     </issue>
@@ -14905,7 +14905,7 @@
         errorLine1="        set(order) = prefs.edit().putString(FAVORITES_CONTACTS_ORDER, order).apply()"
         errorLine2="                     ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="549"
             column="22"/>
     </issue>
@@ -14916,7 +14916,7 @@
         errorLine1="        set(selected) = prefs.edit().putBoolean(FAVORITES_CUSTOM_ORDER_SELECTED, selected).apply()"
         errorLine2="                        ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="553"
             column="25"/>
     </issue>
@@ -14927,7 +14927,7 @@
         errorLine1="        set(viewType) = prefs.edit().putInt(VIEW_TYPE, viewType).apply()"
         errorLine2="                        ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="557"
             column="25"/>
     </issue>
@@ -14938,7 +14938,7 @@
         errorLine1="        set(contactsGridColumnCount) = prefs.edit().putInt(CONTACTS_GRID_COLUMN_COUNT, contactsGridColumnCount).apply()"
         errorLine2="                                       ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="561"
             column="40"/>
     </issue>
@@ -14949,7 +14949,7 @@
         errorLine1="        set(autoBackup) = prefs.edit().putBoolean(AUTO_BACKUP, autoBackup).apply()"
         errorLine2="                          ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="574"
             column="27"/>
     </issue>
@@ -14960,7 +14960,7 @@
         errorLine1="        set(autoBackupFolder) = prefs.edit().putString(AUTO_BACKUP_FOLDER, autoBackupFolder).apply()"
         errorLine2="                                ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="578"
             column="33"/>
     </issue>
@@ -14971,7 +14971,7 @@
         errorLine1="        set(autoBackupFilename) = prefs.edit().putString(AUTO_BACKUP_FILENAME, autoBackupFilename).apply()"
         errorLine2="                                  ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="582"
             column="35"/>
     </issue>
@@ -14982,7 +14982,7 @@
         errorLine1="        set(lastAutoBackupTime) = prefs.edit().putLong(LAST_AUTO_BACKUP_TIME, lastAutoBackupTime).apply()"
         errorLine2="                                  ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="586"
             column="35"/>
     </issue>
@@ -14993,7 +14993,7 @@
         errorLine1="        set(passwordRetryCount) = prefs.edit().putInt(PASSWORD_RETRY_COUNT, passwordRetryCount).apply()"
         errorLine2="                                  ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="590"
             column="35"/>
     </issue>
@@ -15004,7 +15004,7 @@
         errorLine1="        set(passwordCountdownStartMs) = prefs.edit().putLong(PASSWORD_COUNTDOWN_START_MS, passwordCountdownStartMs).apply()"
         errorLine2="                                        ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="594"
             column="41"/>
     </issue>
@@ -15015,7 +15015,7 @@
         errorLine1="        set(firstDayOfWeek) = prefs.edit().putInt(FIRST_DAY_OF_WEEK, firstDayOfWeek).apply()"
         errorLine2="                              ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="602"
             column="31"/>
     </issue>
@@ -15026,7 +15026,7 @@
         errorLine1="        set(showCheckmarksOnSwitches) = prefs.edit().putBoolean(SHOW_CHECKMARKS_ON_SWITCHES, showCheckmarksOnSwitches).apply()"
         errorLine2="                                        ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="607"
             column="41"/>
     </issue>
@@ -15037,7 +15037,7 @@
         errorLine1="        set(customFontType) = prefs.edit().putInt(CUSTOM_FONT_TYPE, customFontType).apply()"
         errorLine2="                              ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="614"
             column="31"/>
     </issue>
@@ -15048,7 +15048,7 @@
         errorLine1="        set(customFontFileName) = prefs.edit().putString(CUSTOM_FONT_FILE_NAME, customFontFileName).apply()"
         errorLine2="                                  ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/BaseConfig.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/BaseConfig.kt"
             line="618"
             column="35"/>
     </issue>
@@ -15059,7 +15059,7 @@
         errorLine1="            stickyRootInitialLeft = if (itemsLayout.childCount > 0) {"
         errorLine2="                                        ~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/views/Breadcrumbs.kt"
+            file="src/main/kotlin/com/omnioone/commons/views/Breadcrumbs.kt"
             line="65"
             column="41"/>
     </issue>
@@ -15070,7 +15070,7 @@
         errorLine1="        if (itemsLayout.childCount > 0) {"
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/views/Breadcrumbs.kt"
+            file="src/main/kotlin/com/omnioone/commons/views/Breadcrumbs.kt"
             line="87"
             column="13"/>
     </issue>
@@ -15081,7 +15081,7 @@
         errorLine1="        if (itemsLayout.childCount > 0) {"
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/views/Breadcrumbs.kt"
+            file="src/main/kotlin/com/omnioone/commons/views/Breadcrumbs.kt"
             line="93"
             column="13"/>
     </issue>
@@ -15092,7 +15092,7 @@
         errorLine1="            Color.parseColor(&quot;#$hexValue&quot;)"
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/dialogs/ColorPickerDialog.kt"
+            file="src/main/kotlin/com/omnioone/commons/dialogs/ColorPickerDialog.kt"
             line="136"
             column="13"/>
     </issue>
@@ -15103,7 +15103,7 @@
         errorLine1="                            Color.parseColor(&quot;#$hexValue&quot;)"
         errorLine2="                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/dialogs/ColorPickerDialog.kt"
+            file="src/main/kotlin/com/omnioone/commons/dialogs/ColorPickerDialog.kt"
             line="234"
             column="29"/>
     </issue>
@@ -15114,7 +15114,7 @@
         errorLine1="                val newColor = Color.parseColor(&quot;#$it&quot;)"
         errorLine2="                               ~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/dialogs/ColorPickerDialog.kt"
+            file="src/main/kotlin/com/omnioone/commons/dialogs/ColorPickerDialog.kt"
             line="335"
             column="32"/>
     </issue>
@@ -15125,7 +15125,7 @@
         errorLine1="            val contactsSize = contacts.size()"
         errorLine2="                               ~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/ContactsHelper.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/ContactsHelper.kt"
             line="58"
             column="32"/>
     </issue>
@@ -15136,7 +15136,7 @@
         errorLine1="            val size = groups.size()"
         errorLine2="                       ~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/ContactsHelper.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/ContactsHelper.kt"
             line="88"
             column="24"/>
     </issue>
@@ -15147,7 +15147,7 @@
         errorLine1="        var size = emails.size()"
         errorLine2="                   ~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/ContactsHelper.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/ContactsHelper.kt"
             line="204"
             column="20"/>
     </issue>
@@ -15158,7 +15158,7 @@
         errorLine1="        size = organizations.size()"
         errorLine2="               ~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/ContactsHelper.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/ContactsHelper.kt"
             line="211"
             column="16"/>
     </issue>
@@ -15169,7 +15169,7 @@
         errorLine1="        size = phoneNumbers.size()"
         errorLine2="               ~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/ContactsHelper.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/ContactsHelper.kt"
             line="223"
             column="16"/>
     </issue>
@@ -15180,7 +15180,7 @@
         errorLine1="        size = addresses.size()"
         errorLine2="               ~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/ContactsHelper.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/ContactsHelper.kt"
             line="233"
             column="16"/>
     </issue>
@@ -15191,7 +15191,7 @@
         errorLine1="        size = IMs.size()"
         errorLine2="               ~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/ContactsHelper.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/ContactsHelper.kt"
             line="240"
             column="16"/>
     </issue>
@@ -15202,7 +15202,7 @@
         errorLine1="        size = events.size()"
         errorLine2="               ~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/ContactsHelper.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/ContactsHelper.kt"
             line="247"
             column="16"/>
     </issue>
@@ -15213,7 +15213,7 @@
         errorLine1="        size = notes.size()"
         errorLine2="               ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/ContactsHelper.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/ContactsHelper.kt"
             line="254"
             column="16"/>
     </issue>
@@ -15224,7 +15224,7 @@
         errorLine1="        size = nicknames.size()"
         errorLine2="               ~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/ContactsHelper.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/ContactsHelper.kt"
             line="261"
             column="16"/>
     </issue>
@@ -15235,7 +15235,7 @@
         errorLine1="        size = websites.size()"
         errorLine2="               ~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/ContactsHelper.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/ContactsHelper.kt"
             line="268"
             column="16"/>
     </issue>
@@ -15246,7 +15246,7 @@
         errorLine1="            val photoUri = Uri.parse(contact.photoUri)"
         errorLine2="                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/ContactsHelper.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/ContactsHelper.kt"
             line="1181"
             column="28"/>
     </issue>
@@ -15257,7 +15257,7 @@
         errorLine1="                val photoUri = Uri.parse(contact.photoUri)"
         errorLine2="                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/ContactsHelper.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/ContactsHelper.kt"
             line="1406"
             column="32"/>
     </issue>
@@ -15268,7 +15268,7 @@
         errorLine1="                val simUri = Uri.parse(&quot;content://icc/adn&quot;)"
         errorLine2="                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/ContactsHelper.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/ContactsHelper.kt"
             line="1415"
             column="30"/>
     </issue>
@@ -15279,7 +15279,7 @@
         errorLine1="    val uri = Uri.parse(&quot;geo:0,0?q=$location&quot;)"
         errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/Context-contacts.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/Context-contacts.kt"
             line="43"
             column="15"/>
     </issue>
@@ -15290,7 +15290,7 @@
         errorLine1="        data = Uri.parse(website)"
         errorLine2="               ~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/Context-contacts.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/Context-contacts.kt"
             line="58"
             column="16"/>
     </issue>
@@ -15301,7 +15301,7 @@
         errorLine1="        data = Uri.parse(website)"
         errorLine2="               ~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/Context-contacts.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/Context-contacts.kt"
             line="58"
             column="16"/>
     </issue>
@@ -15312,7 +15312,7 @@
         errorLine1="    Intent(Intent.ACTION_SENDTO, Uri.parse(uriString)).apply {"
         errorLine2="                                 ~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/Context-contacts.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/Context-contacts.kt"
             line="199"
             column="34"/>
     </issue>
@@ -15323,7 +15323,7 @@
         errorLine1="    return DocumentFile.fromSingleUri(this, Uri.parse(fullUri))"
         errorLine2="                                            ~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/Context-storage.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/Context-storage.kt"
             line="292"
             column="45"/>
     </issue>
@@ -15334,7 +15334,7 @@
         errorLine1="    return DocumentFile.fromSingleUri(this, Uri.parse(fullUri))"
         errorLine2="                                            ~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/Context-storage.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/Context-storage.kt"
             line="308"
             column="45"/>
     </issue>
@@ -15345,7 +15345,7 @@
         errorLine1="        val treeUri = Uri.parse(if (isOTG) baseConfig.OTGTreeUri else baseConfig.sdTreeUri)"
         errorLine2="                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/Context-storage.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/Context-storage.kt"
             line="319"
             column="23"/>
     </issue>
@@ -15356,7 +15356,7 @@
         errorLine1="        DocumentFile.fromTreeUri(applicationContext, Uri.parse(OTGTreeUri))"
         errorLine2="                                                     ~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/Context-storage.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/Context-storage.kt"
             line="474"
             column="54"/>
     </issue>
@@ -15367,7 +15367,7 @@
         errorLine1="            val newUri = ContentUris.withAppendedId(Uri.parse(&quot;content://downloads/public_downloads&quot;), id.toLong())"
         errorLine2="                                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/Context.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/Context.kt"
             line="268"
             column="53"/>
     </issue>
@@ -15378,7 +15378,7 @@
         errorLine1="        Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)"
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/Drawable.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/Drawable.kt"
             line="13"
             column="9"/>
     </issue>
@@ -15389,7 +15389,7 @@
         errorLine1="        Bitmap.createBitmap(intrinsicWidth, intrinsicHeight, Bitmap.Config.ARGB_8888)"
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/Drawable.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/Drawable.kt"
             line="15"
             column="9"/>
     </issue>
@@ -15400,7 +15400,7 @@
         errorLine1="                    context.contentResolver.openInputStream(Uri.parse(path))?.available()?.toLong() ?: 0L"
         errorLine2="                                                            ~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/models/FileDirItem.kt"
+            file="src/main/kotlin/com/omnioone/commons/models/FileDirItem.kt"
             line="86"
             column="61"/>
     </issue>
@@ -15411,7 +15411,7 @@
         errorLine1="                    context.getSizeFromContentUri(Uri.parse(path))"
         errorLine2="                                                  ~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/models/FileDirItem.kt"
+            file="src/main/kotlin/com/omnioone/commons/models/FileDirItem.kt"
             line="88"
             column="51"/>
     </issue>
@@ -15422,7 +15422,7 @@
         errorLine1="        val photoUri = Uri.parse(uri)"
         errorLine2="                       ~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/LocalContactsHelper.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/LocalContactsHelper.kt"
             line="77"
             column="24"/>
     </issue>
@@ -15433,7 +15433,7 @@
         errorLine1="            background = ColorDrawable(backgroundColor)"
         errorLine2="                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/adapters/MyArrayAdapter.kt"
+            file="src/main/kotlin/com/omnioone/commons/adapters/MyArrayAdapter.kt"
             line="18"
             column="26"/>
     </issue>
@@ -15444,7 +15444,7 @@
         errorLine1="            background = ColorDrawable(backgroundColor)"
         errorLine2="                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/adapters/MyArrayAdapter.kt"
+            file="src/main/kotlin/com/omnioone/commons/adapters/MyArrayAdapter.kt"
             line="18"
             column="26"/>
     </issue>
@@ -15455,7 +15455,7 @@
         errorLine1="        val CONTACTS_CONTENT_URI = Uri.parse(&quot;content://$AUTHORITY/contacts&quot;)"
         errorLine2="                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/MyContactsContentProvider.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/MyContactsContentProvider.kt"
             line="18"
             column="36"/>
     </issue>
@@ -15466,7 +15466,7 @@
         errorLine1="            if (childCount > 0) {"
         errorLine2="                ~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/views/MyRecyclerView.kt"
+            file="src/main/kotlin/com/omnioone/commons/views/MyRecyclerView.kt"
             line="260"
             column="17"/>
     </issue>
@@ -15477,7 +15477,7 @@
         errorLine1="                        ExifInterface(mActivity.contentResolver.openInputStream(Uri.parse(fileDirItem.path))!!)"
         errorLine2="                                                                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/dialogs/PropertiesDialog.kt"
+            file="src/main/kotlin/com/omnioone/commons/dialogs/PropertiesDialog.kt"
             line="105"
             column="81"/>
     </issue>
@@ -15488,7 +15488,7 @@
         errorLine1="                ExifInterface(activity.contentResolver.openInputStream(Uri.parse(path))!!)"
         errorLine2="                                                                       ~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/dialogs/PropertiesDialog.kt"
+            file="src/main/kotlin/com/omnioone/commons/dialogs/PropertiesDialog.kt"
             line="302"
             column="72"/>
     </issue>
@@ -15499,7 +15499,7 @@
         errorLine1="    val bitmap = Bitmap.createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight, Bitmap.Config.ARGB_8888)"
         errorLine2="                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/extensions/Resources.kt"
+            file="src/main/kotlin/com/omnioone/commons/extensions/Resources.kt"
             line="12"
             column="18"/>
     </issue>
@@ -15510,7 +15510,7 @@
         errorLine1="                    setDataSource(activity, Uri.parse(alarmSound.uri))"
         errorLine2="                                            ~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/dialogs/SelectAlarmSoundDialog.kt"
+            file="src/main/kotlin/com/omnioone/commons/dialogs/SelectAlarmSoundDialog.kt"
             line="133"
             column="45"/>
     </issue>
@@ -15521,7 +15521,7 @@
         errorLine1="            var size = birthdays.size()"
         errorLine2="                       ~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/SimpleContactsHelper.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/SimpleContactsHelper.kt"
             line="90"
             column="24"/>
     </issue>
@@ -15532,7 +15532,7 @@
         errorLine1="            size = anniversaries.size()"
         errorLine2="                   ~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/SimpleContactsHelper.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/SimpleContactsHelper.kt"
             line="97"
             column="20"/>
     </issue>
@@ -15543,7 +15543,7 @@
         errorLine1="        val placeholder = placeholderImage ?: BitmapDrawable(context.resources, getContactLetterIcon(placeholderName))"
         errorLine2="                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/SimpleContactsHelper.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/SimpleContactsHelper.kt"
             line="285"
             column="47"/>
     </issue>
@@ -15554,7 +15554,7 @@
         errorLine1="        val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)"
         errorLine2="                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/SimpleContactsHelper.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/SimpleContactsHelper.kt"
             line="304"
             column="22"/>
     </issue>
@@ -15565,7 +15565,7 @@
         errorLine1="            val placeholder = BitmapDrawable(context.resources, getContactLetterIcon(placeholderName))"
         errorLine2="                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/SimpleContactsHelper.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/SimpleContactsHelper.kt"
             line="371"
             column="31"/>
     </issue>
@@ -15576,7 +15576,7 @@
         errorLine1="                    val photoByteArray = MediaStore.Images.Media.getBitmap(activity.contentResolver, Uri.parse(contact.thumbnailUri)).getByteArray()"
         errorLine2="                                                                                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/helpers/VcfExporter.kt"
+            file="src/main/kotlin/com/omnioone/commons/helpers/VcfExporter.kt"
             line="171"
             column="102"/>
     </issue>
@@ -15587,7 +15587,7 @@
         errorLine1="        setOnTouchListener { view, motionEvent ->"
         errorLine2="                           ^">
         <location
-            file="src/main/kotlin/org/fossify/commons/views/LineColorPicker.kt"
+            file="src/main/kotlin/com/omnioone/commons/views/LineColorPicker.kt"
             line="46"
             column="28"/>
     </issue>
@@ -15598,7 +15598,7 @@
         errorLine1="    override fun onTouchEvent(ev: MotionEvent): Boolean {"
         errorLine2="                 ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/views/MyDialogViewPager.kt"
+            file="src/main/kotlin/com/omnioone/commons/views/MyDialogViewPager.kt"
             line="19"
             column="18"/>
     </issue>
@@ -15609,7 +15609,7 @@
         errorLine1="    override fun onTouchEvent(ev: MotionEvent): Boolean {"
         errorLine2="                 ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/views/MyScrollView.kt"
+            file="src/main/kotlin/com/omnioone/commons/views/MyScrollView.kt"
             line="17"
             column="18"/>
     </issue>
@@ -15620,7 +15620,7 @@
         errorLine1="    override fun onTouchEvent(ev: MotionEvent): Boolean {"
         errorLine2="                 ~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/views/MyViewPager.kt"
+            file="src/main/kotlin/com/omnioone/commons/views/MyViewPager.kt"
             line="22"
             column="18"/>
     </issue>
@@ -15631,7 +15631,7 @@
         errorLine1="        bottomActionMenuView.sendAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED)"
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/views/bottomactionmenu/BottomActionMenuPopup.kt"
+            file="src/main/kotlin/com/omnioone/commons/views/bottomactionmenu/BottomActionMenuPopup.kt"
             line="46"
             column="9"/>
     </issue>
@@ -15917,7 +15917,7 @@
         errorLine1="    colorPickerOldHex.text = &quot;#$hexCode&quot;"
         errorLine2="                             ~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/dialogs/ColorPickerDialog.kt"
+            file="src/main/kotlin/com/omnioone/commons/dialogs/ColorPickerDialog.kt"
             line="270"
             column="30"/>
     </issue>
@@ -15928,7 +15928,7 @@
         errorLine1="        view.folderPath.setText(&quot;${activity.humanizePath(path).trimEnd(&apos;/&apos;)}/&quot;)"
         errorLine2="                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/dialogs/CreateNewFolderDialog.kt"
+            file="src/main/kotlin/com/omnioone/commons/dialogs/CreateNewFolderDialog.kt"
             line="33"
             column="33"/>
     </issue>
@@ -15939,7 +15939,7 @@
         errorLine1="                    dialogCustomIntervalValue.setText((selectedSeconds / DAY_SECONDS).toString())"
         errorLine2="                                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/dialogs/CustomIntervalPickerDialog.kt"
+            file="src/main/kotlin/com/omnioone/commons/dialogs/CustomIntervalPickerDialog.kt"
             line="66"
             column="55"/>
     </issue>
@@ -15950,7 +15950,7 @@
         errorLine1="                    dialogCustomIntervalValue.setText((selectedSeconds / HOUR_SECONDS).toString())"
         errorLine2="                                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/dialogs/CustomIntervalPickerDialog.kt"
+            file="src/main/kotlin/com/omnioone/commons/dialogs/CustomIntervalPickerDialog.kt"
             line="71"
             column="55"/>
     </issue>
@@ -15961,7 +15961,7 @@
         errorLine1="                    dialogCustomIntervalValue.setText((selectedSeconds / MINUTE_SECONDS).toString())"
         errorLine2="                                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/dialogs/CustomIntervalPickerDialog.kt"
+            file="src/main/kotlin/com/omnioone/commons/dialogs/CustomIntervalPickerDialog.kt"
             line="76"
             column="55"/>
     </issue>
@@ -15972,7 +15972,7 @@
         errorLine1="                    dialogCustomIntervalValue.setText(selectedSeconds.toString())"
         errorLine2="                                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/dialogs/CustomIntervalPickerDialog.kt"
+            file="src/main/kotlin/com/omnioone/commons/dialogs/CustomIntervalPickerDialog.kt"
             line="81"
             column="55"/>
     </issue>
@@ -15983,7 +15983,7 @@
         errorLine1="            exportBlockedNumbersFilename.setText(&quot;${activity.getString(R.string.blocked_numbers)}_${activity.getCurrentFormattedDateTime()}&quot;)"
         errorLine2="                                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/dialogs/ExportBlockedNumbersDialog.kt"
+            file="src/main/kotlin/com/omnioone/commons/dialogs/ExportBlockedNumbersDialog.kt"
             line="24"
             column="50"/>
     </issue>
@@ -15994,7 +15994,7 @@
         errorLine1="        mDialogView.filepickerFavoritesLabel.text = &quot;${activity.getString(R.string.favorites)}:&quot;"
         errorLine2="                                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/dialogs/FilePickerDialog.kt"
+            file="src/main/kotlin/com/omnioone/commons/dialogs/FilePickerDialog.kt"
             line="140"
             column="53"/>
     </issue>
@@ -16005,7 +16005,7 @@
         errorLine1="                        fileCount.toString()"
         errorLine2="                        ~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/dialogs/PropertiesDialog.kt"
+            file="src/main/kotlin/com/omnioone/commons/dialogs/PropertiesDialog.kt"
             line="79"
             column="25"/>
     </issue>
@@ -16016,7 +16016,7 @@
         errorLine1="                    fileCount.toString()"
         errorLine2="                    ~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/kotlin/org/fossify/commons/dialogs/PropertiesDialog.kt"
+            file="src/main/kotlin/com/omnioone/commons/dialogs/PropertiesDialog.kt"
             line="275"
             column="21"/>
     </issue>
@@ -16035,7 +16035,7 @@
     <issue
         id="RelativeOverlap"
         message="`@id/customization_text_color_label` can overlap `@id/customization_text_color` if @string/text_color grows due to localized text expansion"
-        errorLine1="                &lt;org.fossify.commons.views.MyTextView"
+        errorLine1="                &lt;com.omnioone.commons.views.MyTextView"
         errorLine2="                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/layout/activity_customization.xml"
@@ -16046,7 +16046,7 @@
     <issue
         id="RelativeOverlap"
         message="`@id/customization_background_color_label` can overlap `@id/customization_background_color` if @string/background_color grows due to localized text expansion"
-        errorLine1="                &lt;org.fossify.commons.views.MyTextView"
+        errorLine1="                &lt;com.omnioone.commons.views.MyTextView"
         errorLine2="                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/layout/activity_customization.xml"
@@ -16057,7 +16057,7 @@
     <issue
         id="RelativeOverlap"
         message="`@id/customization_primary_color_label` can overlap `@id/customization_primary_color` if @string/primary_color grows due to localized text expansion"
-        errorLine1="                &lt;org.fossify.commons.views.MyTextView"
+        errorLine1="                &lt;com.omnioone.commons.views.MyTextView"
         errorLine2="                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/layout/activity_customization.xml"
@@ -16068,7 +16068,7 @@
     <issue
         id="RelativeOverlap"
         message="`@id/customization_accent_color_label` can overlap `@id/customization_accent_color` if @string/accent_color_white grows due to localized text expansion"
-        errorLine1="                &lt;org.fossify.commons.views.MyTextView"
+        errorLine1="                &lt;com.omnioone.commons.views.MyTextView"
         errorLine2="                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/layout/activity_customization.xml"
@@ -16079,7 +16079,7 @@
     <issue
         id="RelativeOverlap"
         message="`@id/customization_app_icon_color_label` can overlap `@id/customization_app_icon_color` if @string/app_icon_color grows due to localized text expansion"
-        errorLine1="                &lt;org.fossify.commons.views.MyTextView"
+        errorLine1="                &lt;com.omnioone.commons.views.MyTextView"
         errorLine2="                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/layout/activity_customization.xml"
@@ -16090,7 +16090,7 @@
     <issue
         id="RelativeOverlap"
         message="`@id/color_picker_new_hex` can overlap `@id/color_picker_old_hex` if @id/color_picker_new_hex grows due to localized text expansion"
-        errorLine1="            &lt;org.fossify.commons.views.MyEditText"
+        errorLine1="            &lt;com.omnioone.commons.views.MyEditText"
         errorLine2="             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/layout/dialog_color_picker.xml"

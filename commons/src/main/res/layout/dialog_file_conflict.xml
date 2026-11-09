@@ -9,7 +9,7 @@
     android:paddingTop="@dimen/activity_margin"
     android:paddingRight="@dimen/activity_margin">
 
-    <org.fossify.commons.views.MyTextView
+    <com.omnioone.commons.views.MyTextView
         android:id="@+id/conflict_dialog_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -25,7 +25,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/medium_margin">
 
-        <org.fossify.commons.views.MyCompatRadioButton
+        <com.omnioone.commons.views.MyCompatRadioButton
             android:id="@+id/conflict_dialog_radio_skip"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -34,7 +34,7 @@
             android:paddingBottom="@dimen/normal_margin"
             android:text="@string/skip" />
 
-        <org.fossify.commons.views.MyCompatRadioButton
+        <com.omnioone.commons.views.MyCompatRadioButton
             android:id="@+id/conflict_dialog_radio_overwrite"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -42,7 +42,7 @@
             android:paddingBottom="@dimen/normal_margin"
             android:text="@string/overwrite" />
 
-        <org.fossify.commons.views.MyCompatRadioButton
+        <com.omnioone.commons.views.MyCompatRadioButton
             android:id="@+id/conflict_dialog_radio_merge"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -50,7 +50,7 @@
             android:paddingBottom="@dimen/normal_margin"
             android:text="@string/merge" />
 
-        <org.fossify.commons.views.MyCompatRadioButton
+        <com.omnioone.commons.views.MyCompatRadioButton
             android:id="@+id/conflict_dialog_radio_keep_both"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -64,7 +64,7 @@
         android:id="@+id/conflict_dialog_divider"
         layout="@layout/divider" />
 
-    <org.fossify.commons.views.MyAppCompatCheckbox
+    <com.omnioone.commons.views.MyAppCompatCheckbox
         android:id="@+id/conflict_dialog_apply_to_all"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <org.fossify.commons.views.MySearchMenu
+    <com.omnioone.commons.views.MySearchMenu
         android:id="@+id/main_menu"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
@@ -18,14 +18,14 @@
         android:scrollbars="none"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <org.fossify.commons.views.MyViewPager
+        <com.omnioone.commons.views.MyViewPager
             android:id="@+id/view_pager"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             app:layout_constraintBottom_toTopOf="@+id/main_tabs_holder"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <org.fossify.commons.views.MyFloatingActionButton
+        <com.omnioone.commons.views.MyFloatingActionButton
             android:id="@+id/main_dialpad_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

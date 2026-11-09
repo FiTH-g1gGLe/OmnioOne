@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<org.fossify.commons.views.BiometricIdTab xmlns:android="http://schemas.android.com/apk/res/android"
+<com.omnioone.commons.views.BiometricIdTab xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/biometric_lock_holder"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingHorizontal="@dimen/activity_margin">
 
-    <org.fossify.commons.views.MyButton
+    <com.omnioone.commons.views.MyButton
         android:id="@+id/open_biometric_dialog"
         style="@style/ColoredButtonStyle"
         android:layout_width="wrap_content"
@@ -17,4 +17,4 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-</org.fossify.commons.views.BiometricIdTab>
+</com.omnioone.commons.views.BiometricIdTab>

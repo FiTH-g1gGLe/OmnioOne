@@ -19,7 +19,7 @@
         android:paddingTop="@dimen/small_margin"
         android:paddingBottom="@dimen/small_margin">
 
-        <org.fossify.commons.views.MyEditText
+        <com.omnioone.commons.views.MyEditText
             android:id="@+id/search_query"
             android:layout_width="0dp"
             android:layout_height="wrap_content"

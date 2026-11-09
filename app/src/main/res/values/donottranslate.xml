@@ -1,4 +1,4 @@
 <resources>
-    <string name="package_name">org.fossify.phone</string>
+    <string name="package_name">com.omnioone.app</string>
     <string name="app_name">Omnio One</string>
 </resources>

@@ -974,7 +974,7 @@
     <ID>MaxLineLength:Activity.kt$if</ID>
     <ID>MaxLineLength:Activity.kt$return</ID>
     <ID>MaxLineLength:Activity.kt$showPickSecondsDialog(seconds, isSnoozePicker, showSecondsAtCustomDialog, showDuringDayOption, cancelCallback, callback)</ID>
-    <ID>MaxLineLength:Activity.kt$val packageName = if (baseConfig.appId.contains(".debug", true)) "org.fossify.phone.debug" else "org.fossify.phone"</ID>
+    <ID>MaxLineLength:Activity.kt$val packageName = if (baseConfig.appId.contains(".debug", true)) "com.omnioone.app.debug" else "com.omnioone.app"</ID>
     <ID>MaxLineLength:ActivityExtensions.kt$"You are using a fake version of the app. For your own safety download the original one from www.fossify.org. Thanks"</ID>
     <ID>MaxLineLength:ActivityExtensions.kt$fun</ID>
     <ID>MaxLineLength:AlertDialog.kt$// in dialogs, lets use findViewById, because while some dialogs use MyEditText, material theme dialogs use TextInputEditText so the system takes care of it</ID>
@@ -1331,12 +1331,12 @@
     <ID>NestedBlockDepth:MyRecyclerView.kt$MyRecyclerView$override fun onScrollChanged(l: Int, t: Int, oldl: Int, oldt: Int)</ID>
     <ID>NestedBlockDepth:SelectAlarmSoundDialog.kt$SelectAlarmSoundDialog$private fun alarmClicked(alarmSound: AlarmSound)</ID>
     <ID>NestedBlockDepth:VcfExporter.kt$VcfExporter$fun exportContacts( activity: BaseSimpleActivity, outputStream: OutputStream?, contacts: ArrayList&lt;Contact&gt;, showExportingToast: Boolean, callback: (result: ExportResult) -&gt; Unit )</ID>
-    <ID>NewLineAtEndOfFile:Context-styling.kt$org.fossify.commons.extensions.Context-styling.kt</ID>
-    <ID>PackageNaming:AlertDialogState.kt$package org.fossify.commons.compose.alert_dialog</ID>
-    <ID>PackageNaming:AlertDialogsExtensions.kt$package org.fossify.commons.compose.alert_dialog</ID>
-    <ID>PackageNaming:BottomSheetDialogState.kt$package org.fossify.commons.compose.bottom_sheet</ID>
-    <ID>PackageNaming:BottomSheetDialogsExtensions.kt$package org.fossify.commons.compose.bottom_sheet</ID>
-    <ID>PackageNaming:SystemUIController.kt$package org.fossify.commons.compose.system_ui_controller</ID>
+    <ID>NewLineAtEndOfFile:Context-styling.kt$com.omnioone.commons.extensions.Context-styling.kt</ID>
+    <ID>PackageNaming:AlertDialogState.kt$package com.omnioone.commons.compose.alert_dialog</ID>
+    <ID>PackageNaming:AlertDialogsExtensions.kt$package com.omnioone.commons.compose.alert_dialog</ID>
+    <ID>PackageNaming:BottomSheetDialogState.kt$package com.omnioone.commons.compose.bottom_sheet</ID>
+    <ID>PackageNaming:BottomSheetDialogsExtensions.kt$package com.omnioone.commons.compose.bottom_sheet</ID>
+    <ID>PackageNaming:SystemUIController.kt$package com.omnioone.commons.compose.system_ui_controller</ID>
     <ID>ParameterNaming:BottomSheetChooserDialog.kt$onItemClicked</ID>
     <ID>ParameterNaming:ChangeViewTypeDialog.kt$onTypeChosen</ID>
     <ID>ParameterNaming:ColorPickerDialog.kt$onButtonPressed</ID>
@@ -1402,39 +1402,39 @@
     <ID>TooGenericExceptionThrown:PasswordTypesAdapter.kt$PasswordTypesAdapter$throw RuntimeException("Only 3 tabs allowed")</ID>
     <ID>TooGenericExceptionThrown:RenameAdapter.kt$RenameAdapter$throw RuntimeException("Only 2 tabs allowed")</ID>
     <ID>TooManyFunctions:AboutActivity.kt$AboutActivity : BaseComposeActivity</ID>
-    <ID>TooManyFunctions:Activity.kt$org.fossify.commons.extensions.Activity.kt</ID>
+    <ID>TooManyFunctions:Activity.kt$com.omnioone.commons.extensions.Activity.kt</ID>
     <ID>TooManyFunctions:BaseConfig.kt$BaseConfig</ID>
     <ID>TooManyFunctions:BaseSecurityTab.kt$BaseSecurityTab : ConstraintLayoutSecurityTab</ID>
     <ID>TooManyFunctions:BaseSimpleActivity.kt$BaseSimpleActivity : EdgeToEdgeActivity</ID>
     <ID>TooManyFunctions:BottomActionMenuView.kt$BottomActionMenuView : LinearLayout</ID>
     <ID>TooManyFunctions:Breadcrumbs.kt$Breadcrumbs : HorizontalScrollView</ID>
-    <ID>TooManyFunctions:ComposeExtensions.kt$org.fossify.commons.compose.extensions.ComposeExtensions.kt</ID>
-    <ID>TooManyFunctions:Constants.kt$org.fossify.commons.helpers.Constants.kt</ID>
+    <ID>TooManyFunctions:ComposeExtensions.kt$com.omnioone.commons.compose.extensions.ComposeExtensions.kt</ID>
+    <ID>TooManyFunctions:Constants.kt$com.omnioone.commons.helpers.Constants.kt</ID>
     <ID>TooManyFunctions:Contact.kt$Contact : Comparable</ID>
     <ID>TooManyFunctions:ContactsHelper.kt$ContactsHelper</ID>
-    <ID>TooManyFunctions:Context-contacts.kt$org.fossify.commons.extensions.Context-contacts.kt</ID>
-    <ID>TooManyFunctions:Context-storage-sdk30.kt$org.fossify.commons.extensions.Context-storage-sdk30.kt</ID>
-    <ID>TooManyFunctions:Context-storage.kt$org.fossify.commons.extensions.Context-storage.kt</ID>
-    <ID>TooManyFunctions:Context-styling.kt$org.fossify.commons.extensions.Context-styling.kt</ID>
-    <ID>TooManyFunctions:Context.kt$org.fossify.commons.extensions.Context.kt</ID>
+    <ID>TooManyFunctions:Context-contacts.kt$com.omnioone.commons.extensions.Context-contacts.kt</ID>
+    <ID>TooManyFunctions:Context-storage-sdk30.kt$com.omnioone.commons.extensions.Context-storage-sdk30.kt</ID>
+    <ID>TooManyFunctions:Context-storage.kt$com.omnioone.commons.extensions.Context-storage.kt</ID>
+    <ID>TooManyFunctions:Context-styling.kt$com.omnioone.commons.extensions.Context-styling.kt</ID>
+    <ID>TooManyFunctions:Context.kt$com.omnioone.commons.extensions.Context.kt</ID>
     <ID>TooManyFunctions:Converters.kt$Converters</ID>
     <ID>TooManyFunctions:CopyMoveTask.kt$CopyMoveTask : AsyncTask</ID>
-    <ID>TooManyFunctions:CustomIntervalPickerDialog.kt$org.fossify.commons.dialogs.CustomIntervalPickerDialog.kt</ID>
+    <ID>TooManyFunctions:CustomIntervalPickerDialog.kt$com.omnioone.commons.dialogs.CustomIntervalPickerDialog.kt</ID>
     <ID>TooManyFunctions:CustomizationActivity.kt$CustomizationActivity : BaseSimpleActivity</ID>
-    <ID>TooManyFunctions:File.kt$org.fossify.commons.extensions.File.kt</ID>
+    <ID>TooManyFunctions:File.kt$com.omnioone.commons.extensions.File.kt</ID>
     <ID>TooManyFunctions:FileDirItem.kt$FileDirItem : Comparable</ID>
     <ID>TooManyFunctions:FilePickerDialog.kt$FilePickerDialog : BreadcrumbsListener</ID>
     <ID>TooManyFunctions:FilepickerFavoritesAdapter.kt$FilepickerFavoritesAdapter : MyRecyclerViewAdapter</ID>
     <ID>TooManyFunctions:FilepickerItemsAdapter.kt$FilepickerItemsAdapter : MyRecyclerViewAdapterOnPopupTextUpdate</ID>
-    <ID>TooManyFunctions:Int.kt$org.fossify.commons.extensions.Int.kt</ID>
+    <ID>TooManyFunctions:Int.kt$com.omnioone.commons.extensions.Int.kt</ID>
     <ID>TooManyFunctions:LocalContactsHelper.kt$LocalContactsHelper</ID>
     <ID>TooManyFunctions:ManageBlockedNumbersActivity.kt$ManageBlockedNumbersActivity : BaseSimpleActivity</ID>
-    <ID>TooManyFunctions:ManageBlockedNumbersScreen.kt$org.fossify.commons.compose.screens.ManageBlockedNumbersScreen.kt</ID>
+    <ID>TooManyFunctions:ManageBlockedNumbersScreen.kt$com.omnioone.commons.compose.screens.ManageBlockedNumbersScreen.kt</ID>
     <ID>TooManyFunctions:MyRecyclerViewAdapter.kt$MyRecyclerViewAdapter : Adapter</ID>
     <ID>TooManyFunctions:MyRecyclerViewListAdapter.kt$MyRecyclerViewListAdapter&lt;T&gt; : ListAdapter</ID>
     <ID>TooManyFunctions:SimpleContactsHelper.kt$SimpleContactsHelper</ID>
-    <ID>TooManyFunctions:String.kt$org.fossify.commons.extensions.String.kt</ID>
-    <ID>TooManyFunctions:View.kt$org.fossify.commons.extensions.View.kt</ID>
+    <ID>TooManyFunctions:String.kt$com.omnioone.commons.extensions.String.kt</ID>
+    <ID>TooManyFunctions:View.kt$com.omnioone.commons.extensions.View.kt</ID>
     <ID>TopLevelPropertyNaming:ChangeDateTimeFormatDialog.kt$private const val timeSample = 1676419200000 // February 15, 2023</ID>
     <ID>UnusedParameter:MyAppCompatCheckbox.kt$MyAppCompatCheckbox$backgroundColor: Int</ID>
     <ID>UnusedParameter:MyAppCompatSpinner.kt$MyAppCompatSpinner$accentColor: Int</ID>
@@ -1532,103 +1532,103 @@
     <ID>WildcardImport:ActionMenu.kt$import androidx.compose.material3.*</ID>
     <ID>WildcardImport:ActionMenu.kt$import androidx.compose.runtime.*</ID>
     <ID>WildcardImport:AddBlockedNumberDialog.kt$import androidx.compose.runtime.*</ID>
-    <ID>WildcardImport:AddBlockedNumberDialog.kt$import org.fossify.commons.compose.alert_dialog.*</ID>
+    <ID>WildcardImport:AddBlockedNumberDialog.kt$import com.omnioone.commons.compose.alert_dialog.*</ID>
     <ID>WildcardImport:AlertDialogState.kt$import androidx.compose.runtime.*</ID>
-    <ID>WildcardImport:AppSideloadedDialog.kt$import org.fossify.commons.compose.alert_dialog.*</ID>
-    <ID>WildcardImport:AppSideloadedDialog.kt$import org.fossify.commons.extensions.*</ID>
+    <ID>WildcardImport:AppSideloadedDialog.kt$import com.omnioone.commons.compose.alert_dialog.*</ID>
+    <ID>WildcardImport:AppSideloadedDialog.kt$import com.omnioone.commons.extensions.*</ID>
     <ID>WildcardImport:AppTheme.kt$import androidx.compose.runtime.*</ID>
-    <ID>WildcardImport:BaseBottomSheetDialogFragment.kt$import org.fossify.commons.extensions.*</ID>
-    <ID>WildcardImport:BaseSplashActivity.kt$import org.fossify.commons.extensions.*</ID>
-    <ID>WildcardImport:BiometricIdTab.kt$import org.fossify.commons.extensions.*</ID>
+    <ID>WildcardImport:BaseBottomSheetDialogFragment.kt$import com.omnioone.commons.extensions.*</ID>
+    <ID>WildcardImport:BaseSplashActivity.kt$import com.omnioone.commons.extensions.*</ID>
+    <ID>WildcardImport:BiometricIdTab.kt$import com.omnioone.commons.extensions.*</ID>
     <ID>WildcardImport:BottomActionMenuItemPopup.kt$import android.view.*</ID>
     <ID>WildcardImport:BottomSheetDialogState.kt$import androidx.compose.runtime.*</ID>
     <ID>WildcardImport:BottomSheetDialogsExtensions.kt$import androidx.compose.foundation.layout.*</ID>
     <ID>WildcardImport:CallConfirmationDialog.kt$import androidx.compose.animation.core.*</ID>
-    <ID>WildcardImport:CallConfirmationDialog.kt$import org.fossify.commons.compose.alert_dialog.*</ID>
+    <ID>WildcardImport:CallConfirmationDialog.kt$import com.omnioone.commons.compose.alert_dialog.*</ID>
     <ID>WildcardImport:ChangeDateTimeFormatDialog.kt$import androidx.compose.foundation.layout.*</ID>
     <ID>WildcardImport:ChangeDateTimeFormatDialog.kt$import androidx.compose.material3.*</ID>
     <ID>WildcardImport:ChangeDateTimeFormatDialog.kt$import androidx.compose.runtime.*</ID>
-    <ID>WildcardImport:ChangeDateTimeFormatDialog.kt$import org.fossify.commons.helpers.*</ID>
+    <ID>WildcardImport:ChangeDateTimeFormatDialog.kt$import com.omnioone.commons.helpers.*</ID>
     <ID>WildcardImport:ChangeViewTypeDialog.kt$import androidx.compose.foundation.layout.*</ID>
     <ID>WildcardImport:ChangeViewTypeDialog.kt$import androidx.compose.runtime.*</ID>
     <ID>WildcardImport:ColorPickerDialog.kt$import androidx.compose.foundation.layout.*</ID>
     <ID>WildcardImport:ColorPickerDialog.kt$import androidx.compose.runtime.*</ID>
-    <ID>WildcardImport:ColorPickerDialog.kt$import org.fossify.commons.extensions.*</ID>
+    <ID>WildcardImport:ColorPickerDialog.kt$import com.omnioone.commons.extensions.*</ID>
     <ID>WildcardImport:ColorPickerSquare.kt$import android.graphics.*</ID>
     <ID>WildcardImport:ComposeExtensions.kt$import androidx.compose.runtime.*</ID>
-    <ID>WildcardImport:ConfirmationAdvancedDialog.kt$import org.fossify.commons.compose.alert_dialog.*</ID>
-    <ID>WildcardImport:ConfirmationDialog.kt$import org.fossify.commons.compose.alert_dialog.*</ID>
-    <ID>WildcardImport:Contact.kt$import org.fossify.commons.helpers.*</ID>
+    <ID>WildcardImport:ConfirmationAdvancedDialog.kt$import com.omnioone.commons.compose.alert_dialog.*</ID>
+    <ID>WildcardImport:ConfirmationDialog.kt$import com.omnioone.commons.compose.alert_dialog.*</ID>
+    <ID>WildcardImport:Contact.kt$import com.omnioone.commons.helpers.*</ID>
     <ID>WildcardImport:ContactsHelper.kt$import android.content.*</ID>
     <ID>WildcardImport:ContactsHelper.kt$import android.provider.ContactsContract.*</ID>
-    <ID>WildcardImport:ContactsHelper.kt$import org.fossify.commons.extensions.*</ID>
-    <ID>WildcardImport:ContactsHelper.kt$import org.fossify.commons.models.contacts.*</ID>
-    <ID>WildcardImport:Context-contacts.kt$import org.fossify.commons.helpers.*</ID>
+    <ID>WildcardImport:ContactsHelper.kt$import com.omnioone.commons.extensions.*</ID>
+    <ID>WildcardImport:ContactsHelper.kt$import com.omnioone.commons.models.contacts.*</ID>
+    <ID>WildcardImport:Context-contacts.kt$import com.omnioone.commons.helpers.*</ID>
     <ID>WildcardImport:Context-storage.kt$import android.provider.MediaStore.*</ID>
     <ID>WildcardImport:Context-storage.kt$import java.io.*</ID>
-    <ID>WildcardImport:Context-storage.kt$import org.fossify.commons.helpers.*</ID>
-    <ID>WildcardImport:CopyMoveTask.kt$import org.fossify.commons.extensions.*</ID>
+    <ID>WildcardImport:Context-storage.kt$import com.omnioone.commons.helpers.*</ID>
+    <ID>WildcardImport:CopyMoveTask.kt$import com.omnioone.commons.extensions.*</ID>
     <ID>WildcardImport:CreateNewFolderDialog.kt$import androidx.compose.material3.*</ID>
     <ID>WildcardImport:CreateNewFolderDialog.kt$import androidx.compose.runtime.*</ID>
-    <ID>WildcardImport:CreateNewFolderDialog.kt$import org.fossify.commons.compose.alert_dialog.*</ID>
-    <ID>WildcardImport:CreateNewFolderDialog.kt$import org.fossify.commons.extensions.*</ID>
+    <ID>WildcardImport:CreateNewFolderDialog.kt$import com.omnioone.commons.compose.alert_dialog.*</ID>
+    <ID>WildcardImport:CreateNewFolderDialog.kt$import com.omnioone.commons.extensions.*</ID>
     <ID>WildcardImport:CustomIntervalPickerDialog.kt$import androidx.compose.foundation.layout.*</ID>
     <ID>WildcardImport:CustomIntervalPickerDialog.kt$import androidx.compose.runtime.*</ID>
-    <ID>WildcardImport:CustomIntervalPickerDialog.kt$import org.fossify.commons.extensions.*</ID>
-    <ID>WildcardImport:DonateDialog.kt$import org.fossify.commons.compose.alert_dialog.*</ID>
-    <ID>WildcardImport:DonateDialog.kt$import org.fossify.commons.extensions.*</ID>
+    <ID>WildcardImport:CustomIntervalPickerDialog.kt$import com.omnioone.commons.extensions.*</ID>
+    <ID>WildcardImport:DonateDialog.kt$import com.omnioone.commons.compose.alert_dialog.*</ID>
+    <ID>WildcardImport:DonateDialog.kt$import com.omnioone.commons.extensions.*</ID>
     <ID>WildcardImport:DragHandler.kt$import androidx.compose.runtime.*</ID>
-    <ID>WildcardImport:DynamicTheme.kt$import org.fossify.commons.extensions.*</ID>
+    <ID>WildcardImport:DynamicTheme.kt$import com.omnioone.commons.extensions.*</ID>
     <ID>WildcardImport:EnterPasswordDialog.kt$import androidx.compose.material3.*</ID>
     <ID>WildcardImport:EnterPasswordDialog.kt$import androidx.compose.runtime.*</ID>
-    <ID>WildcardImport:EnterPasswordDialog.kt$import org.fossify.commons.compose.alert_dialog.*</ID>
-    <ID>WildcardImport:EnterPasswordDialog.kt$import org.fossify.commons.extensions.*</ID>
-    <ID>WildcardImport:ExportBlockedNumbersDialog.kt$import org.fossify.commons.extensions.*</ID>
-    <ID>WildcardImport:ExportSettingsDialog.kt$import org.fossify.commons.extensions.*</ID>
+    <ID>WildcardImport:EnterPasswordDialog.kt$import com.omnioone.commons.compose.alert_dialog.*</ID>
+    <ID>WildcardImport:EnterPasswordDialog.kt$import com.omnioone.commons.extensions.*</ID>
+    <ID>WildcardImport:ExportBlockedNumbersDialog.kt$import com.omnioone.commons.extensions.*</ID>
+    <ID>WildcardImport:ExportSettingsDialog.kt$import com.omnioone.commons.extensions.*</ID>
     <ID>WildcardImport:FAQScreen.kt$import androidx.compose.foundation.layout.*</ID>
-    <ID>WildcardImport:FeatureLockedDialog.kt$import org.fossify.commons.compose.alert_dialog.*</ID>
-    <ID>WildcardImport:FeatureLockedDialog.kt$import org.fossify.commons.extensions.*</ID>
-    <ID>WildcardImport:File.kt$import org.fossify.commons.helpers.*</ID>
+    <ID>WildcardImport:FeatureLockedDialog.kt$import com.omnioone.commons.compose.alert_dialog.*</ID>
+    <ID>WildcardImport:FeatureLockedDialog.kt$import com.omnioone.commons.extensions.*</ID>
+    <ID>WildcardImport:File.kt$import com.omnioone.commons.helpers.*</ID>
     <ID>WildcardImport:FileConflictDialog.kt$import androidx.compose.foundation.layout.*</ID>
     <ID>WildcardImport:FileConflictDialog.kt$import androidx.compose.runtime.*</ID>
-    <ID>WildcardImport:FileDirItem.kt$import org.fossify.commons.extensions.*</ID>
-    <ID>WildcardImport:FileDirItem.kt$import org.fossify.commons.helpers.*</ID>
-    <ID>WildcardImport:FilepickerItemsAdapter.kt$import org.fossify.commons.extensions.*</ID>
-    <ID>WildcardImport:FingerprintTab.kt$import org.fossify.commons.extensions.*</ID>
-    <ID>WildcardImport:FolderLockingNoticeDialog.kt$import org.fossify.commons.compose.alert_dialog.*</ID>
+    <ID>WildcardImport:FileDirItem.kt$import com.omnioone.commons.extensions.*</ID>
+    <ID>WildcardImport:FileDirItem.kt$import com.omnioone.commons.helpers.*</ID>
+    <ID>WildcardImport:FilepickerItemsAdapter.kt$import com.omnioone.commons.extensions.*</ID>
+    <ID>WildcardImport:FingerprintTab.kt$import com.omnioone.commons.extensions.*</ID>
+    <ID>WildcardImport:FolderLockingNoticeDialog.kt$import com.omnioone.commons.compose.alert_dialog.*</ID>
     <ID>WildcardImport:LineColorPickerDialog.kt$import androidx.compose.foundation.layout.*</ID>
     <ID>WildcardImport:LineColorPickerDialog.kt$import androidx.compose.runtime.*</ID>
-    <ID>WildcardImport:LineColorPickerDialog.kt$import org.fossify.commons.extensions.*</ID>
+    <ID>WildcardImport:LineColorPickerDialog.kt$import com.omnioone.commons.extensions.*</ID>
     <ID>WildcardImport:ManageBlockedNumbersActivity.kt$import androidx.compose.runtime.*</ID>
-    <ID>WildcardImport:ManageBlockedNumbersActivity.kt$import org.fossify.commons.extensions.*</ID>
-    <ID>WildcardImport:ManageBlockedNumbersActivity.kt$import org.fossify.commons.helpers.*</ID>
+    <ID>WildcardImport:ManageBlockedNumbersActivity.kt$import com.omnioone.commons.extensions.*</ID>
+    <ID>WildcardImport:ManageBlockedNumbersActivity.kt$import com.omnioone.commons.helpers.*</ID>
     <ID>WildcardImport:ManageBlockedNumbersScreen.kt$import androidx.compose.foundation.layout.*</ID>
     <ID>WildcardImport:ManageBlockedNumbersScreen.kt$import androidx.compose.material3.*</ID>
     <ID>WildcardImport:ManageBlockedNumbersScreen.kt$import androidx.compose.runtime.*</ID>
-    <ID>WildcardImport:ManageBlockedNumbersScreen.kt$import org.fossify.commons.compose.extensions.*</ID>
-    <ID>WildcardImport:ManageBlockedNumbersScreen.kt$import org.fossify.commons.compose.lists.*</ID>
-    <ID>WildcardImport:ManageBlockedNumbersScreen.kt$import org.fossify.commons.compose.theme.*</ID>
+    <ID>WildcardImport:ManageBlockedNumbersScreen.kt$import com.omnioone.commons.compose.extensions.*</ID>
+    <ID>WildcardImport:ManageBlockedNumbersScreen.kt$import com.omnioone.commons.compose.lists.*</ID>
+    <ID>WildcardImport:ManageBlockedNumbersScreen.kt$import com.omnioone.commons.compose.theme.*</ID>
     <ID>WildcardImport:MyRecyclerViewAdapter.kt$import android.view.*</ID>
-    <ID>WildcardImport:MyRecyclerViewAdapter.kt$import org.fossify.commons.extensions.*</ID>
+    <ID>WildcardImport:MyRecyclerViewAdapter.kt$import com.omnioone.commons.extensions.*</ID>
     <ID>WildcardImport:MyRecyclerViewListAdapter.kt$import android.view.*</ID>
-    <ID>WildcardImport:MyRecyclerViewListAdapter.kt$import org.fossify.commons.extensions.*</ID>
-    <ID>WildcardImport:OpenDeviceSettingsDialog.kt$import org.fossify.commons.compose.alert_dialog.*</ID>
-    <ID>WildcardImport:PermissionRequiredDialog.kt$import org.fossify.commons.compose.alert_dialog.*</ID>
-    <ID>WildcardImport:PinTab.kt$import org.fossify.commons.extensions.*</ID>
-    <ID>WildcardImport:PropertiesDialog.kt$import org.fossify.commons.extensions.*</ID>
-    <ID>WildcardImport:PropertiesDialog.kt$import org.fossify.commons.helpers.*</ID>
-    <ID>WildcardImport:PurchaseThankYouDialog.kt$import org.fossify.commons.compose.alert_dialog.*</ID>
-    <ID>WildcardImport:PurchaseThankYouDialog.kt$import org.fossify.commons.extensions.*</ID>
+    <ID>WildcardImport:MyRecyclerViewListAdapter.kt$import com.omnioone.commons.extensions.*</ID>
+    <ID>WildcardImport:OpenDeviceSettingsDialog.kt$import com.omnioone.commons.compose.alert_dialog.*</ID>
+    <ID>WildcardImport:PermissionRequiredDialog.kt$import com.omnioone.commons.compose.alert_dialog.*</ID>
+    <ID>WildcardImport:PinTab.kt$import com.omnioone.commons.extensions.*</ID>
+    <ID>WildcardImport:PropertiesDialog.kt$import com.omnioone.commons.extensions.*</ID>
+    <ID>WildcardImport:PropertiesDialog.kt$import com.omnioone.commons.helpers.*</ID>
+    <ID>WildcardImport:PurchaseThankYouDialog.kt$import com.omnioone.commons.compose.alert_dialog.*</ID>
+    <ID>WildcardImport:PurchaseThankYouDialog.kt$import com.omnioone.commons.extensions.*</ID>
     <ID>WildcardImport:RadioButtonDialogComponent.kt$import androidx.compose.foundation.layout.*</ID>
     <ID>WildcardImport:RadioGroupDialog.kt$import androidx.compose.runtime.*</ID>
-    <ID>WildcardImport:RenameDialog.kt$import org.fossify.commons.extensions.*</ID>
-    <ID>WildcardImport:RenameItemDialog.kt$import org.fossify.commons.extensions.*</ID>
-    <ID>WildcardImport:RenameItemsDialog.kt$import org.fossify.commons.extensions.*</ID>
-    <ID>WildcardImport:RenamePatternTab.kt$import org.fossify.commons.extensions.*</ID>
-    <ID>WildcardImport:RenameSimpleTab.kt$import org.fossify.commons.extensions.*</ID>
-    <ID>WildcardImport:SecurityDialog.kt$import org.fossify.commons.extensions.*</ID>
-    <ID>WildcardImport:SecurityDialog.kt$import org.fossify.commons.helpers.*</ID>
-    <ID>WildcardImport:SelectAlarmSoundDialog.kt$import org.fossify.commons.extensions.*</ID>
+    <ID>WildcardImport:RenameDialog.kt$import com.omnioone.commons.extensions.*</ID>
+    <ID>WildcardImport:RenameItemDialog.kt$import com.omnioone.commons.extensions.*</ID>
+    <ID>WildcardImport:RenameItemsDialog.kt$import com.omnioone.commons.extensions.*</ID>
+    <ID>WildcardImport:RenamePatternTab.kt$import com.omnioone.commons.extensions.*</ID>
+    <ID>WildcardImport:RenameSimpleTab.kt$import com.omnioone.commons.extensions.*</ID>
+    <ID>WildcardImport:SecurityDialog.kt$import com.omnioone.commons.extensions.*</ID>
+    <ID>WildcardImport:SecurityDialog.kt$import com.omnioone.commons.helpers.*</ID>
+    <ID>WildcardImport:SelectAlarmSoundDialog.kt$import com.omnioone.commons.extensions.*</ID>
     <ID>WildcardImport:SettingsCheckBoxComponent.kt$import androidx.compose.material3.*</ID>
     <ID>WildcardImport:SettingsCheckBoxComponent.kt$import androidx.compose.runtime.*</ID>
     <ID>WildcardImport:SettingsGroup.kt$import androidx.compose.foundation.layout.*</ID>
@@ -1642,16 +1642,16 @@
     <ID>WildcardImport:SimpleColumnScaffold.kt$import androidx.compose.material3.*</ID>
     <ID>WildcardImport:SimpleLazyListScaffold.kt$import androidx.compose.foundation.layout.*</ID>
     <ID>WildcardImport:SimpleLazyListScaffold.kt$import androidx.compose.material3.*</ID>
-    <ID>WildcardImport:SimpleListItemAdapter.kt$import org.fossify.commons.extensions.*</ID>
+    <ID>WildcardImport:SimpleListItemAdapter.kt$import com.omnioone.commons.extensions.*</ID>
     <ID>WildcardImport:SimpleScaffoldTopBar.kt$import androidx.compose.foundation.layout.*</ID>
     <ID>WildcardImport:SimpleScaffoldTopBar.kt$import androidx.compose.material3.*</ID>
-    <ID>WildcardImport:StoragePickerDialog.kt$import org.fossify.commons.extensions.*</ID>
+    <ID>WildcardImport:StoragePickerDialog.kt$import com.omnioone.commons.extensions.*</ID>
     <ID>WildcardImport:String.kt$import android.text.*</ID>
-    <ID>WildcardImport:String.kt$import org.fossify.commons.helpers.*</ID>
+    <ID>WildcardImport:String.kt$import com.omnioone.commons.helpers.*</ID>
     <ID>WildcardImport:Theme.kt$import androidx.compose.material3.*</ID>
     <ID>WildcardImport:Theme.kt$import androidx.compose.runtime.*</ID>
-    <ID>WildcardImport:UpgradeToProDialog.kt$import org.fossify.commons.compose.alert_dialog.*</ID>
-    <ID>WildcardImport:WhatsNewDialog.kt$import org.fossify.commons.compose.alert_dialog.*</ID>
+    <ID>WildcardImport:UpgradeToProDialog.kt$import com.omnioone.commons.compose.alert_dialog.*</ID>
+    <ID>WildcardImport:WhatsNewDialog.kt$import com.omnioone.commons.compose.alert_dialog.*</ID>
     <ID>WildcardImport:WritePermissionDialog.kt$import androidx.compose.foundation.layout.*</ID>
   </CurrentIssues>
 </SmellBaseline>

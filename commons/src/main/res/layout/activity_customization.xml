@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <org.fossify.commons.views.MyAppBarLayout
+    <com.omnioone.commons.views.MyAppBarLayout
         android:id="@+id/app_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -20,7 +20,7 @@
             app:title="@string/customize_colors"
             app:titleTextAppearance="@style/AppTheme.ActionBar.TitleTextStyle" />
 
-    </org.fossify.commons.views.MyAppBarLayout>
+    </com.omnioone.commons.views.MyAppBarLayout>
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/customization_nested_scrollview"
@@ -52,7 +52,7 @@
                 android:paddingTop="@dimen/bigger_margin"
                 android:paddingBottom="@dimen/bigger_margin">
 
-                <org.fossify.commons.views.MyTextView
+                <com.omnioone.commons.views.MyTextView
                     android:id="@+id/customization_theme_label"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -61,7 +61,7 @@
                     android:text="@string/theme"
                     android:textSize="@dimen/normal_text_size" />
 
-                <org.fossify.commons.views.MyTextView
+                <com.omnioone.commons.views.MyTextView
                     android:id="@+id/customization_theme"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -80,7 +80,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <org.fossify.commons.views.MyTextView
+                <com.omnioone.commons.views.MyTextView
                     android:id="@+id/customization_text_color_label"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -106,7 +106,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <org.fossify.commons.views.MyTextView
+                <com.omnioone.commons.views.MyTextView
                     android:id="@+id/customization_background_color_label"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -132,7 +132,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <org.fossify.commons.views.MyTextView
+                <com.omnioone.commons.views.MyTextView
                     android:id="@+id/customization_primary_color_label"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -160,7 +160,7 @@
                 android:visibility="gone"
                 tools:visibility="visible">
 
-                <org.fossify.commons.views.MyTextView
+                <com.omnioone.commons.views.MyTextView
                     android:id="@+id/customization_accent_color_label"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -186,7 +186,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <org.fossify.commons.views.MyTextView
+                <com.omnioone.commons.views.MyTextView
                     android:id="@+id/customization_app_icon_color_label"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -226,7 +226,7 @@
                 android:paddingTop="@dimen/bigger_margin"
                 android:paddingBottom="@dimen/bigger_margin">
 
-                <org.fossify.commons.views.MyTextView
+                <com.omnioone.commons.views.MyTextView
                     android:id="@+id/customization_font_label"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -235,7 +235,7 @@
                     android:text="@string/app_font"
                     android:textSize="@dimen/normal_text_size" />
 
-                <org.fossify.commons.views.MyTextView
+                <com.omnioone.commons.views.MyTextView
                     android:id="@+id/customization_font"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -266,7 +266,7 @@
                 android:visibility="gone"
                 tools:visibility="visible">
 
-                <org.fossify.commons.views.MyMaterialSwitch
+                <com.omnioone.commons.views.MyMaterialSwitch
                     android:id="@+id/apply_to_all_switch"
                     style="@style/SettingsSwitchStyle"
                     android:layout_width="wrap_content"
@@ -282,14 +282,14 @@
                     android:layout_toStartOf="@id/apply_to_all_switch"
                     android:orientation="vertical">
 
-                    <org.fossify.commons.views.MyTextView
+                    <com.omnioone.commons.views.MyTextView
                         android:id="@+id/apply_to_all_label"
                         style="@style/SettingsTextLabelStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/apply_to_all_apps" />
 
-                    <org.fossify.commons.views.MyTextView
+                    <com.omnioone.commons.views.MyTextView
                         android:id="@+id/apply_to_all_note"
                         style="@style/SettingsTextValueStyle"
                         android:layout_width="wrap_content"

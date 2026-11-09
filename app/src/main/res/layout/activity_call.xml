@@ -28,7 +28,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/ic_phone_vector" />
 
-        <org.fossify.commons.views.MyTextView
+        <com.omnioone.commons.views.MyTextView
             android:id="@+id/on_hold_caller_name"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -43,7 +43,7 @@
             android:textDirection="firstStrongLtr"
             tools:text="0912 345 678" />
 
-        <org.fossify.commons.views.MyTextView
+        <com.omnioone.commons.views.MyTextView
             android:id="@+id/on_hold_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -73,7 +73,7 @@
         tools:padding="16dp"
         tools:src="@drawable/ic_person_vector" />
 
-    <org.fossify.commons.views.MyTextView
+    <com.omnioone.commons.views.MyTextView
         android:id="@+id/caller_name_label"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -91,7 +91,7 @@
         android:textDirection="firstStrongLtr"
         tools:text="Caller name" />
 
-    <org.fossify.commons.views.MyTextView
+    <com.omnioone.commons.views.MyTextView
         android:id="@+id/caller_number"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -105,7 +105,7 @@
         android:textDirection="firstStrongLtr"
         tools:text="+1 (123) 456-7890" />
 
-    <org.fossify.commons.views.MyTextView
+    <com.omnioone.commons.views.MyTextView
         android:id="@+id/call_status_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -330,7 +330,7 @@
             app:layout_constraintTop_toTopOf="@+id/call_draggable"
             app:layout_constraintVertical_bias="0.85" />
 
-        <org.fossify.commons.views.MyTextView
+        <com.omnioone.commons.views.MyTextView
             android:id="@+id/call_decline_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -420,7 +420,7 @@
             app:layout_constraintTop_toTopOf="@+id/call_draggable"
             app:layout_constraintVertical_bias="0.85" />
 
-        <org.fossify.commons.views.MyTextView
+        <com.omnioone.commons.views.MyTextView
             android:id="@+id/call_accept_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -465,7 +465,7 @@
                 android:padding="@dimen/medium_margin"
                 android:src="@drawable/ic_cross_vector" />
 
-            <org.fossify.commons.views.MyEditText
+            <com.omnioone.commons.views.MyEditText
                 android:id="@+id/dialpad_input"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

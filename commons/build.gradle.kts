@@ -15,7 +15,7 @@ group = "org.fossify"
 version = findProperty("VERSION")?.toString() ?: System.getenv("VERSION") ?: "1.0.0"
 
 android {
-    namespace = "org.fossify.commons"
+    namespace = "com.omnioone.commons"
 
     compileSdk = libs.versions.app.build.compileSDKVersion.get().toInt()
 
