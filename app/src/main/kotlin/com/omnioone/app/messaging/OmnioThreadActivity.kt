@@ -46,13 +46,6 @@ import com.omnioone.commons.extensions.toast
 import com.omnioone.commons.helpers.OmnioColors
 import com.omnioone.commons.helpers.OmnioContactData
 import com.omnioone.commons.helpers.ensureBackgroundThread
-import com.omnioone.messages.extensions.deleteSmsDraft
-import com.omnioone.messages.extensions.getSmsDraft
-import com.omnioone.messages.extensions.saveSmsDraft
-import com.omnioone.messages.helpers.OmnioEmail
-import com.omnioone.messages.helpers.OmnioReactions
-import com.omnioone.messages.helpers.THREAD_ID
-import com.omnioone.messages.helpers.THREAD_TITLE
 import java.util.Calendar
 
 /**
@@ -146,7 +139,7 @@ class OmnioThreadActivity : SimpleActivity() {
         setContentView(buildScreen())
         window.decorView.post { (input.parent?.parent as? View)?.requestFocus() }
         titleView.text = intent.getStringExtra(THREAD_TITLE).orEmpty()
-        input.setText(intent.getStringExtra(com.omnioone.messages.helpers.THREAD_TEXT) ?: getSmsDraft(threadId))
+        input.setText(intent.getStringExtra(com.omnioone.app.messaging.THREAD_TEXT) ?: OmnioDrafts.get(this, threadId))
         sharedAttachments()
         setUpSim()
         contentResolver.registerContentObserver(Uri.parse("content://mms-sms/"), true, observer)
@@ -165,7 +158,7 @@ class OmnioThreadActivity : SimpleActivity() {
         OmnioSendReceiver.openThreadId = 0L
         val text = input.text.toString()
         ensureBackgroundThread {
-            if (text.isNotBlank()) saveSmsDraft(text, threadId) else deleteSmsDraft(threadId)
+            if (text.isNotBlank()) OmnioDrafts.save(this, threadId, text) else OmnioDrafts.delete(this, threadId)
         }
         super.onPause()
     }
@@ -258,8 +251,8 @@ class OmnioThreadActivity : SimpleActivity() {
     /** Photos or files shared from another app arrive ready to send. */
     @Suppress("DEPRECATION")
     private fun sharedAttachments() {
-        val uris = if (android.os.Build.VERSION.SDK_INT >= 33) intent.getParcelableArrayListExtra(com.omnioone.messages.helpers.THREAD_ATTACHMENT_URIS, Uri::class.java)
-        else intent.getParcelableArrayListExtra<Uri>(com.omnioone.messages.helpers.THREAD_ATTACHMENT_URIS)
+        val uris = if (android.os.Build.VERSION.SDK_INT >= 33) intent.getParcelableArrayListExtra(com.omnioone.app.messaging.THREAD_ATTACHMENT_URIS, Uri::class.java)
+        else intent.getParcelableArrayListExtra<Uri>(com.omnioone.app.messaging.THREAD_ATTACHMENT_URIS)
         if (!uris.isNullOrEmpty()) addAttachments(uris)
     }
 
@@ -270,7 +263,7 @@ class OmnioThreadActivity : SimpleActivity() {
         ensureBackgroundThread {
             try {
                 OmnioSender.send(this, text, to, sim, files)
-                deleteSmsDraft(threadId)
+                OmnioDrafts.delete(this, threadId)
             } catch (e: Exception) {
                 runOnUiThread { toast(getString(R.string.omnio_thread_send_failed) + (e.message?.let { ": $it" } ?: "")) }
             }
@@ -290,7 +283,7 @@ class OmnioThreadActivity : SimpleActivity() {
     }
 
     private fun messagesConfigShowsCounter() = try {
-        com.omnioone.messages.helpers.Config.newInstance(this).showCharacterCounter
+        com.omnioone.app.messaging.OmnioMessagesConfig(this).showCharacterCounter
     } catch (e: Exception) {
         false
     }
@@ -715,7 +708,7 @@ class OmnioThreadActivity : SimpleActivity() {
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
                 maxLines = 5
                 imeOptions = EditorInfo.IME_FLAG_NO_EXTRACT_UI
-                if (com.omnioone.messages.helpers.Config.newInstance(this@OmnioThreadActivity).sendOnEnter) {
+                if (com.omnioone.app.messaging.OmnioMessagesConfig(this@OmnioThreadActivity).sendOnEnter) {
                     // "Send on Enter": the keyboard's Enter key sends
                     inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
                     setHorizontallyScrolling(false)

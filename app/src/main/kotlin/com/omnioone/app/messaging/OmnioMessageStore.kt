@@ -6,8 +6,6 @@ import android.provider.Telephony.Mms
 import android.provider.Telephony.Sms
 import android.provider.Telephony.Threads
 import com.omnioone.app.helpers.OmnioCallLog
-import com.omnioone.messages.extensions.getConversations
-import com.omnioone.messages.extensions.getUnreadCountsByThread
 
 /**
  * Omnio One's own message reader (stage 1 of the Messages rewrite).
@@ -231,36 +229,5 @@ object OmnioMessageStore {
         )?.use { cursor -> if (cursor.moveToFirst()) cursor.getString(0).orEmpty() else "" } ?: ""
     } catch (e: Exception) {
         ""
-    }
-
-    // ---- checking the new reader against the current Messages code ----
-
-    data class Check(val newChats: Int, val oldChats: Int, val newUnread: Int, val oldUnread: Int, val onlyNew: List<String>, val onlyOld: List<String>) {
-        val matches get() = newChats == oldChats && newUnread == oldUnread && onlyNew.isEmpty() && onlyOld.isEmpty()
-    }
-
-    /** Reads everything both ways and compares, so we know the new reader is right before any screen uses it. */
-    fun check(context: Context): Check {
-        val mine = conversations(context)
-        val old = try {
-            context.getConversations()
-        } catch (e: Exception) {
-            arrayListOf()
-        }
-        val oldUnread = try {
-            context.getUnreadCountsByThread().values.sum()
-        } catch (e: Exception) {
-            -1
-        }
-        val mineIds = mine.map { it.threadId }.toSet()
-        val oldIds = old.map { it.threadId }.toSet()
-        return Check(
-            newChats = mine.size,
-            oldChats = old.size,
-            newUnread = mine.sumOf { it.unread },
-            oldUnread = oldUnread,
-            onlyNew = mine.filter { it.threadId !in oldIds }.take(5).map { it.title },
-            onlyOld = old.filter { it.threadId !in mineIds }.take(5).map { it.title },
-        )
     }
 }

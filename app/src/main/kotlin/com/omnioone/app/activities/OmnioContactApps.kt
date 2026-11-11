@@ -42,7 +42,6 @@ import com.omnioone.commons.extensions.setupDialogStuff
 import com.omnioone.commons.extensions.getAlertDialogBuilder
 import com.omnioone.app.helpers.OmnioSocials
 import com.omnioone.app.helpers.OmnioSheet
-import com.omnioone.messages.messaging.sendMessageCompat
 import com.omnioone.commons.extensions.beVisible
 import com.omnioone.commons.extensions.getFormattedDuration
 

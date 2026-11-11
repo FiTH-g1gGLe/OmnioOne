@@ -42,7 +42,6 @@ import com.omnioone.commons.extensions.setupDialogStuff
 import com.omnioone.commons.extensions.getAlertDialogBuilder
 import com.omnioone.app.helpers.OmnioSocials
 import com.omnioone.app.helpers.OmnioSheet
-import com.omnioone.messages.messaging.sendMessageCompat
 import com.omnioone.commons.extensions.beVisible
 import com.omnioone.commons.extensions.getFormattedDuration
 
@@ -143,7 +142,7 @@ internal fun OmnioContactActivity.askForEmailByText(contact: Contact, number: St
         if (text.isEmpty()) return@input
         try {
             sendOmnioText(text, number)
-            com.omnioone.messages.helpers.OmnioEmail.markAsked(this, number)
+            com.omnioone.app.messaging.OmnioEmail.markAsked(this, number)
             toast(getString(R.string.omnio_ask_sent, firstName))
         } catch (e: Exception) {
             showErrorToast(e)
@@ -152,7 +151,7 @@ internal fun OmnioContactActivity.askForEmailByText(contact: Contact, number: St
 }
 
 internal fun OmnioContactActivity.sendOmnioText(text: String, number: String) {
-    sendMessageCompat(text, listOf(number), null, emptyList())
+    com.omnioone.app.messaging.OmnioSender.send(this, text, listOf(number), -1)
 }
 
 internal fun OmnioContactActivity.shareText(text: String) {

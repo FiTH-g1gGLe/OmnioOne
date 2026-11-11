@@ -28,7 +28,6 @@ import com.omnioone.commons.extensions.toast
 import com.omnioone.commons.helpers.OmnioColors
 import com.omnioone.commons.helpers.SimpleContactsHelper
 import com.omnioone.commons.helpers.ensureBackgroundThread
-import com.omnioone.messages.messaging.sendMessageCompat
 import com.omnioone.app.R
 import com.omnioone.app.extensions.config
 import com.omnioone.app.helpers.OmnioAppTags
@@ -264,7 +263,7 @@ class OmnioCallActivity : SimpleActivity() {
         decline()
         if (preview || number.isEmpty()) return
         try {
-            sendMessageCompat(text, listOf(number), null, emptyList())
+            com.omnioone.app.messaging.OmnioSender.send(this, text, listOf(number), -1)
             toast(R.string.omnio_reply_sent)
         } catch (e: Exception) {
             toast(com.omnioone.commons.R.string.unknown_error_occurred)

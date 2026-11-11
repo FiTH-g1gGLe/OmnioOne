@@ -21,7 +21,7 @@ import android.telephony.SubscriptionManager
 import com.klinker.android.send_message.Message
 import com.klinker.android.send_message.Settings
 import com.klinker.android.send_message.Transaction
-import com.omnioone.messages.extensions.config
+import com.omnioone.app.messaging.messagesConfig as config
 import java.io.ByteArrayOutputStream
 
 /**

@@ -20,15 +20,15 @@ import androidx.core.widget.NestedScrollView
 import com.omnioone.commons.extensions.isDefaultDialer
 import com.omnioone.commons.extensions.toast
 import com.omnioone.commons.helpers.OmnioColors
-import com.omnioone.messages.helpers.LOCK_SCREEN_NOTHING
-import com.omnioone.messages.helpers.LOCK_SCREEN_SENDER
-import com.omnioone.messages.helpers.LOCK_SCREEN_SENDER_MESSAGE
+import com.omnioone.app.messaging.LOCK_SCREEN_NOTHING
+import com.omnioone.app.messaging.LOCK_SCREEN_SENDER
+import com.omnioone.app.messaging.LOCK_SCREEN_SENDER_MESSAGE
 import com.omnioone.app.R
 import com.omnioone.app.dialogs.OmnioDisplayDialog
 import com.omnioone.app.extensions.config
 import com.omnioone.app.helpers.OmnioSheet
 import com.omnioone.app.services.OmnioLinkHelperService
-import com.omnioone.messages.extensions.config as messagesConfig
+import com.omnioone.app.messaging.messagesConfig
 
 /**
  * Omnio One: one settings page for calls, contacts and messages.
@@ -210,16 +210,6 @@ class OmnioSettingsActivity : SimpleActivity() {
             },
         )
 
-        section("⚙️", R.string.omnio_settings_advanced)
-        card(
-            switch(R.string.omnio_new_messages, R.string.omnio_new_messages_desc, OmnioMessagesSwitch.isOn(this)) { OmnioMessagesSwitch.set(this, it) },
-            switch(R.string.omnio_new_thread, R.string.omnio_new_thread_desc, OmnioMessagesSwitch.threadOn(this)) { OmnioMessagesSwitch.setThread(this, it) },
-            action(R.string.omnio_check_reader, getString(R.string.omnio_check_reader_desc)) { checkMessageReader() },
-            action(R.string.omnio_settings_more_messages, getString(R.string.omnio_settings_more_messages_desc)) {
-                startActivity(Intent().setClassName(packageName, "com.omnioone.messages.activities.SettingsActivity"))
-            },
-        )
-
         section("ℹ️", R.string.omnio_about)
         card(action(R.string.omnio_about_title, getString(R.string.omnio_about_row_desc)) {
             startActivity(Intent(this, OmnioAboutActivity::class.java))
@@ -300,32 +290,6 @@ class OmnioSettingsActivity : SimpleActivity() {
                 runOnUiThread {
                     if (count < 0) toast(R.string.omnio_import_failed) else toast(getString(R.string.omnio_imported_calls, count))
                 }
-            }
-        }
-    }
-
-    /** Messages rewrite, stage 1: compare Omnio's new message reader with the current Messages code. */
-    private fun checkMessageReader() {
-        toast(R.string.omnio_check_reader_running)
-        com.omnioone.commons.helpers.ensureBackgroundThread {
-            val result = com.omnioone.app.messaging.OmnioMessageStore.check(this)
-            runOnUiThread {
-                val lines = buildString {
-                    append(getString(R.string.omnio_check_reader_counts, result.newChats, result.oldChats, result.newUnread, result.oldUnread))
-                    if (result.onlyNew.isNotEmpty()) append("\n\n" + getString(R.string.omnio_check_reader_only_new, result.onlyNew.joinToString(", ")))
-                    if (result.onlyOld.isNotEmpty()) append("\n\n" + getString(R.string.omnio_check_reader_only_old, result.onlyOld.joinToString(", ")))
-                }
-                OmnioSheet.confirm(
-                    this,
-                    title = getString(if (result.matches) R.string.omnio_check_reader_match else R.string.omnio_check_reader_differ),
-                    message = lines,
-                    positive = getString(com.omnioone.commons.R.string.ok),
-                    negative = getString(R.string.omnio_check_reader_copy),
-                    onNegative = {
-                        (getSystemService(CLIPBOARD_SERVICE) as android.content.ClipboardManager).setPrimaryClip(android.content.ClipData.newPlainText("Omnio check", lines))
-                        toast(R.string.omnio_copied)
-                    }
-                ) {}
             }
         }
     }

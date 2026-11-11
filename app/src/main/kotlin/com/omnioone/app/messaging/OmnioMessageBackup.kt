@@ -175,7 +175,7 @@ object OmnioMessageBackup {
             context.contentResolver.delete(Telephony.Threads.CONTENT_URI, "1 = 0", null)
         } catch (ignored: Exception) {
         }
-        com.omnioone.messages.helpers.refreshConversations()
+        OmnioMessagesBus.changed()
         return Result(written, skipped, failed)
     }
 

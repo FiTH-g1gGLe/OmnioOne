@@ -121,7 +121,7 @@ class OmnioChatListActivity : SimpleActivity() {
     // ---- archive actions ----
 
     private fun openChat(conversation: OmnioMessageStore.Conversation) =
-        startActivity(OmnioNotifications.threadIntent(this, conversation.threadId).putExtra(com.omnioone.messages.helpers.THREAD_TITLE, conversation.title))
+        startActivity(OmnioNotifications.threadIntent(this, conversation.threadId).putExtra(com.omnioone.app.messaging.THREAD_TITLE, conversation.title))
 
     private fun archiveMenu(conversation: OmnioMessageStore.Conversation) {
         val items = listOf(

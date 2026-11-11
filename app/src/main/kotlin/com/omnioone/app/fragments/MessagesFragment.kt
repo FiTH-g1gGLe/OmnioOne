@@ -36,10 +36,8 @@ import com.omnioone.commons.helpers.OmnioColors
 import com.omnioone.commons.helpers.OmnioContactData
 import com.omnioone.commons.helpers.PERMISSION_READ_SMS
 import com.omnioone.commons.helpers.ensureBackgroundThread
-import com.omnioone.messages.extensions.markThreadMessagesRead
-import com.omnioone.messages.extensions.markThreadMessagesUnread
-import com.omnioone.messages.helpers.THREAD_ID
-import com.omnioone.messages.helpers.THREAD_TITLE
+import com.omnioone.app.messaging.THREAD_ID
+import com.omnioone.app.messaging.THREAD_TITLE
 
 /**
  * Omnio One Messages tab (Messages rewrite, stage 2): your conversations inside the main screen,
@@ -106,8 +104,12 @@ class MessagesFragment(context: Context, attributeSet: AttributeSet) :
 
     // ---- MyViewPagerFragment ----
 
+    // archive, recycle bin and other changes made elsewhere refresh this list
+    private val changeListener: () -> Unit = { refreshItems() }
+
     override fun setupFragment() {
         val host = activity ?: return
+        com.omnioone.app.messaging.OmnioMessagesBus.listen(changeListener)
         adapter = OmnioConversationsAdapter(
             onOpen = { open(it) },
             onPhoto = { openPerson(it) },
@@ -258,8 +260,7 @@ class MessagesFragment(context: Context, attributeSet: AttributeSet) :
 
     private fun open(conversation: OmnioMessageStore.Conversation) {
         val host = activity ?: return
-        val screen = if (com.omnioone.app.activities.OmnioMessagesSwitch.threadOn(host)) com.omnioone.app.messaging.OmnioThreadActivity::class.java
-        else com.omnioone.messages.activities.ThreadActivity::class.java
+        val screen = com.omnioone.app.messaging.OmnioThreadActivity::class.java
         host.startActivity(Intent(host, screen).apply {
             putExtra(THREAD_ID, conversation.threadId)
             putExtra(THREAD_TITLE, conversation.title)
@@ -297,7 +298,8 @@ class MessagesFragment(context: Context, attributeSet: AttributeSet) :
 
     private fun setRead(conversation: OmnioMessageStore.Conversation, read: Boolean) {
         ensureBackgroundThread {
-            if (read) context.markThreadMessagesRead(conversation.threadId) else context.markThreadMessagesUnread(conversation.threadId)
+            if (read) com.omnioone.app.messaging.OmnioNotificationActions.markRead(context, conversation.threadId)
+            else com.omnioone.app.messaging.OmnioNotificationActions.markUnread(context, conversation.threadId)
             handler.post { refreshItems() }
         }
     }

@@ -152,8 +152,7 @@ detekt {
 dependencies {
     implementation(project(":commons"))
     testImplementation("junit:junit:4.13.2")
-    implementation(project(":messages"))
-    // packages picture messages (MMS) for sending
+    // packages picture messages (MMS) for sending and downloading
     implementation(libs.mmslib)
     // Omnio One: reads profile addresses from screenshots, on the phone (no internet needed)
     implementation("com.google.mlkit:text-recognition:16.0.1")

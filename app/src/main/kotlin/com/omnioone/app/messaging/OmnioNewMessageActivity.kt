@@ -26,7 +26,6 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.omnioone.app.R
-import com.omnioone.app.activities.OmnioMessagesSwitch
 import com.omnioone.app.activities.SimpleActivity
 import com.omnioone.app.helpers.OmnioDisplay
 import com.omnioone.app.helpers.OmnioPeople
@@ -36,11 +35,6 @@ import com.omnioone.app.extensions.config
 import com.omnioone.commons.extensions.toast
 import com.omnioone.commons.helpers.OmnioColors
 import com.omnioone.commons.helpers.ensureBackgroundThread
-import com.omnioone.messages.helpers.THREAD_ATTACHMENT_URIS
-import com.omnioone.messages.helpers.THREAD_ID
-import com.omnioone.messages.helpers.THREAD_NUMBER
-import com.omnioone.messages.helpers.THREAD_TEXT
-import com.omnioone.messages.helpers.THREAD_TITLE
 
 /**
  * Omnio One new message screen (Messages rewrite, stage 6): pick someone (or type a number),
@@ -196,8 +190,7 @@ class OmnioNewMessageActivity : SimpleActivity() {
             toast(R.string.omnio_thread_send_failed)
             return
         }
-        val screen = if (OmnioMessagesSwitch.threadOn(this)) OmnioThreadActivity::class.java
-        else com.omnioone.messages.activities.ThreadActivity::class.java
+        val screen = OmnioThreadActivity::class.java
         startActivity(Intent(this, screen).apply {
             putExtra(THREAD_ID, threadId)
             putExtra(THREAD_TITLE, who.joinToString(", ") { if (who.size > 1) it.name.substringBefore(" ") else it.name })

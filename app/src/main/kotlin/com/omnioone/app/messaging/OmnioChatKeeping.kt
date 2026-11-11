@@ -4,9 +4,7 @@ import android.content.ContentUris
 import android.content.Context
 import android.provider.Telephony.Mms
 import android.provider.Telephony.Sms
-import com.omnioone.messages.extensions.config
-import com.omnioone.messages.helpers.refreshConversations
-import com.omnioone.messages.helpers.refreshMessages
+import com.omnioone.app.messaging.messagesConfig as config
 import org.json.JSONObject
 import java.io.File
 
@@ -26,14 +24,7 @@ object OmnioArchive {
         val current = prefs(context).getStringSet(KEY, emptySet()).orEmpty()
         val id = threadId.toString()
         prefs(context).edit().putStringSet(KEY, if (archived) current + id else current - id).apply()
-        // keep the previous Messages screens in step until they're retired
-        try {
-            com.omnioone.messages.databases.MessagesDatabase.getInstance(context).ConversationsDao().apply {
-                if (archived) moveToArchive(threadId) else unarchive(threadId)
-            }
-        } catch (ignored: Exception) {
-        }
-        refreshConversations()
+        OmnioMessagesBus.changed()
     }
 
     /** A new message brings an archived chat back, unless "Keep chats archived" is on. */
@@ -45,11 +36,7 @@ object OmnioArchive {
     /** First run: bring over chats archived in the previous Messages screens. */
     private fun migrate(context: Context) {
         if (prefs(context).getBoolean("archive_migrated", false)) return
-        val old = try {
-            com.omnioone.messages.databases.MessagesDatabase.getInstance(context).ConversationsDao().getAllArchived().map { it.threadId.toString() }.toSet()
-        } catch (e: Exception) {
-            emptySet()
-        }
+        val old = OmnioOldData.archivedThreads(context).map { it.toString() }.toSet()
         val current = prefs(context).getStringSet(KEY, emptySet()).orEmpty()
         prefs(context).edit().putStringSet(KEY, current + old).putBoolean("archive_migrated", true).apply()
     }
@@ -110,8 +97,7 @@ object OmnioRecycleBin {
         } else {
             messages.forEach { erase(context, it.isMms, it.id) }
         }
-        refreshMessages()
-        refreshConversations()
+        OmnioMessagesBus.changed()
     }
 
     /** Deletes a whole chat. */
@@ -124,13 +110,8 @@ object OmnioRecycleBin {
                 context.contentResolver.delete(Mms.CONTENT_URI, "${Mms.THREAD_ID} = ?", arrayOf(threadId.toString()))
             } catch (ignored: Exception) {
             }
-            try {
-                com.omnioone.messages.databases.MessagesDatabase.getInstance(context).ConversationsDao().deleteThreadId(threadId)
-            } catch (ignored: Exception) {
-            }
             OmnioNotifications.cancel(context, threadId)
-            refreshMessages()
-            refreshConversations()
+            OmnioMessagesBus.changed()
         }
     }
 
@@ -139,8 +120,7 @@ object OmnioRecycleBin {
     fun restore(context: Context, keys: Collection<String>) {
         val remove = keys.toSet()
         save(context, entries(context).filter { it.key !in remove })
-        refreshMessages()
-        refreshConversations()
+        OmnioMessagesBus.changed()
     }
 
     fun restoreChat(context: Context, threadId: Long) = restore(context, entries(context).filter { it.threadId == threadId }.map { it.key })
@@ -151,8 +131,7 @@ object OmnioRecycleBin {
         val all = entries(context)
         all.filter { it.key in remove }.forEach { erase(context, it.isMms, it.id) }
         save(context, all.filter { it.key !in remove })
-        refreshMessages()
-        refreshConversations()
+        OmnioMessagesBus.changed()
     }
 
     fun purgeChat(context: Context, threadId: Long) = purge(context, entries(context).filter { it.threadId == threadId }.map { it.key })
@@ -179,11 +158,11 @@ object OmnioRecycleBin {
         if (prefs.getBoolean("bin_migrated", false)) return
         prefs.edit().putBoolean("bin_migrated", true).apply()
         try {
-            val old = com.omnioone.messages.databases.MessagesDatabase.getInstance(context).MessagesDao().getAllRecycleBinMessages()
+            val old = OmnioOldData.binned(context)
             if (old.isEmpty()) return
             val now = System.currentTimeMillis()
             val json = JSONObject(file(context).takeIf { it.exists() }?.readText() ?: "{}")
-            old.forEach { json.put(keyOf(it.isMMS, it.id), JSONObject().put("thread", it.threadId).put("at", now)) }
+            old.forEach { (id, isMms, thread) -> json.put(keyOf(isMms, id), JSONObject().put("thread", thread).put("at", now)) }
             file(context).writeText(json.toString())
         } catch (ignored: Exception) {
         }

@@ -42,7 +42,6 @@ import com.omnioone.commons.extensions.setupDialogStuff
 import com.omnioone.commons.extensions.getAlertDialogBuilder
 import com.omnioone.app.helpers.OmnioSocials
 import com.omnioone.app.helpers.OmnioSheet
-import com.omnioone.messages.messaging.sendMessageCompat
 import com.omnioone.commons.extensions.beVisible
 import com.omnioone.commons.extensions.getFormattedDuration
 
@@ -107,7 +106,7 @@ internal fun OmnioContactActivity.loadRecentTexts(numbers: List<String>, now: Lo
                 val address = cursor.getString(0) ?: continue
                 if (numbers.none { PhoneNumberUtils.compare(it, address) }) continue
                 val rawBody = (cursor.getString(1) ?: "").replace(Regex("\\s+"), " ").trim()
-                val body = com.omnioone.messages.helpers.OmnioReactions.describe(rawBody) ?: rawBody
+                val body = com.omnioone.app.messaging.OmnioReactions.describe(rawBody) ?: rawBody
                 val date = cursor.getLong(2)
                 val received = cursor.getInt(3) == android.provider.Telephony.Sms.MESSAGE_TYPE_INBOX
                 val whenText = DateUtils.getRelativeTimeSpanString(date, now, DateUtils.MINUTE_IN_MILLIS).toString()

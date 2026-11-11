@@ -11,9 +11,6 @@ import android.provider.ContactsContract
 import android.provider.Telephony.Mms
 import android.provider.Telephony.Sms
 import android.telephony.SmsMessage
-import com.omnioone.messages.extensions.messagesDB
-import com.omnioone.messages.helpers.refreshConversations
-import com.omnioone.messages.helpers.refreshMessages
 import java.io.File
 
 /**
@@ -52,7 +49,7 @@ class OmnioSendReceiver : BroadcastReceiver() {
         val selection = if (ok) "${Sms.TYPE} != ${Sms.MESSAGE_TYPE_FAILED}" else null
         context.contentResolver.update(uri, ContentValues().apply { put(Sms.TYPE, type) }, selection, null)
         val id = ContentUris.parseId(uri)
-        keepOldScreenInStep { context.messagesDB.updateType(id, type) }
+        OmnioMessagesBus.changed()
         if (!ok) notifyFailed(context, uri)
     }
 
@@ -80,7 +77,7 @@ class OmnioSendReceiver : BroadcastReceiver() {
             put(Sms.DATE_SENT, System.currentTimeMillis())
         }, null, null)
         val id = ContentUris.parseId(uri)
-        keepOldScreenInStep { context.messagesDB.updateStatus(id, status) }
+        OmnioMessagesBus.changed()
     }
 
     private fun mmsSent(context: Context, intent: Intent, ok: Boolean) {
@@ -96,17 +93,7 @@ class OmnioSendReceiver : BroadcastReceiver() {
         } catch (ignored: Exception) {
         }
         intent.getStringExtra("file_path")?.let { File(it).delete() }
-        keepOldScreenInStep { }
-    }
-
-    /** The previous Messages screens keep their own copy: update it until they're retired. */
-    private fun keepOldScreenInStep(update: () -> Unit) {
-        try {
-            update()
-        } catch (ignored: Exception) {
-        }
-        refreshMessages()
-        refreshConversations()
+        OmnioMessagesBus.changed()
     }
 
     private fun notifyFailed(context: Context, uri: Uri) {

@@ -420,26 +420,9 @@ class MainActivity : SimpleActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        val omnioTab = intent.getIntExtra(com.omnioone.messages.helpers.OmnioTabBar.EXTRA_OPEN_TAB, -1)
+        val omnioTab = intent.getIntExtra("omnio_open_tab", -1)
         if (omnioTab in 0 until pageTabCount) {
             binding.mainTabsHolder.getTabAt(omnioTab)?.select()
-        }
-    }
-
-    @Suppress("DEPRECATION")
-    private fun openMessages() {
-        if (binding.mainMenu.isSearchOpen || binding.mainMenu.getCurrentQuery().isNotEmpty()) {
-            binding.mainMenu.closeSearch()
-        }
-        try {
-            startActivity(Intent(this, com.omnioone.messages.activities.MainActivity::class.java))
-            overridePendingTransition(0, 0)
-        } catch (e: Exception) {
-            showErrorToast(e)
-        }
-        // keep the current phone tab highlighted
-        binding.mainTabsHolder.post {
-            binding.mainTabsHolder.getTabAt(binding.viewPager.currentItem)?.select()
         }
     }
 
@@ -495,10 +478,10 @@ class MainActivity : SimpleActivity() {
                 }
 
                 // Omnio One: coming back from the Messages screen's tab bar
-                val omnioTab = intent.getIntExtra(com.omnioone.messages.helpers.OmnioTabBar.EXTRA_OPEN_TAB, -1)
+                val omnioTab = intent.getIntExtra("omnio_open_tab", -1)
                 if (omnioTab in 0 until pageTabCount) {
                     wantedTab = omnioTab
-                    intent.removeExtra(com.omnioone.messages.helpers.OmnioTabBar.EXTRA_OPEN_TAB)
+                    intent.removeExtra("omnio_open_tab")
                 }
 
                 binding.mainTabsHolder.getTabAt(wantedTab)?.select()
@@ -542,10 +525,7 @@ class MainActivity : SimpleActivity() {
                 tintOmnioTab(it.customView, it.position, selected = false)
             },
             tabSelectedAction = {
-                if (it.tag == OMNIO_MESSAGES_TAB) {
-                    openMessages()
-                    return@onTabSelectionChanged
-                }
+                if (it.tag == OMNIO_MESSAGES_TAB) return@onTabSelectionChanged
                 // Omnio One: switching tab clears the search
                 if (binding.mainMenu.isSearchOpen || binding.mainMenu.getCurrentQuery().isNotEmpty()) {
                     binding.mainMenu.closeSearch()

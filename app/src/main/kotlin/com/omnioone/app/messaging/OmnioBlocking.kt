@@ -6,7 +6,7 @@ import android.provider.BlockedNumberContract
 import android.provider.BlockedNumberContract.BlockedNumbers
 import android.provider.ContactsContract
 import com.omnioone.commons.extensions.baseConfig
-import com.omnioone.messages.extensions.config
+import com.omnioone.app.messaging.messagesConfig as config
 
 /** Omnio One: decides whether an incoming message should be dropped (blocked number, unknown sender or blocked word). */
 object OmnioBlocking {

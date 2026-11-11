@@ -97,7 +97,7 @@ data class OmnioCallInfo(
                         val body = (c.getString(1) ?: "").replace(Regex("\\s+"), " ").trim()
                         if (body.isEmpty()) continue
                         val ago = DateUtils.getRelativeTimeSpanString(c.getLong(2), System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS)
-                        val shown = com.omnioone.messages.helpers.OmnioReactions.describe(body) ?: body
+                        val shown = com.omnioone.app.messaging.OmnioReactions.describe(body) ?: body
                         return@use "“${if (shown.length > 80) shown.take(80).trimEnd() + "…" else shown}” · $ago"
                     }
                     null

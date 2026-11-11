@@ -15,12 +15,6 @@ import android.widget.Toast
 import androidx.core.app.RemoteInput
 import com.klinker.android.send_message.MmsReceivedReceiver
 import com.omnioone.app.R
-import com.omnioone.messages.extensions.conversationsDB
-import com.omnioone.messages.extensions.getConversations
-import com.omnioone.messages.extensions.insertOrUpdateConversation
-import com.omnioone.messages.helpers.THREAD_ID
-import com.omnioone.messages.helpers.refreshConversations
-import com.omnioone.messages.helpers.refreshMessages
 
 /** Shared steps once a new message is saved: un-archive the chat, refresh screens, notify. */
 private object OmnioIncoming {
@@ -35,15 +29,9 @@ private object OmnioIncoming {
         OmnioNotifications.showIncoming(context, message)
     }
 
-    /** The previous Messages screens keep their own copy of the chat list: update it until they're retired. */
-    fun keepOldScreensInStep(context: Context, threadId: Long) {
-        try {
-            context.getConversations(threadId).firstOrNull()?.let { context.insertOrUpdateConversation(it) }
-        } catch (ignored: Exception) {
-        }
-        refreshMessages()
-        refreshConversations()
-    }
+    /** Tells open Messages screens to refresh. */
+    @Suppress("UNUSED_PARAMETER")
+    fun keepOldScreensInStep(context: Context, threadId: Long) = OmnioMessagesBus.changed()
 }
 
 /** Omnio One: receives texts (SMS) as the phone's messaging app. */
@@ -187,11 +175,18 @@ class OmnioNotificationActions : BroadcastReceiver() {
                 context.contentResolver.update(Mms.CONTENT_URI, values, "${Mms.THREAD_ID} = ? AND (${Mms.READ} = 0 OR ${Mms.SEEN} = 0)", arrayOf(threadId.toString()))
             } catch (ignored: Exception) {
             }
+            OmnioMessagesBus.changed()
+        }
+
+        /** Marks a chat unread again (its latest received message). */
+        fun markUnread(context: Context, threadId: Long) {
+            val latest = OmnioMessageStore.messages(context, threadId, limit = 20).lastOrNull { it.incoming } ?: return
+            val values = ContentValues().apply { put(Sms.READ, 0) }
             try {
-                context.conversationsDB.markRead(threadId)
+                context.contentResolver.update(ContentUris.withAppendedId(if (latest.isMms) Mms.CONTENT_URI else Sms.CONTENT_URI, latest.id), values, null, null)
             } catch (ignored: Exception) {
             }
-            refreshConversations()
+            OmnioMessagesBus.changed()
         }
 
         fun delete(context: Context, id: Long, isMms: Boolean) {

@@ -23,13 +23,9 @@ import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
 import com.omnioone.app.R
-import com.omnioone.app.activities.OmnioMessagesSwitch
 import com.omnioone.app.helpers.OmnioDisplay
 import com.omnioone.commons.helpers.OmnioColors
-import com.omnioone.messages.extensions.config
-import com.omnioone.messages.helpers.LOCK_SCREEN_NOTHING
-import com.omnioone.messages.helpers.LOCK_SCREEN_SENDER
-import com.omnioone.messages.helpers.THREAD_ID
+import com.omnioone.app.messaging.messagesConfig as config
 import java.io.File
 
 /**
@@ -75,8 +71,7 @@ object OmnioNotifications {
 
     /** Opens the chat in whichever conversation screen is switched on. */
     fun threadIntent(context: Context, threadId: Long): Intent {
-        val screen = if (OmnioMessagesSwitch.threadOn(context)) OmnioThreadActivity::class.java
-        else com.omnioone.messages.activities.ThreadActivity::class.java
+        val screen = OmnioThreadActivity::class.java
         return Intent(context, screen).putExtra(THREAD_ID, threadId).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
     }
 
@@ -158,7 +153,7 @@ object OmnioNotifications {
 
     private fun baseBuilder(context: Context, threadId: Long, channel: String, existing: NotificationCompat.Builder? = null) =
         (existing ?: NotificationCompat.Builder(context, channel))
-            .setSmallIcon(com.omnioone.messages.R.drawable.ic_messenger)
+            .setSmallIcon(R.drawable.ic_omnio_message_small)
             .setColor(OmnioColors.MESSAGES)
             .setCategory(Notification.CATEGORY_MESSAGE)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
