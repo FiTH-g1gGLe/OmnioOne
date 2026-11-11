@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Omnio One's own theme: dark background, Omnio orange accent. -->
+    <style name="AppTheme" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">#FF8A3D</item>
+        <item name="colorPrimaryVariant">#E0752E</item>
+        <item name="colorOnPrimary">#0F1115</item>
+        <item name="colorSecondary">#FF8A3D</item>
+        <item name="colorOnSecondary">#0F1115</item>
+        <item name="colorAccent">#FF8A3D</item>
+        <item name="colorControlActivated">#FF8A3D</item>
+        <item name="android:colorBackground">#0F1115</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:textColorPrimary">#FFFFFF</item>
+        <item name="alertDialogTheme">@style/OmnioDialog</item>
+        <item name="materialAlertDialogTheme">@style/OmnioDialog</item>
+    </style>
+
+    <style name="OmnioDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="colorPrimary">#FF8A3D</item>
+        <item name="colorAccent">#FF8A3D</item>
+        <item name="colorSurface">#1A1D23</item>
+        <item name="android:textColorPrimary">#FFFFFF</item>
+    </style>
+
+    <style name="SplashTheme" parent="AppTheme">
+        <item name="android:windowBackground">@android:color/black</item>
+    </style>
+
+    <style name="Theme.Transparent" parent="AppTheme">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:windowAnimationStyle">@null</item>
+    </style>
+
+</resources>
