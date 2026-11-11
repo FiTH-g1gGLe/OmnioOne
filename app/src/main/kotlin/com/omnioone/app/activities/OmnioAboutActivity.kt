@@ -60,17 +60,28 @@ class OmnioAboutActivity : SimpleActivity() {
 
     private fun build() {
         // logo: the four-colour ring on navy, like the app icon
+        // with the Omnio ring spinning once around it as the page opens
+        val ring = com.omnioone.app.helpers.OrbitRing(this, dp(3).toFloat()).apply {
+            layoutParams = FrameLayout.LayoutParams(dp(132), dp(132), Gravity.CENTER)
+        }
         form.addView(FrameLayout(this).apply {
-            layoutParams = LinearLayout.LayoutParams(dp(112), dp(112)).apply { gravity = Gravity.CENTER_HORIZONTAL }
-            background = GradientDrawable().apply {
-                shape = GradientDrawable.OVAL
-                setColor(0xFF101828.toInt())
-            }
-            addView(ImageView(this@OmnioAboutActivity).apply {
-                setImageResource(R.drawable.ic_launcher_foreground)
-                layoutParams = FrameLayout.LayoutParams(dp(112), dp(112))
+            layoutParams = LinearLayout.LayoutParams(dp(132), dp(132)).apply { gravity = Gravity.CENTER_HORIZONTAL }
+            addView(FrameLayout(this@OmnioAboutActivity).apply {
+                layoutParams = FrameLayout.LayoutParams(dp(112), dp(112), Gravity.CENTER)
+                background = GradientDrawable().apply {
+                    shape = GradientDrawable.OVAL
+                    setColor(0xFF101828.toInt())
+                }
+                addView(ImageView(this@OmnioAboutActivity).apply {
+                    setImageResource(R.drawable.ic_launcher_foreground)
+                    layoutParams = FrameLayout.LayoutParams(dp(112), dp(112))
+                })
             })
+            addView(ring)
         })
+        ring.postDelayed({
+            ring.animate().rotationBy(360f).setDuration(900).setInterpolator(android.view.animation.DecelerateInterpolator()).start()
+        }, 250)
         form.addView(TextView(this).apply {
             text = getString(R.string.app_launcher_name)
             setTextColor(OmnioColors.TEXT)
@@ -87,14 +98,25 @@ class OmnioAboutActivity : SimpleActivity() {
             gravity = Gravity.CENTER
             setPadding(0, dp(4), 0, 0)
         })
+        // signature
         form.addView(TextView(this).apply {
-            text = getString(R.string.omnio_about_tagline)
+            text = getString(R.string.omnio_signature_tagline)
             setTextColor(OmnioColors.TEXT)
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 17f)
+            setTypeface(typeface, Typeface.ITALIC)
             gravity = Gravity.CENTER
-            setLineSpacing(0f, 1.2f)
             setPadding(dp(8), dp(16), dp(8), 0)
         })
+        listOf(R.string.omnio_signature_people, R.string.omnio_signature_made).forEach { line ->
+            form.addView(TextView(this).apply {
+                text = getString(line)
+                setTextColor(OmnioColors.TEXT)
+                alpha = 0.85f
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
+                gravity = Gravity.CENTER
+                setPadding(dp(8), dp(8), dp(8), 0)
+            })
+        }
 
         // brand colours strip
         form.addView(LinearLayout(this).apply {
@@ -118,14 +140,6 @@ class OmnioAboutActivity : SimpleActivity() {
             R.string.omnio_about_privacy_2,
             R.string.omnio_about_privacy_3,
             R.string.omnio_about_privacy_4,
-        )
-
-        section("🧩", R.string.omnio_about_built_on)
-        infoCard(R.string.omnio_about_built_on_text)
-        linkCard(
-            R.string.omnio_about_fossify_phone to "https://github.com/FossifyOrg/Phone",
-            R.string.omnio_about_fossify_messages to "https://github.com/FossifyOrg/Messages",
-            R.string.omnio_about_fossify_commons to "https://github.com/FossifyOrg/Commons",
         )
 
         section("🛠️", R.string.omnio_about_project)
@@ -155,6 +169,14 @@ class OmnioAboutActivity : SimpleActivity() {
             }
         }
 
+        // licence notice (required until every original line is rewritten)
+        form.addView(TextView(this).apply {
+            text = getString(R.string.omnio_about_licence_notice)
+            setTextColor(OmnioColors.TEXT_MUTED)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
+            gravity = Gravity.CENTER
+            setPadding(dp(16), dp(20), dp(16), 0)
+        })
         form.addView(TextView(this).apply {
             text = getString(R.string.omnio_about_footer)
             setTextColor(OmnioColors.TEXT)
