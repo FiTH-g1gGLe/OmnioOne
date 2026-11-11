@@ -214,7 +214,8 @@ class NewConversationActivity : SimpleActivity() {
         val privateCursor = getMyContactsCursor(false, true)
         ensureBackgroundThread {
             privateContacts = MyContactsContentProvider.getSimpleContacts(this, privateCursor)
-            val suggestions = getSuggestedContacts(privateContacts)
+            // the same person can appear once per number format (07… and +44…): show them once
+            val suggestions = getSuggestedContacts(privateContacts).distinctBy { it.name.trim().lowercase() + "|" + it.photoUri }
             runOnUiThread {
                 binding.suggestionsHolder.removeAllViews()
                 if (suggestions.isEmpty()) {

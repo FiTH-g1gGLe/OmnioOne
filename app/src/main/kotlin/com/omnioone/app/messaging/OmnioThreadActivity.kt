@@ -627,6 +627,8 @@ class OmnioThreadActivity : SimpleActivity() {
             addView(simChip)
             input = EditText(this@OmnioThreadActivity).apply {
                 hint = getString(R.string.omnio_thread_type)
+                // the friendly prompt clears as soon as you tap in to type
+                setOnFocusChangeListener { _, focused -> hint = if (focused) "" else getString(R.string.omnio_thread_type) }
                 setTextColor(OmnioColors.TEXT)
                 setHintTextColor(OmnioColors.TEXT_MUTED)
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
