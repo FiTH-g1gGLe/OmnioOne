@@ -113,6 +113,16 @@
             android:exported="false"
             android:screenOrientation="portrait" />
 
+        <receiver
+            android:name=".messaging.OmnioSendReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.omnioone.app.action.SMS_SENT" />
+                <action android:name="com.omnioone.app.action.SMS_DELIVERED" />
+                <action android:name="com.omnioone.app.action.MMS_SENT" />
+            </intent-filter>
+        </receiver>
+
         <activity
             android:name=".messaging.OmnioThreadActivity"
             android:exported="false"

@@ -21,6 +21,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
+import android.widget.FrameLayout
+import android.widget.HorizontalScrollView
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.FileProvider
+import java.io.File
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -50,7 +56,6 @@ import com.omnioone.messages.helpers.OmnioEmail
 import com.omnioone.messages.helpers.OmnioReactions
 import com.omnioone.messages.helpers.THREAD_ID
 import com.omnioone.messages.helpers.THREAD_TITLE
-import com.omnioone.messages.messaging.sendMessageCompat
 import java.util.Calendar
 
 /**
@@ -78,6 +83,37 @@ class OmnioThreadActivity : SimpleActivity() {
     private var offeredEmail: String? = null
     private var loading = false
 
+    // sending (stage 4)
+    private val attachments = ArrayList<OmnioSender.Attachment>()
+    private lateinit var attachmentScroll: HorizontalScrollView
+    private lateinit var attachmentStrip: LinearLayout
+    private lateinit var simChip: TextView
+    private lateinit var undoBar: LinearLayout
+    private lateinit var undoText: TextView
+    private var sims = listOf<OmnioSender.Sim>()
+    private var subId = -1
+    private var queued: Queued? = null
+    private var countdown = 0
+    private var cameraUri: Uri? = null
+
+    private data class Queued(val text: String, val attachments: List<OmnioSender.Attachment>, val subId: Int)
+
+    private val tick = object : Runnable {
+        override fun run() {
+            countdown--
+            if (countdown <= 0) flushQueued() else {
+                undoText.text = getString(R.string.omnio_thread_sending_in, countdown)
+                handler.postDelayed(this, 1000)
+            }
+        }
+    }
+
+    private val pickMedia = registerForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(10)) { addAttachments(it) }
+    private val pickFiles = registerForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { addAttachments(it) }
+    private val takePhoto = registerForActivityResult(ActivityResultContracts.TakePicture()) { ok ->
+        if (ok) cameraUri?.let { addAttachments(listOf(it)) }
+    }
+
     private val reloadSoon = Runnable { load() }
     private val observer = object : ContentObserver(handler) {
         override fun onChange(selfChange: Boolean) {
@@ -98,16 +134,21 @@ class OmnioThreadActivity : SimpleActivity() {
         setContentView(buildScreen())
         titleView.text = intent.getStringExtra(THREAD_TITLE).orEmpty()
         input.setText(getSmsDraft(threadId))
+        setUpSim()
         contentResolver.registerContentObserver(Uri.parse("content://mms-sms/"), true, observer)
         load()
     }
 
     override fun onResume() {
         super.onResume()
+        OmnioSendReceiver.openThreadId = threadId
         markRead()
     }
 
     override fun onPause() {
+        // leaving the chat sends anything still waiting on undo, so nothing gets lost
+        flushQueued()
+        OmnioSendReceiver.openThreadId = 0L
         val text = input.text.toString()
         ensureBackgroundThread {
             if (text.isNotBlank()) saveSmsDraft(text, threadId) else deleteSmsDraft(threadId)
@@ -201,25 +242,182 @@ class OmnioThreadActivity : SimpleActivity() {
 
     private fun addresses() = conversation?.people?.map { it.address }.orEmpty()
 
-    private fun send(text: String, retryOf: Long? = null) {
+    /** Sends straight away (reactions, resends and the end of the undo wait). */
+    private fun send(text: String, files: List<OmnioSender.Attachment> = emptyList(), sim: Int = subId) {
         val to = addresses()
-        if (text.isBlank() || to.isEmpty()) return
+        if ((text.isBlank() && files.isEmpty()) || to.isEmpty()) return
         ensureBackgroundThread {
             try {
-                sendMessageCompat(text, to, null, emptyList(), retryOf)
+                OmnioSender.send(this, text, to, sim, files)
                 deleteSmsDraft(threadId)
+            } catch (e: Exception) {
+                runOnUiThread { toast(getString(R.string.omnio_thread_send_failed) + (e.message?.let { ": $it" } ?: "")) }
+            }
+            handler.postDelayed(reloadSoon, 300)
+        }
+    }
+
+    private fun retry(message: OmnioMessageStore.Message) {
+        val to = addresses()
+        if (to.isEmpty()) return
+        ensureBackgroundThread {
+            try {
+                OmnioSender.retry(this, message, to, subId)
             } catch (e: Exception) {
                 runOnUiThread { toast(R.string.omnio_thread_send_failed) }
             }
-            handler.postDelayed(reloadSoon, 400)
+            handler.postDelayed(reloadSoon, 300)
         }
     }
 
     private fun sendTyped() {
         val text = input.text.toString().trim()
-        if (text.isEmpty()) return
+        if (text.isEmpty() && attachments.isEmpty()) return
+        flushQueued()
+        val files = attachments.toList()
         input.setText("")
-        send(text)
+        attachments.clear()
+        showAttachments()
+        val seconds = OmnioSender.undoSeconds(this)
+        if (seconds <= 0) {
+            send(text, files)
+            return
+        }
+        queued = Queued(text, files, subId)
+        countdown = seconds
+        undoText.text = getString(R.string.omnio_thread_sending_in, countdown)
+        undoBar.visibility = View.VISIBLE
+        handler.postDelayed(tick, 1000)
+    }
+
+    private fun flushQueued() {
+        val waiting = queued ?: return
+        queued = null
+        handler.removeCallbacks(tick)
+        undoBar.visibility = View.GONE
+        send(waiting.text, waiting.attachments, waiting.subId)
+    }
+
+    private fun undo() {
+        val waiting = queued ?: return
+        queued = null
+        handler.removeCallbacks(tick)
+        undoBar.visibility = View.GONE
+        input.setText(waiting.text)
+        input.setSelection(input.text.length)
+        attachments.addAll(0, waiting.attachments)
+        showAttachments()
+    }
+
+    // ---- SIM ----
+
+    private fun setUpSim() {
+        sims = OmnioSender.sims(this)
+        val saved = OmnioSender.simFor(this, threadId)
+        val fallback = OmnioSender.defaultSubId()
+        subId = when {
+            sims.any { it.subId == saved } -> saved
+            sims.any { it.subId == fallback } -> fallback
+            else -> sims.firstOrNull()?.subId ?: -1
+        }
+        showSim()
+    }
+
+    private fun showSim() {
+        val sim = sims.firstOrNull { it.subId == subId }
+        simChip.visibility = if (sims.size > 1 && sim != null) View.VISIBLE else View.GONE
+        simChip.text = sim?.short.orEmpty()
+    }
+
+    private fun pickSim() {
+        OmnioSheet.list(this, getString(R.string.omnio_thread_send_from), null, sims.map {
+            OmnioSheet.Item(it.short + " · " + it.name, trailing = if (it.subId == subId) "✓" else null)
+        }) { picked ->
+            subId = sims[picked].subId
+            OmnioSender.rememberSim(this, threadId, subId)
+            showSim()
+        }
+    }
+
+    // ---- attachments ----
+
+    private fun showAttachMenu() {
+        val options = listOf(R.string.omnio_thread_attach_media, R.string.omnio_thread_attach_camera, R.string.omnio_thread_attach_file)
+        OmnioSheet.list(this, getString(R.string.omnio_thread_attach), null, options.map { OmnioSheet.Item(getString(it)) }) { picked ->
+            try {
+                when (picked) {
+                    0 -> pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo))
+                    1 -> {
+                        val folder = File(cacheDir, "attachments").apply { mkdirs() }
+                        val uri = FileProvider.getUriForFile(this, "$packageName.provider", File(folder, "photo_${System.currentTimeMillis()}.jpg"))
+                        cameraUri = uri
+                        takePhoto.launch(uri)
+                    }
+                    else -> pickFiles.launch(arrayOf("*/*"))
+                }
+            } catch (e: Exception) {
+                toast(com.omnioone.commons.R.string.no_app_found)
+            }
+        }
+    }
+
+    private fun addAttachments(uris: List<Uri>) {
+        if (uris.isEmpty()) return
+        ensureBackgroundThread {
+            val added = uris.map { OmnioSender.attachmentFrom(this, it) }
+            runOnUiThread {
+                attachments.addAll(added.filter { new -> attachments.none { it.uri == new.uri } })
+                showAttachments()
+            }
+        }
+    }
+
+    private fun showAttachments() {
+        attachmentStrip.removeAllViews()
+        attachmentScroll.visibility = if (attachments.isEmpty()) View.GONE else View.VISIBLE
+        attachments.forEach { attachment ->
+            val visual = attachment.mime.startsWith("image/") || attachment.mime.startsWith("video/")
+            attachmentStrip.addView(FrameLayout(this).apply {
+                layoutParams = LinearLayout.LayoutParams(dp(76), dp(76)).apply { marginEnd = dp(8) }
+                if (visual) {
+                    addView(ImageView(this@OmnioThreadActivity).apply {
+                        scaleType = ImageView.ScaleType.CENTER_CROP
+                        layoutParams = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+                        Glide.with(this).load(attachment.uri).transform(com.bumptech.glide.load.resource.bitmap.CenterCrop(), RoundedCorners(dp(14))).into(this)
+                    })
+                } else {
+                    addView(TextView(this@OmnioThreadActivity).apply {
+                        text = "📎\n" + attachment.name
+                        gravity = Gravity.CENTER
+                        maxLines = 3
+                        ellipsize = TextUtils.TruncateAt.END
+                        setTextColor(OmnioColors.TEXT)
+                        setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
+                        setPadding(dp(6), dp(6), dp(6), dp(6))
+                        background = GradientDrawable().apply {
+                            cornerRadius = dp(14).toFloat()
+                            setColor(OmnioColors.CARD)
+                        }
+                        layoutParams = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+                    })
+                }
+                addView(TextView(this@OmnioThreadActivity).apply {
+                    text = "✕"
+                    gravity = Gravity.CENTER
+                    setTextColor(OmnioColors.TEXT)
+                    setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
+                    background = GradientDrawable().apply {
+                        shape = GradientDrawable.OVAL
+                        setColor(0xCC000000.toInt())
+                    }
+                    layoutParams = FrameLayout.LayoutParams(dp(24), dp(24), Gravity.TOP or Gravity.END).apply { setMargins(0, dp(4), dp(4), 0) }
+                    setOnClickListener {
+                        attachments.remove(attachment)
+                        showAttachments()
+                    }
+                })
+            })
+        }
     }
 
     private fun showMessageMenu(message: OmnioMessageStore.Message, reactions: List<OmnioReactions.Reaction> = emptyList()) {
@@ -233,7 +431,7 @@ class OmnioThreadActivity : SimpleActivity() {
                 startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, message.body), getString(R.string.omnio_thread_forward)))
             }
         }
-        if (message.failed) items += getString(R.string.omnio_thread_retry) to { send(message.body, message.id) }
+        if (message.failed) items += getString(R.string.omnio_thread_retry) to { retry(message) }
         items += getString(R.string.omnio_thread_delete) to {
             OmnioSheet.confirm(this, getString(R.string.omnio_thread_delete_question), null, positive = getString(com.omnioone.commons.R.string.delete), mainColor = OmnioColors.MISSED) {
                 ensureBackgroundThread {
@@ -351,15 +549,69 @@ class OmnioThreadActivity : SimpleActivity() {
         }
         root.addView(list)
 
+        // undo bar
+        undoBar = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            visibility = View.GONE
+            setPadding(dp(16), dp(6), dp(8), dp(6))
+            background = GradientDrawable().apply {
+                cornerRadius = dp(22).toFloat()
+                setColor(OmnioColors.CARD)
+            }
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { setMargins(dp(12), dp(4), dp(12), 0) }
+            undoText = TextView(this@OmnioThreadActivity).apply {
+                setTextColor(OmnioColors.TEXT)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+                layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+            }
+            addView(undoText)
+            addView(TextView(this@OmnioThreadActivity).apply {
+                text = getString(R.string.omnio_thread_undo)
+                setTextColor(OmnioColors.ON_ACCENT)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+                setTypeface(typeface, Typeface.BOLD)
+                setPadding(dp(16), dp(8), dp(16), dp(8))
+                background = GradientDrawable().apply {
+                    cornerRadius = dp(18).toFloat()
+                    setColor(OmnioColors.MESSAGES)
+                }
+                setOnClickListener { undo() }
+            })
+        }
+        root.addView(undoBar)
+
+        // attachments waiting to be sent
+        attachmentStrip = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            setPadding(dp(12), dp(8), dp(12), 0)
+        }
+        attachmentScroll = HorizontalScrollView(this).apply {
+            visibility = View.GONE
+            isHorizontalScrollBarEnabled = false
+            addView(attachmentStrip)
+        }
+        root.addView(attachmentScroll)
+
         // reply box
         root.addView(LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
             setPadding(dp(8), dp(6), dp(8), dp(8))
-            addView(icon(R.drawable.ic_attach_file_vector, OmnioColors.TEXT_MUTED) {
-                // photos and files: the current conversation screen handles them until stage 4
-                startActivity(Intent(this@OmnioThreadActivity, com.omnioone.messages.activities.ThreadActivity::class.java).putExtra(THREAD_ID, threadId))
-            })
+            addView(icon(R.drawable.ic_attach_file_vector, OmnioColors.TEXT_MUTED) { showAttachMenu() })
+            simChip = TextView(this@OmnioThreadActivity).apply {
+                visibility = View.GONE
+                setTextColor(OmnioColors.MESSAGES_SOFT)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
+                setTypeface(typeface, Typeface.BOLD)
+                setPadding(dp(10), dp(6), dp(10), dp(6))
+                background = GradientDrawable().apply {
+                    cornerRadius = dp(14).toFloat()
+                    setColor(OmnioColors.CARD_DEEP)
+                }
+                setOnClickListener { pickSim() }
+            }
+            addView(simChip)
             input = EditText(this@OmnioThreadActivity).apply {
                 hint = getString(R.string.omnio_thread_type)
                 setTextColor(OmnioColors.TEXT)
@@ -548,7 +800,7 @@ class OmnioThreadActivity : SimpleActivity() {
                     setTextColor(if (message.failed) OmnioColors.MISSED_SOFT else OmnioColors.TEXT_MUTED)
                     setTextSize(TypedValue.COMPLEX_UNIT_SP, 11.5f)
                     setPadding(dp(8), dp(3), dp(8), dp(6))
-                    if (message.failed) setOnClickListener { send(message.body, message.id) }
+                    if (message.failed) setOnClickListener { retry(message) }
                 }, wrap())
             }
         }

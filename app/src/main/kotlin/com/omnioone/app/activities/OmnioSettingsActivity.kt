@@ -183,6 +183,13 @@ class OmnioSettingsActivity : SimpleActivity() {
         card(
             switch(R.string.omnio_new_messages, R.string.omnio_new_messages_desc, OmnioMessagesSwitch.isOn(this)) { OmnioMessagesSwitch.set(this, it) },
             switch(R.string.omnio_new_thread, R.string.omnio_new_thread_desc, OmnioMessagesSwitch.threadOn(this)) { OmnioMessagesSwitch.setThread(this, it) },
+            action(R.string.omnio_undo_send, undoText(com.omnioone.app.messaging.OmnioSender.undoSeconds(this))) {
+                val choices = listOf(0, 3, 5, 10)
+                OmnioSheet.list(this, getString(R.string.omnio_undo_send), getString(R.string.omnio_undo_send_help), choices.map { OmnioSheet.Item(undoText(it)) }) { picked ->
+                    com.omnioone.app.messaging.OmnioSender.setUndoSeconds(this, choices[picked])
+                    buildRows()
+                }
+            },
             action(R.string.omnio_check_reader, getString(R.string.omnio_check_reader_desc)) { checkMessageReader() },
             action(R.string.omnio_settings_more_messages, getString(R.string.omnio_settings_more_messages_desc)) {
                 startActivity(Intent().setClassName(packageName, "com.omnioone.messages.activities.SettingsActivity"))
@@ -395,6 +402,8 @@ class OmnioSettingsActivity : SimpleActivity() {
             setPadding(dp(8), 0, 0, 0)
         })
     }
+
+    private fun undoText(seconds: Int) = if (seconds <= 0) getString(R.string.omnio_undo_send_off) else getString(R.string.omnio_undo_send_seconds, seconds)
 
     private fun section(emoji: String, titleRes: Int) {
         form.addView(TextView(this).apply {
