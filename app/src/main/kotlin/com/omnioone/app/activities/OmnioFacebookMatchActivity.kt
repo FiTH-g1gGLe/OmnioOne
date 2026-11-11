@@ -285,7 +285,7 @@ class OmnioFacebookMatchActivity : SimpleActivity() {
         current = match
         gotLink = false
         val person = match.person
-        OmnioSocials.setPendingLink(this, OmnioSocials.PendingLink(person.contactId, person.rawId, person.name, "facebook"))
+        OmnioSocials.setPendingLink(this, OmnioSocials.PendingLink(person.contactId, person.rawId, person.name, "facebook"), expectName = match.friend.name)
         val search = facebook.searchUrl(match.friend.name)
         val opened = search != null && (open(Intent(Intent.ACTION_VIEW, Uri.parse(search)).setPackage(facebook.pkg)) || open(Intent(Intent.ACTION_VIEW, Uri.parse(search))))
         if (!opened) {

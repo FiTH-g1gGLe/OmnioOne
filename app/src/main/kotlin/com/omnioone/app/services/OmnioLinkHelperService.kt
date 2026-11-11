@@ -22,6 +22,8 @@ class OmnioLinkHelperService : AccessibilityService() {
 
     private var lastHandedOver: String? = null
     private var photoTakenFor: String? = null
+    /** A linking or photo session that's finished: nothing more happens until a new one starts. */
+    private var finishedSession: String? = null
     private var capturing = false
     /** Something small drawn over the photo (Messenger's "active 2h" badge, an online dot), to crop out. */
     private var overlay: android.graphics.Rect? = null
@@ -49,6 +51,11 @@ class OmnioLinkHelperService : AccessibilityService() {
         val contactId = pending?.contactId ?: photoPending!!.contactId
         val prefs = getSharedPreferences("omnio", Context.MODE_PRIVATE)
         val session = "$contactId:" + (if (pending != null) prefs.getLong("link_time", 0) else prefs.getLong("photo_time", 0))
+        // already done: pressing back onto a profile must not catch it again
+        if (session == finishedSession) return
+        // when we know their exact profile name, only act on a profile that shows it
+        val expected = if (pending != null) OmnioSocials.expectedName(this) else null
+        if (!expected.isNullOrBlank() && !showsName(root, expected)) return
         val photo = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R && photoTakenFor != session) profilePhoto(root, pkg) else null
 
         val url = pending?.let { link ->
@@ -67,12 +74,19 @@ class OmnioLinkHelperService : AccessibilityService() {
             // take the photo first: once Omnio comes to the front the profile is no longer on screen
             url != null && photo != null -> capture(photo, contactId, session) { handOver(pending!!, url) }
             url != null -> handOver(pending!!, url)
-            photo != null -> capture(photo, contactId, session) { if (pending == null) OmnioPhotoCapture.clearPending(this) }
+            photo != null -> capture(photo, contactId, session) {
+                if (pending == null) {
+                    finishedSession = session
+                    OmnioPhotoCapture.clearPending(this)
+                }
+            }
         }
     }
 
     private fun handOver(pending: OmnioSocials.PendingLink, url: String) {
         lastHandedOver = url
+        val prefs = getSharedPreferences("omnio", Context.MODE_PRIVATE)
+        finishedSession = "${pending.contactId}:${prefs.getLong("link_time", 0)}"
         startActivity(OmnioSocials.linkIntent(this, pending, url))
     }
 
@@ -123,6 +137,15 @@ class OmnioLinkHelperService : AccessibilityService() {
         overlay = found?.let { overlayOn(root, it, pkg) }
         if (found == null) OmnioPhotoCapture.note(this, "No profile photo found on screen in ${pkg.orEmpty()}. Square pictures seen: " + seen.joinToString("; ").ifEmpty { "none" })
         return found
+    }
+
+    /** True if [name] is written somewhere on screen (ignoring capitals and accents). */
+    private fun showsName(root: AccessibilityNodeInfo, name: String): Boolean {
+        fun plain(text: String) = java.text.Normalizer.normalize(text, java.text.Normalizer.Form.NFD).replace("\\p{M}".toRegex(), "").lowercase().trim()
+        val wanted = plain(name)
+        val texts = ArrayList<CharSequence>()
+        collectTexts(root, texts, 0)
+        return texts.any { plain(it.toString()).contains(wanted) }
     }
 
     /** Small views sitting on the photo's edge, like an "active" badge: their combined area, or null. */

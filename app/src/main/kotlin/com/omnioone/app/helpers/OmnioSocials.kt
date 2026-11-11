@@ -142,8 +142,13 @@ object OmnioSocials {
 
     private fun prefs(context: Context) = context.getSharedPreferences("omnio", Context.MODE_PRIVATE)
 
-    fun setPendingLink(context: Context, link: PendingLink) {
+    /**
+     * [expectName]: the exact name shown on their profile, when known (Facebook friends matching).
+     * The Link helper then only acts on a profile showing that name, never one left over from before.
+     */
+    fun setPendingLink(context: Context, link: PendingLink, expectName: String? = null) {
         prefs(context).edit()
+            .putString("link_expect_name", expectName)
             .putInt("link_contact", link.contactId)
             .putInt("link_raw", link.rawId)
             .putString("link_name", link.contactName)
@@ -196,7 +201,9 @@ object OmnioSocials {
         }
     }
 
-    fun clearPendingLink(context: Context) = prefs(context).edit().remove("link_time").remove("link_contact").apply()
+    fun clearPendingLink(context: Context) = prefs(context).edit().remove("link_time").remove("link_contact").remove("link_expect_name").apply()
+
+    fun expectedName(context: Context): String? = prefs(context).getString("link_expect_name", null)
 
     /** First web link in a piece of text (a share or the clipboard). */
     fun firstUrl(text: CharSequence?): String? =
