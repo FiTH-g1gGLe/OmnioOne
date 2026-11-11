@@ -139,8 +139,16 @@ object OmnioSheet {
     }
 
     /** A list of choices in a rounded card, like the Apps card. */
-    fun list(activity: Activity, title: String, subtitle: String? = null, items: List<Item>, onPick: (Int) -> Unit) {
+    fun list(
+        activity: Activity,
+        title: String,
+        subtitle: String? = null,
+        items: List<Item>,
+        top: ((dismiss: () -> Unit) -> View)? = null,
+        onPick: (Int) -> Unit
+    ) {
         val frame = Frame(activity, title, subtitle)
+        top?.let { frame.body.addView(it { frame.sheet.dismiss() }) }
         with(activity) {
             val card = LinearLayout(this).apply {
                 orientation = LinearLayout.VERTICAL

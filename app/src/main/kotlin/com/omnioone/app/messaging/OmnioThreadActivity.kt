@@ -60,6 +60,10 @@ import java.util.Calendar
  */
 class OmnioThreadActivity : SimpleActivity() {
 
+    companion object {
+        private val QUICK_EMOJIS = listOf("👍", "❤️", "😂", "😮", "😢", "🙏", "‼️", "❓", "👎")
+    }
+
     private var threadId = 0L
     private var conversation: OmnioMessageStore.Conversation? = null
     private var messages = listOf<OmnioMessageStore.Message>()
@@ -218,10 +222,9 @@ class OmnioThreadActivity : SimpleActivity() {
         send(text)
     }
 
-    private fun showMessageMenu(message: OmnioMessageStore.Message) {
+    private fun showMessageMenu(message: OmnioMessageStore.Message, reactions: List<OmnioReactions.Reaction> = emptyList()) {
         val items = ArrayList<Pair<String, () -> Unit>>()
         if (message.body.isNotBlank()) {
-            items += getString(R.string.omnio_thread_react) to { showReactions(message) }
             items += getString(R.string.omnio_thread_copy) to {
                 (getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager).setPrimaryClip(ClipData.newPlainText("message", message.body))
                 toast(R.string.omnio_copied)
@@ -240,15 +243,41 @@ class OmnioThreadActivity : SimpleActivity() {
             }
         }
         val time = android.text.format.DateFormat.getMediumDateFormat(this).format(message.date) + " " + android.text.format.DateFormat.getTimeFormat(this).format(message.date)
-        OmnioSheet.list(this, getString(if (message.incoming) R.string.omnio_thread_received else R.string.omnio_thread_sent), time, items.map { OmnioSheet.Item(it.first) }) { picked ->
+        val top: ((() -> Unit) -> View)? = if (message.body.isNotBlank()) { dismiss -> emojiRow(message, reactions, dismiss) } else null
+        OmnioSheet.list(this, getString(if (message.incoming) R.string.omnio_thread_received else R.string.omnio_thread_sent), time, items.map { OmnioSheet.Item(it.first) }, top) { picked ->
             items[picked].second()
         }
     }
 
-    private fun showReactions(message: OmnioMessageStore.Message) {
-        val emojis = listOf("👍", "❤️", "😂", "😮", "😢", "🙏", "‼️", "❓", "👎")
-        OmnioSheet.list(this, getString(R.string.omnio_thread_react), null, emojis.map { OmnioSheet.Item(it) }) { picked ->
-            send(OmnioReactions.reactionText(emojis[picked], message.body))
+    /** The emoji row at the top of the long-press sheet. Your own reactions are ringed: tap one again to take it back. */
+    private fun emojiRow(message: OmnioMessageStore.Message, reactions: List<OmnioReactions.Reaction>, dismiss: () -> Unit): View {
+        val mine = reactions.filter { it.mine }.map { it.emoji }.toSet()
+        return LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER
+            setPadding(dp(4), dp(8), dp(4), dp(8))
+            background = GradientDrawable().apply {
+                cornerRadius = dp(30).toFloat()
+                setColor(OmnioColors.CARD)
+            }
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { bottomMargin = dp(12) }
+            QUICK_EMOJIS.forEach { emoji ->
+                addView(TextView(this@OmnioThreadActivity).apply {
+                    text = emoji
+                    gravity = Gravity.CENTER
+                    setTextSize(TypedValue.COMPLEX_UNIT_SP, 24f)
+                    if (emoji in mine) background = GradientDrawable().apply {
+                        shape = GradientDrawable.OVAL
+                        setColor(OmnioColors.CARD_SELECTED)
+                        setStroke(dp(2), OmnioColors.MESSAGES)
+                    }
+                    layoutParams = LinearLayout.LayoutParams(0, dp(44), 1f)
+                    setOnClickListener {
+                        dismiss()
+                        send(if (emoji in mine) OmnioReactions.removalText(emoji, message.body) else OmnioReactions.reactionText(emoji, message.body))
+                    }
+                })
+            }
         }
     }
 
@@ -305,7 +334,7 @@ class OmnioThreadActivity : SimpleActivity() {
                 addView(titleView)
                 addView(subtitleView)
             })
-            callButton = icon(R.drawable.ic_call_accept, OmnioColors.CALLS) {
+            callButton = icon(com.omnioone.commons.R.drawable.ic_phone_vector, OmnioColors.CALLS) {
                 conversation?.people?.singleOrNull()?.let { startCallWithConfirmationCheck(it.address, it.label) }
             }
             addView(callButton)
@@ -375,14 +404,14 @@ class OmnioThreadActivity : SimpleActivity() {
 
     private sealed class Row {
         data class Day(val label: String) : Row()
-        data class Bubble(val message: OmnioMessageStore.Message, val reactions: List<String>, val showTime: Boolean, val sender: String?) : Row()
+        data class Bubble(val message: OmnioMessageStore.Message, val reactions: List<OmnioReactions.Reaction>, val showTime: Boolean, val sender: String?) : Row()
     }
 
     private inner class BubbleAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         var rows = listOf<Row>()
 
         fun submit(loaded: List<OmnioMessageStore.Message>, info: OmnioMessageStore.Conversation?) {
-            val (hidden, reactions) = OmnioReactions.processBodies(loaded.map { Triple(it.key, it.body, it.isMms && it.body.isEmpty()) })
+            val (hidden, reactions) = OmnioReactions.processThread(loaded.map { OmnioReactions.Entry(it.key, it.body, it.isMms && it.body.isEmpty(), !it.incoming) })
             val visible = loaded.filter { it.key !in hidden }
             val names = info?.people?.associate { it.address.filter(Char::isDigit).takeLast(9) to it.label }.orEmpty()
             val out = ArrayList<Row>()
@@ -437,6 +466,8 @@ class OmnioThreadActivity : SimpleActivity() {
             outer.addView(column, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
         }
 
+        private fun wrap(topMargin: Int = 0) = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { this.topMargin = topMargin }
+
         fun bind(row: Row.Bubble) {
             val message = row.message
             val mine = !message.incoming
@@ -451,7 +482,7 @@ class OmnioThreadActivity : SimpleActivity() {
                     setTextColor(OmnioColors.MESSAGES_SOFT)
                     setTextSize(TypedValue.COMPLEX_UNIT_SP, 12.5f)
                     setPadding(dp(12), dp(6), 0, dp(2))
-                })
+                }, wrap())
             }
 
             // photos, videos and other attachments
@@ -464,7 +495,7 @@ class OmnioThreadActivity : SimpleActivity() {
                     Glide.with(this).load(part.uri).transform(RoundedCorners(dp(16))).override(dp(260)).into(this)
                     if (part.mime.startsWith("video/")) foreground = this@OmnioThreadActivity.getDrawable(android.R.drawable.ic_media_play)
                     setOnClickListener { openPart(part) }
-                    setOnLongClickListener { showMessageMenu(message); true }
+                    setOnLongClickListener { showMessageMenu(message, row.reactions); true }
                 })
             }
             message.parts.filter { !it.mime.startsWith("image/") && !it.mime.startsWith("video/") && it.mime != "text/plain" }.forEach { part ->
@@ -484,8 +515,8 @@ class OmnioThreadActivity : SimpleActivity() {
                         setColor(if (mine) (if (message.failed) OmnioColors.MISSED else OmnioColors.MESSAGES) else OmnioColors.CARD)
                     }
                     Linkify.addLinks(this, Linkify.WEB_URLS or Linkify.PHONE_NUMBERS)
-                    setOnLongClickListener { showMessageMenu(message); true }
-                })
+                    setOnLongClickListener { showMessageMenu(message, row.reactions); true }
+                }, wrap())
                 OmnioEmail.findEmail(message.body)?.let { email ->
                     val number = if (message.incoming) message.address.ifEmpty { conversation?.people?.singleOrNull()?.address.orEmpty() } else ""
                     column.addView(chip("✉  $email", OmnioColors.MESSAGES_SOFT) { OmnioEmail.showActions(this@OmnioThreadActivity, email, number) })
@@ -494,7 +525,7 @@ class OmnioThreadActivity : SimpleActivity() {
 
             if (row.reactions.isNotEmpty()) {
                 column.addView(TextView(outer.context).apply {
-                    text = row.reactions.joinToString(" ")
+                    text = row.reactions.map { it.emoji }.distinct().joinToString(" ")
                     setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
                     setPadding(dp(8), dp(2), dp(8), dp(2))
                     background = GradientDrawable().apply {
@@ -502,8 +533,8 @@ class OmnioThreadActivity : SimpleActivity() {
                         setColor(OmnioColors.CARD_SELECTED)
                         setStroke(dp(2), OmnioColors.BACKGROUND)
                     }
-                    layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = -dp(6) }
-                })
+                    setOnClickListener { showMessageMenu(message, row.reactions) }
+                }, wrap(-dp(6)))
             }
 
             if (row.showTime || message.failed || message.pending) {
@@ -518,7 +549,7 @@ class OmnioThreadActivity : SimpleActivity() {
                     setTextSize(TypedValue.COMPLEX_UNIT_SP, 11.5f)
                     setPadding(dp(8), dp(3), dp(8), dp(6))
                     if (message.failed) setOnClickListener { send(message.body, message.id) }
-                })
+                }, wrap())
             }
         }
 

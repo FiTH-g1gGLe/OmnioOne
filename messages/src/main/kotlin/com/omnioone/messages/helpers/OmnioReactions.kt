@@ -105,6 +105,47 @@ object OmnioReactions {
         return hidden to reactions.filterValues { it.isNotEmpty() }
     }
 
+    /** One message for [processThread]; [mine] = you sent it. */
+    data class Entry(val id: Long, val body: String, val emptyPicture: Boolean, val mine: Boolean)
+
+    /** A reaction shown on a message; [mine] = you reacted. */
+    data class Reaction(val emoji: String, val mine: Boolean)
+
+    /** Like [processBodies], but remembers who reacted, so you can take your own reaction back. */
+    fun processThread(items: List<Entry>): Pair<Set<Long>, Map<Long, List<Reaction>>> {
+        val hidden = HashSet<Long>()
+        val reactions = LinkedHashMap<Long, MutableList<Reaction>>()
+        items.forEachIndexed { index, item ->
+            if (item.emptyPicture) return@forEachIndexed
+            val parsed = parse(item.body) ?: return@forEachIndexed
+            val target = (index - 1 downTo 0).asSequence()
+                .map { items[it] }
+                .firstOrNull { it.id !in hidden && matches(it.body, parsed.quoted) }
+                ?: return@forEachIndexed
+            hidden.add(item.id)
+            val list = reactions.getOrPut(target.id) { ArrayList() }
+            val reaction = Reaction(parsed.emoji, item.mine)
+            if (parsed.removed) list.remove(reaction) else if (reaction !in list) list.add(reaction)
+        }
+        return hidden to reactions.filterValues { it.isNotEmpty() }
+    }
+
+    private fun quote(body: String) = body.trim().replace(Regex("\\s+"), " ").let { if (it.length > 100) it.take(100).trimEnd() + "…" else it }
+
+    /** The text to send to take a reaction back, in words iPhone and Google Messages understand. */
+    fun removalText(emoji: String, body: String): String {
+        val what = when (emoji) {
+            "👍" -> "a like"
+            "❤️" -> "a heart"
+            "😂" -> "a laugh"
+            "‼️" -> "an exclamation"
+            "❓" -> "a question mark"
+            "👎" -> "a dislike"
+            else -> emoji
+        }
+        return "Removed $what from “${quote(body)}”"
+    }
+
     /** The text to send for a reaction, in the classic words iPhone and Google Messages understand. */
     fun reactionText(emoji: String, body: String): String {
         val quoted = body.trim().replace(Regex("\\s+"), " ").let { if (it.length > 100) it.take(100).trimEnd() + "…" else it }
