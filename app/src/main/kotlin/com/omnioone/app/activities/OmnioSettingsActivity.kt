@@ -178,6 +178,14 @@ class OmnioSettingsActivity : SimpleActivity() {
             },
             action(R.string.omnio_settings_blocked_words, blockedWordsText()) { manageBlockedWords() },
         )
+        card(
+            action(R.string.omnio_backup_messages, getString(R.string.omnio_backup_messages_desc)) {
+                exportMessages.launch("omnio-messages-" + java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.UK).format(java.util.Date()) + ".json")
+            },
+            action(R.string.omnio_restore_messages, getString(R.string.omnio_restore_messages_desc)) {
+                importMessages.launch(arrayOf("application/json", "text/plain", "application/octet-stream"))
+            },
+        )
 
         section("🔗", R.string.omnio_link_helper_name)
         val helperOn = OmnioLinkHelperService.isEnabled(this)
@@ -232,6 +240,48 @@ class OmnioSettingsActivity : SimpleActivity() {
             }
             runOnUiThread {
                 if (count < 0) toast(R.string.omnio_export_failed) else toast(getString(R.string.omnio_exported_calls, count))
+            }
+        }
+    }
+
+    private val exportMessages = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.CreateDocument("application/json")) { uri ->
+        if (uri == null) return@registerForActivityResult
+        toast(R.string.omnio_backup_working)
+        com.omnioone.commons.helpers.ensureBackgroundThread {
+            val count = try {
+                contentResolver.openOutputStream(uri)?.use { com.omnioone.app.messaging.OmnioMessageBackup.export(this, it) } ?: -1
+            } catch (e: Exception) {
+                -1
+            }
+            runOnUiThread {
+                if (count < 0) toast(R.string.omnio_backup_failed) else toast(getString(R.string.omnio_backup_done, count))
+            }
+        }
+    }
+
+    private val importMessages = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri == null) return@registerForActivityResult
+        val defaultSms = Telephony.Sms.getDefaultSmsPackage(this) == packageName
+        if (!defaultSms) {
+            toast(R.string.omnio_restore_needs_default)
+            return@registerForActivityResult
+        }
+        toast(R.string.omnio_restore_working)
+        com.omnioone.commons.helpers.ensureBackgroundThread {
+            val result = try {
+                contentResolver.openInputStream(uri)?.use { com.omnioone.app.messaging.OmnioMessageBackup.import(this, it) }
+            } catch (e: Exception) {
+                null
+            }
+            runOnUiThread {
+                if (result == null) toast(R.string.omnio_restore_failed)
+                else OmnioSheet.confirm(
+                    this,
+                    title = getString(R.string.omnio_restore_done_title),
+                    message = getString(R.string.omnio_restore_done, result.written, result.skipped) +
+                        (if (result.failed > 0) "\n" + getString(R.string.omnio_restore_some_failed, result.failed) else ""),
+                    positive = getString(com.omnioone.commons.R.string.ok),
+                ) {}
             }
         }
     }

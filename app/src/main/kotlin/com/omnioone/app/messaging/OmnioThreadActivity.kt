@@ -95,6 +95,7 @@ class OmnioThreadActivity : SimpleActivity() {
     private var queued: Queued? = null
     private var countdown = 0
     private var cameraUri: Uri? = null
+    private var cards = mapOf<Long, OmnioContactCard.Card>()
 
     private data class Queued(val text: String, val attachments: List<OmnioSender.Attachment>, val subId: Int)
 
@@ -110,6 +111,17 @@ class OmnioThreadActivity : SimpleActivity() {
 
     private val pickMedia = registerForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(10)) { addAttachments(it) }
     private val pickFiles = registerForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { addAttachments(it) }
+    private val pickContact = registerForActivityResult(ActivityResultContracts.PickContact()) { uri ->
+        if (uri != null) ensureBackgroundThread {
+            val card = OmnioContactCard.attachmentFor(this, uri)
+            runOnUiThread {
+                if (card != null) {
+                    attachments.add(card)
+                    showAttachments()
+                }
+            }
+        }
+    }
     private val takePhoto = registerForActivityResult(ActivityResultContracts.TakePicture()) { ok ->
         if (ok) cameraUri?.let { addAttachments(listOf(it)) }
     }
@@ -180,6 +192,11 @@ class OmnioThreadActivity : SimpleActivity() {
         ensureBackgroundThread {
             val info = OmnioMessageStore.conversations(this, onlyThread = threadId).firstOrNull()
             val loaded = OmnioMessageStore.messages(this, threadId, limit = 400)
+            // read any contact cards so they show as a name, not a file
+            val readCards = HashMap(cards)
+            loaded.flatMap { it.parts }.filter { OmnioContactCard.isCard(it.mime) && it.id !in readCards }.forEach { part ->
+                OmnioContactCard.read(this, part.uri)?.let { readCards[part.id] = it }
+            }
             runOnUiThread {
                 loading = false
                 if (isFinishing) return@runOnUiThread
@@ -187,6 +204,7 @@ class OmnioThreadActivity : SimpleActivity() {
                 conversation = info
                 messages = loaded
                 showHeader()
+                cards = readCards
                 adapter.submit(loaded, info)
                 if (atBottom || adapter.itemCount <= 1) list.scrollToPosition(adapter.itemCount - 1)
                 offerEmailIfAsked(loaded)
@@ -366,6 +384,7 @@ class OmnioThreadActivity : SimpleActivity() {
             Triple(R.string.omnio_thread_attach_media, "🖼️", OmnioColors.SOCIALS),
             Triple(R.string.omnio_thread_attach_camera, "📷", OmnioColors.CALLS),
             Triple(R.string.omnio_thread_attach_file, "📄", OmnioColors.MESSAGES),
+            Triple(R.string.omnio_thread_attach_contact, "👤", OmnioColors.CONTACTS),
         )
         OmnioSheet.list(this, getString(R.string.omnio_thread_attach), null, options.map { (label, emoji, colour) ->
             OmnioSheet.Item(getString(label), icon = emojiBadge(emoji, colour))
@@ -379,7 +398,8 @@ class OmnioThreadActivity : SimpleActivity() {
                         cameraUri = uri
                         takePhoto.launch(uri)
                     }
-                    else -> pickFiles.launch(arrayOf("*/*"))
+                    2 -> pickFiles.launch(arrayOf("*/*"))
+                    else -> pickContact.launch(null)
                 }
             } catch (e: Exception) {
                 toast(com.omnioone.commons.R.string.no_app_found)
@@ -430,7 +450,7 @@ class OmnioThreadActivity : SimpleActivity() {
                     })
                 } else {
                     addView(TextView(this@OmnioThreadActivity).apply {
-                        text = "📎\n" + attachment.name
+                        text = (if (OmnioContactCard.isCard(attachment.mime)) "👤\n" else "📎\n") + attachment.name
                         gravity = Gravity.CENTER
                         maxLines = 3
                         ellipsize = TextUtils.TruncateAt.END
@@ -520,6 +540,34 @@ class OmnioThreadActivity : SimpleActivity() {
                 })
             }
         }
+    }
+
+    /** A contact card someone sent: save it, call or text them. */
+    private fun showCard(card: OmnioContactCard.Card) {
+        val actions = ArrayList<Pair<String, () -> Unit>>()
+        actions += getString(R.string.omnio_card_save) to {
+            startActivity(Intent(this, OmnioEditContactActivity::class.java).apply {
+                putExtra(OmnioEditContactActivity.EXTRA_NAME, card.name)
+                putStringArrayListExtra(OmnioEditContactActivity.EXTRA_NUMBERS, ArrayList(card.numbers))
+                card.emails.firstOrNull()?.let { putExtra(OmnioEditContactActivity.EXTRA_EMAIL, it) }
+            })
+        }
+        card.numbers.forEach { number ->
+            actions += getString(R.string.omnio_card_call, number) to { startCallWithConfirmationCheck(number, card.name) }
+            actions += getString(R.string.omnio_card_text, number) to {
+                startActivity(Intent(Intent.ACTION_SENDTO, Uri.fromParts("smsto", number, null)).setPackage(packageName))
+            }
+        }
+        card.emails.forEach { email ->
+            actions += email to {
+                try {
+                    startActivity(Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:$email")))
+                } catch (e: Exception) {
+                    toast(com.omnioone.commons.R.string.no_app_found)
+                }
+            }
+        }
+        OmnioSheet.list(this, card.name, (card.numbers + card.emails).joinToString("  ·  "), actions.map { OmnioSheet.Item(it.first) }) { actions[it].second() }
     }
 
     private fun openPart(part: OmnioMessageStore.Part) {
@@ -844,7 +892,12 @@ class OmnioThreadActivity : SimpleActivity() {
                 })
             }
             message.parts.filter { !it.mime.startsWith("image/") && !it.mime.startsWith("video/") && it.mime != "text/plain" }.forEach { part ->
-                column.addView(chip("📎  " + part.mime.substringAfter("/").uppercase(), OmnioColors.TEXT) { openPart(part) })
+                val card = cards[part.id]
+                if (card != null) {
+                    column.addView(chip("👤  " + card.name, OmnioColors.CONTACTS) { showCard(card) })
+                } else {
+                    column.addView(chip("📎  " + part.mime.substringAfter("/").uppercase(), OmnioColors.TEXT) { openPart(part) })
+                }
             }
 
             if (message.body.isNotBlank()) {

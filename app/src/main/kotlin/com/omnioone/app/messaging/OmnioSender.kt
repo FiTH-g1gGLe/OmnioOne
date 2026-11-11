@@ -218,7 +218,7 @@ object OmnioSender {
             if (attachment != null) {
                 val (bytes, mime) = prepare(context, attachment, config.mmsFileSizeLimit)
                 val name = attachment.name.ifBlank { "attachment" }
-                message.addMedia(bytes, if (mime.startsWith("text/")) "application/txt" else mime, name, name)
+                message.addMedia(bytes, if (mime == "text/plain") "application/txt" else mime, name, name)
             }
             val sentIntent = Intent(context, OmnioSendReceiver::class.java).setAction(ACTION_MMS_SENT)
             if (retryOf != null && index == batches.lastIndex) sentIntent.putExtra(EXTRA_RETRY_OF, retryOf)

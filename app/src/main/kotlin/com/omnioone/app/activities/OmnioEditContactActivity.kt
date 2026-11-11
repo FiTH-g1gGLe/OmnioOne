@@ -56,6 +56,8 @@ class OmnioEditContactActivity : SimpleActivity() {
         const val EXTRA_CONTACT_ID = "omnio_contact_id"
         const val EXTRA_NUMBER = "omnio_number"
         const val EXTRA_EMAIL = "omnio_email"
+        const val EXTRA_NAME = "omnio_name"
+        const val EXTRA_NUMBERS = "omnio_numbers"
     }
 
     private class Row(val holder: View, val input: EditText, var type: Int, var label: String)
@@ -117,6 +119,11 @@ class OmnioEditContactActivity : SimpleActivity() {
         val id = intent.getIntExtra(EXTRA_CONTACT_ID, 0)
         if (id == 0) {
             intent.getStringExtra(EXTRA_NUMBER)?.let { addPhoneRow(it, PhoneKind.TYPE_MOBILE, "") }
+            intent.getStringArrayListExtra(EXTRA_NUMBERS)?.forEach { addPhoneRow(it, PhoneKind.TYPE_MOBILE, "") }
+            intent.getStringExtra(EXTRA_NAME)?.trim()?.takeIf { it.isNotEmpty() }?.let { full ->
+                firstName.setText(full.substringBeforeLast(" ", full))
+                if (full.contains(" ")) surname.setText(full.substringAfterLast(" "))
+            }
             intent.getStringExtra(EXTRA_EMAIL)?.let { addEmailRow(it, EmailKind.TYPE_HOME, "") }
             if (phones.isEmpty()) addPhoneRow("", PhoneKind.TYPE_MOBILE, "")
             loadSources()

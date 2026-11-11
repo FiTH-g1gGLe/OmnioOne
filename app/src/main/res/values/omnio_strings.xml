@@ -615,4 +615,21 @@ Unread, new: %3$d · current: %4$d</string>
     <string name="omnio_settings_blocked_words_help">Texts containing any of these are dropped. Tap a word to remove it.</string>
     <string name="omnio_settings_blocked_words_add">Add a word</string>
     <string name="omnio_settings_blocked_words_hint">e.g. prize, crypto</string>
+    <string name="omnio_thread_attach_contact">Contact card</string>
+    <string name="omnio_card_save">Save to contacts</string>
+    <string name="omnio_card_call">Call %s</string>
+    <string name="omnio_card_text">Text %s</string>
+    <string name="omnio_backup_messages">Back up messages</string>
+    <string name="omnio_backup_messages_desc">Save every text and picture message to a file</string>
+    <string name="omnio_restore_messages">Restore messages</string>
+    <string name="omnio_restore_messages_desc">Add messages from a backup file. Anything already here is skipped</string>
+    <string name="omnio_backup_working">Backing up your messages…</string>
+    <string name="omnio_backup_done">Saved %d messages</string>
+    <string name="omnio_backup_failed">Couldn\'t save the backup</string>
+    <string name="omnio_restore_working">Restoring messages… this can take a minute</string>
+    <string name="omnio_restore_failed">Couldn\'t read that backup file</string>
+    <string name="omnio_restore_needs_default">Omnio One needs to be your messaging app to restore messages</string>
+    <string name="omnio_restore_done_title">Messages restored</string>
+    <string name="omnio_restore_done">%1$d messages added, %2$d were already here.</string>
+    <string name="omnio_restore_some_failed">%d couldn\'t be read.</string>
 </resources>
