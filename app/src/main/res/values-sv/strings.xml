@@ -70,11 +70,7 @@
     <string name="app_launcher_name">Omnio One</string>
     <string name="audio_route_bluetooth">Bluetooth</string>
     <string name="call_is_being_connected">Samtalet kopplas…</string>
-    <string name="faq_2_title">Varför fungerar inte nödsamtal korrekt?</string>
-    <string name="faq_3_title">Varför saknas vissa av mina kontakter i appen?</string>
-    <string name="faq_3_text">Fossify Phone visar bara kontakter som har ett telefonummer. Kontakter utan ett telefonnummer visas inte i appen.</string>
     <string name="call_notification_channel">Samtalsstatus</string>
     <string name="call_notification_channel_high_priority">Samtalsstatus (hög prioritet)</string>
     <string name="calling_accounts">Konton för samtal</string>
-    <string name="faq_2_text">På grund av systembegränsningar går det bara att ringa nödsamtal via systemets standardtelefonapp. För att säkerställa att nödsamtal fungerar korrekt måste du låta systemappen vara installerad och aktiverad.</string>
 </resources>

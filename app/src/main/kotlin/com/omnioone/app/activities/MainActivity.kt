@@ -48,7 +48,6 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
-private const val OMNIO_MESSAGES_TAB = "omnio_messages"
 private const val OMNIO_MESSAGES_GREEN = OmnioColors.MESSAGES
 
 class MainActivity : SimpleActivity() {
@@ -59,10 +58,6 @@ class MainActivity : SimpleActivity() {
 
     private var launchedDialer = false
     private var storedShowTabs = 0
-    private var storedNewMessages = false
-
-    /** Messages rewrite, stage 2: the Messages tab lives inside the main screen when this is on. */
-    private val newMessages get() = OmnioMessagesSwitch.isOn(this)
     private var storedFontSize = 0
     private var storedStartNameWithSurname = false
 
@@ -126,11 +121,6 @@ class MainActivity : SimpleActivity() {
             System.exit(0)
             return
         }
-        if (storedNewMessages != newMessages) {
-            setupTabs()
-            refreshItems()
-        }
-
         updateMenuColors()
         val properPrimaryColor = getProperPrimaryColor()
         updateFab()
@@ -374,7 +364,7 @@ class MainActivity : SimpleActivity() {
             TAB_CONTACTS -> OmnioColors.CONTACTS
             TAB_FAVORITES -> OmnioColors.FAVOURITES
             TAB_CALL_HISTORY -> OmnioColors.CALLS
-            else -> if (newMessages && position == visibleTabs.size) OmnioColors.MESSAGES else return
+            else -> if (position == visibleTabs.size) OmnioColors.MESSAGES else return
         }
         view?.findViewById<ImageView>(R.id.tab_item_icon)?.apply {
             applyColorFilter(color)
@@ -400,13 +390,12 @@ class MainActivity : SimpleActivity() {
 
     private fun getInactiveTabIndexes(activeIndex: Int) = (0 until pageTabCount).filter { it != activeIndex }
 
-    // Omnio One: the Messages tab sits after the phone tabs and opens the messages screen
+    // Omnio One: the Messages tab sits after the phone tabs
     private val pageTabCount: Int
-        get() = tabsList.count { config.showTabs and it != 0 } + if (newMessages) 1 else 0
+        get() = tabsList.count { config.showTabs and it != 0 } + 1
 
     private fun addMessagesTab() {
         binding.mainTabsHolder.newTab().setCustomView(R.layout.bottom_tablayout_item).apply {
-            tag = if (newMessages) null else OMNIO_MESSAGES_TAB
             customView?.findViewById<ImageView>(R.id.tab_item_icon)?.apply {
                 setImageResource(R.drawable.ic_omnio_chat)
                 applyColorFilter(OMNIO_MESSAGES_GREEN)
@@ -442,7 +431,7 @@ class MainActivity : SimpleActivity() {
             icons.add(R.drawable.ic_clock_filled_vector)
         }
 
-        if (newMessages) icons.add(R.drawable.ic_omnio_chat)
+        icons.add(R.drawable.ic_omnio_chat)
 
         return icons
     }
@@ -520,12 +509,10 @@ class MainActivity : SimpleActivity() {
 
         binding.mainTabsHolder.onTabSelectionChanged(
             tabUnselectedAction = {
-                if (it.tag == OMNIO_MESSAGES_TAB) return@onTabSelectionChanged
                 updateBottomTabItemColors(it.customView, false, getDeselectedTabDrawableIds()[it.position])
                 tintOmnioTab(it.customView, it.position, selected = false)
             },
             tabSelectedAction = {
-                if (it.tag == OMNIO_MESSAGES_TAB) return@onTabSelectionChanged
                 // Omnio One: switching tab clears the search
                 if (binding.mainMenu.isSearchOpen || binding.mainMenu.getCurrentQuery().isNotEmpty()) {
                     binding.mainMenu.closeSearch()
@@ -545,7 +532,6 @@ class MainActivity : SimpleActivity() {
 
         binding.mainTabsHolder.beGoneIf(binding.mainTabsHolder.tabCount == 1)
         storedShowTabs = config.showTabs
-        storedNewMessages = newMessages
         storedStartNameWithSurname = config.startNameWithSurname
     }
 
@@ -616,7 +602,7 @@ class MainActivity : SimpleActivity() {
             fragments.add(getRecentsFragment())
         }
 
-        if (newMessages) fragments.add(getMessagesFragment())
+        fragments.add(getMessagesFragment())
 
         return fragments
     }
@@ -633,7 +619,7 @@ class MainActivity : SimpleActivity() {
 
     /** The round button: keypad on the phone tabs, "new message" on Messages. */
     private fun updateFab() {
-        val onMessages = newMessages && getCurrentFragment() == getMessagesFragment() && getMessagesFragment() != null
+        val onMessages = getCurrentFragment() == getMessagesFragment() && getMessagesFragment() != null
         val icon = if (onMessages) com.omnioone.commons.R.drawable.ic_plus_vector else R.drawable.ic_dialpad_vector
         binding.mainDialpadButton.setImageDrawable(resources.getColoredDrawableWithColor(icon, getProperPrimaryColor().getContrastColor()))
         binding.mainDialpadButton.setOnClickListener {

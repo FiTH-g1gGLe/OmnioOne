@@ -4,12 +4,8 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.provider.ContactsContract
-import com.omnioone.commons.extensions.isPackageInstalled
 import com.omnioone.commons.extensions.launchActivityIntent
 import com.omnioone.commons.extensions.launchViewContactIntent
-import com.omnioone.commons.helpers.CONTACT_ID
-import com.omnioone.commons.helpers.FIRST_CONTACT_ID
-import com.omnioone.commons.helpers.IS_PRIVATE
 import com.omnioone.commons.helpers.ON_CLICK_CALL_CONTACT
 import com.omnioone.commons.helpers.ON_CLICK_VIEW_CONTACT
 import com.omnioone.commons.helpers.SimpleContactsHelper
@@ -40,36 +36,11 @@ fun Activity.startContactDetailsIntent(contact: Contact) {
     }
 }
 
-/** Opens the contact in the phone's contacts app, used by the Edit button. */
+/** Opens the contact in the phone's contacts app, used by the Edit button for contacts Omnio can't edit itself. */
 fun Activity.openContactInSystemApp(contact: Contact) {
-    val simpleContacts = "org.fossify.contacts"
-    val simpleContactsDebug = "org.fossify.contacts.debug"
-    val isPrivateContact = contact.rawId > FIRST_CONTACT_ID
-            && contact.contactId > FIRST_CONTACT_ID
-            && contact.rawId == contact.contactId
-            && (isPackageInstalled(simpleContacts) || isPackageInstalled(simpleContactsDebug))
-    if (isPrivateContact) {
-        Intent().apply {
-            action = Intent.ACTION_VIEW
-            putExtra(CONTACT_ID, contact.rawId)
-            putExtra(IS_PRIVATE, true)
-            `package` =
-                if (isPackageInstalled(simpleContacts)) simpleContacts else simpleContactsDebug
-            setDataAndType(
-                ContactsContract.Contacts.CONTENT_LOOKUP_URI,
-                "vnd.android.cursor.dir/person"
-            )
-            launchActivityIntent(this)
-        }
-    } else {
-        ensureBackgroundThread {
-            val lookupKey =
-                SimpleContactsHelper(this).getContactLookupKey((contact).rawId.toString())
-            val publicUri =
-                Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_LOOKUP_URI, lookupKey)
-            runOnUiThread {
-                launchViewContactIntent(publicUri)
-            }
-        }
+    ensureBackgroundThread {
+        val lookupKey = SimpleContactsHelper(this).getContactLookupKey(contact.rawId.toString())
+        val publicUri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_LOOKUP_URI, lookupKey)
+        runOnUiThread { launchViewContactIntent(publicUri) }
     }
 }

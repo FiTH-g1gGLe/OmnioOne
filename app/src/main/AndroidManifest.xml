@@ -39,8 +39,6 @@
         tools:node="remove" />
 
     <queries>
-        <package android:name="org.fossify.contacts.debug" />
-        <package android:name="org.fossify.contacts" />
 
         <!-- Omnio One: chat and social apps shown on contact pages -->
         <package android:name="com.whatsapp" />

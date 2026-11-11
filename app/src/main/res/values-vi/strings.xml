@@ -72,9 +72,5 @@
     <string name="call_is_being_connected">Đang kết nối cuộc gọi…</string>
     <string name="call_notification_channel">Trạng thái cuộc gọi</string>
     <string name="call_notification_channel_high_priority">Trạng thái cuộc gọi (ưu tiên cao)</string>
-    <string name="faq_2_title">Tại sao không thể sử dụng cuộc gọi khẩn cấp?</string>
-    <string name="faq_2_text">Do hạn chế của hệ thống, chỉ có thể thực hiện các cuộc gọi khẩn cấp thông qua trình quay số mặc định hoặc ứng dụng điện thoại của hệ thống. Để đảm bảo các cuộc gọi khẩn cấp hoạt động bình thường, bạn cần giữ ứng dụng hệ thống cài đặt và được bật.</string>
-    <string name="faq_3_title">Tại sao một số liên hệ của tôi không thấy trên ứng dụng?</string>
-    <string name="faq_3_text">Fossify Phone chỉ hiển thị các liên hệ đã liên kết số điện thoại. Các liên hệ không có số điện thoại sẽ không được hiển thị trong ứng dụng.</string>
     <string name="calling_accounts">Tài khoản cuộc gọi</string>
 </resources>
