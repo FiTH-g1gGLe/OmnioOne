@@ -622,4 +622,19 @@
     <string name="omnio_style_monogram_desc">Bold coloured initials instead of photos</string>
     <string name="omnio_open_on_keypad">Keypad</string>
     <string name="omnio_search_people_hint">🔎 Search a name or number…</string>
+    <string name="omnio_numbers">Numbers</string>
+    <string name="omnio_details">Details</string>
+    <string name="omnio_recent">Recent</string>
+    <string name="omnio_whatsapp_video">Video</string>
+    <string name="omnio_filter_all">All</string>
+    <string name="omnio_filter_missed">Missed</string>
+    <string name="omnio_filter_unknown">Unknown</string>
+    <string name="omnio_apps">Apps</string>
+    <string name="omnio_share_label">Link to contact</string>
+    <string name="omnio_link_helper_description">Only while you\'re linking a contact to Facebook, Instagram, TikTok and similar apps, Omnio One reads the profile address shown on screen (like facebook.com/name) so you don\'t have to copy or type it. When you tap Call or Video for a Messenger contact, it also taps Messenger\'s call button for you. It never reads anything else, never runs at other times, and nothing leaves your phone.</string>
+    <string name="omnio_filter_incoming">Incoming</string>
+    <string name="omnio_filter_outgoing">Outgoing</string>
+    <string name="omnio_view">View</string>
+    <string name="omnio_filter_unread">Unread</string>
+    <string name="omnio_filter_groups">Groups</string>
 </resources>
