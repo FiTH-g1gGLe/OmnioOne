@@ -21,8 +21,11 @@ Every change to `main` is built and published as a release automatically, so eac
 - Speed dial and blocked numbers screens, and call history export and import
 
 ### Messages
-- Messages merged in as a tab, with reactions (seen and sent) and email chips
-- The conversation title opens the contact page
+- Rebuilt as Omnio's own code: Messages tab, conversation screen, new message screen
+- Sending with photos, camera, files, contact cards, SIM picker and undo send
+- Receiving and notifications with photos, previews, quick reply and mark as read
+- Archive, 30-day recycle bin, blocked words, message backup and restore
+- Reactions (seen, sent and taken back) and email chips
 
 ### Everything else
 - Unified Settings and About

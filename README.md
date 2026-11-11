@@ -86,10 +86,12 @@ Omnio One brings them together. Open someone and everything about them is in one
 - **Speed dial** for keys 1–9, and **blocked numbers** with automatic blocking of unknown or hidden callers
 
 ### 💬 Messages
-- A full SMS/MMS messenger, built in and sharing the same bottom bar
-- **Reactions:** see them on messages, and send them from a quick bar or the picker
-- **Email detection:** email addresses in texts become chips you can save, email or copy
-- Tap the conversation title to open their contact page
+- A full SMS/MMS messenger as a tab: pinned chats, filters, swipe to archive or mark read
+- **Conversation screen:** bubbles with day dividers, photos, reactions shown on their message, email chips, contact cards, drafts
+- **Sending:** photos, camera, files and contact cards, a SIM picker for dual-SIM phones, and **undo send**
+- **Notifications** with the sender's photo, photo previews, quick reply and mark as read
+- **New message screen** with recent people, search and group chats
+- **Archive and recycle bin** (30 days to restore), blocked words, and **message backup and restore**
 
 ### ⚙️ Settings
 - One settings page for everything: theme, contact display, language, call screen, contacts, calls, call history, messages, Link helper and default apps
@@ -121,7 +123,7 @@ Omnio One brings them together. Open someone and everything about them is in one
 - [x] One unified Settings and About page
 
 ### 🚧 Next
-- [ ] **Messages, rebuilt from scratch** in stages: conversation list → conversation screen → sending and receiving → notifications and quick reply → extras
+- [x] **Messages, rebuilt from scratch:** conversation list, conversation screen, sending, receiving, notifications, extras
 - [ ] **"Remind me"** on incoming calls: decline and get a reminder to call back
 - [ ] More contact styles: **Bubbles, Timeline, Map**
 - [ ] **Theme designer** for the whole app
@@ -136,7 +138,7 @@ Omnio One brings them together. Open someone and everything about them is in one
 | Contact page · Editor · Linking | ✅ Omnio code |
 | Call screen · Designer · Call service · Notifications | ✅ Omnio code |
 | Settings · About · Speed dial · Blocked numbers | ✅ Omnio code |
-| Messages | 🚧 Being rebuilt |
+| Messages · Notifications · Backup | ✅ Omnio code |
 | Shared library | 🚧 Shrinking as each area is rebuilt |
 
 ---
@@ -151,12 +153,11 @@ cd OmnioOne
 
 The APK appears in `app/build/outputs/apk/foss/debug/`. You need JDK 17 and the Android SDK.
 
-The project has three modules:
+The project has two modules:
 
 | Module | What it is |
 |---|---|
-| `app` | Contacts, phone, call screen, settings |
-| `messages` | The SMS/MMS messenger |
+| `app` | Contacts, phone, messages, call screen, settings |
 | `commons` | Shared building blocks |
 
 ---
