@@ -254,7 +254,9 @@ class MessagesFragment(context: Context, attributeSet: AttributeSet) :
 
     private fun open(conversation: OmnioMessageStore.Conversation) {
         val host = activity ?: return
-        host.startActivity(Intent(host, com.omnioone.messages.activities.ThreadActivity::class.java).apply {
+        val screen = if (com.omnioone.app.activities.OmnioMessagesSwitch.threadOn(host)) com.omnioone.app.messaging.OmnioThreadActivity::class.java
+        else com.omnioone.messages.activities.ThreadActivity::class.java
+        host.startActivity(Intent(host, screen).apply {
             putExtra(THREAD_ID, conversation.threadId)
             putExtra(THREAD_TITLE, conversation.title)
         })

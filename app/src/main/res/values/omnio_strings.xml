@@ -519,4 +519,20 @@ Unread, new: %3$d · current: %4$d</string>
     <string name="omnio_messages_delete_desc">All its messages are deleted from your phone. This can’t be undone.</string>
     <string name="omnio_new_messages">New Messages tab (preview)</string>
     <string name="omnio_new_messages_desc">Messages rewrite: shows your chats inside the main screen. Switch off to go back to the current Messages screen.</string>
+    <string name="omnio_new_thread">New conversation screen (preview)</string>
+    <string name="omnio_new_thread_desc">Messages rewrite: opens chats from the Messages tab in the new screen. Switch off to use the current one.</string>
+    <string name="omnio_thread_people">%d people</string>
+    <string name="omnio_thread_type">Message</string>
+    <string name="omnio_thread_send">Send</string>
+    <string name="omnio_thread_send_failed">Couldn\'t send the message</string>
+    <string name="omnio_thread_react">React</string>
+    <string name="omnio_thread_copy">Copy text</string>
+    <string name="omnio_thread_forward">Forward</string>
+    <string name="omnio_thread_retry">Try sending again</string>
+    <string name="omnio_thread_delete">Delete</string>
+    <string name="omnio_thread_delete_question">Delete this message?</string>
+    <string name="omnio_thread_received">Received</string>
+    <string name="omnio_thread_sent">Sent</string>
+    <string name="omnio_thread_not_sent">Not sent · tap to retry</string>
+    <string name="omnio_thread_sending">Sending…</string>
 </resources>

@@ -182,6 +182,7 @@ class OmnioSettingsActivity : SimpleActivity() {
         section("⚙️", R.string.omnio_settings_advanced)
         card(
             switch(R.string.omnio_new_messages, R.string.omnio_new_messages_desc, OmnioMessagesSwitch.isOn(this)) { OmnioMessagesSwitch.set(this, it) },
+            switch(R.string.omnio_new_thread, R.string.omnio_new_thread_desc, OmnioMessagesSwitch.threadOn(this)) { OmnioMessagesSwitch.setThread(this, it) },
             action(R.string.omnio_check_reader, getString(R.string.omnio_check_reader_desc)) { checkMessageReader() },
             action(R.string.omnio_settings_more_messages, getString(R.string.omnio_settings_more_messages_desc)) {
                 startActivity(Intent().setClassName(packageName, "com.omnioone.messages.activities.SettingsActivity"))

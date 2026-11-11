@@ -86,4 +86,37 @@ object OmnioReactions {
         }
         return hidden to reactions.filterValues { it.isNotEmpty() }
     }
+
+    /** Same as [process], for any list of (id, body, isEmptyPictureMessage) – used by Omnio's new conversation screen. */
+    fun processBodies(items: List<Triple<Long, String, Boolean>>): Pair<Set<Long>, Map<Long, List<String>>> {
+        val hidden = HashSet<Long>()
+        val reactions = LinkedHashMap<Long, MutableList<String>>()
+        items.forEachIndexed { index, (id, body, emptyPicture) ->
+            if (emptyPicture) return@forEachIndexed
+            val parsed = parse(body) ?: return@forEachIndexed
+            val target = (index - 1 downTo 0).asSequence()
+                .map { items[it] }
+                .firstOrNull { it.first !in hidden && matches(it.second, parsed.quoted) }
+                ?: return@forEachIndexed
+            hidden.add(id)
+            val list = reactions.getOrPut(target.first) { ArrayList() }
+            if (parsed.removed) list.remove(parsed.emoji) else if (parsed.emoji !in list) list.add(parsed.emoji)
+        }
+        return hidden to reactions.filterValues { it.isNotEmpty() }
+    }
+
+    /** The text to send for a reaction, in the classic words iPhone and Google Messages understand. */
+    fun reactionText(emoji: String, body: String): String {
+        val quoted = body.trim().replace(Regex("\\s+"), " ").let { if (it.length > 100) it.take(100).trimEnd() + "…" else it }
+        val word = when (emoji) {
+            "👍" -> "Liked"
+            "❤️" -> "Loved"
+            "😂" -> "Laughed at"
+            "‼️" -> "Emphasized"
+            "❓" -> "Questioned"
+            "👎" -> "Disliked"
+            else -> null
+        }
+        return if (word != null) "$word “$quoted”" else "Reacted $emoji to “$quoted”"
+    }
 }

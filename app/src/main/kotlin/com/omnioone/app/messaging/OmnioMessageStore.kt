@@ -101,8 +101,8 @@ object OmnioMessageStore {
         emptySet()
     }
 
-    /** Every conversation, newest first. */
-    fun conversations(context: Context): List<Conversation> {
+    /** Every conversation, newest first (or just [onlyThread]). */
+    fun conversations(context: Context, onlyThread: Long? = null): List<Conversation> {
         val addressBook = addresses(context)
         val unread = unreadByThread(context)
         val pins = pinned(context)
@@ -121,8 +121,9 @@ object OmnioMessageStore {
                 null, null, "${Threads.DATE} DESC"
             )?.use { cursor ->
                 while (cursor.moveToNext()) {
-                    if (cursor.getInt(5) == 0) continue // empty threads (all messages deleted)
                     val threadId = cursor.getLong(0)
+                    if (onlyThread != null && threadId != onlyThread) continue
+                    if (onlyThread == null && cursor.getInt(5) == 0) continue // empty threads (all messages deleted)
                     val members = parseRecipientIds(cursor.getString(3)).mapNotNull { addressBook[it] }.filter { it.isNotBlank() }.map { person(it) }
                     list += Conversation(
                         threadId = threadId,
