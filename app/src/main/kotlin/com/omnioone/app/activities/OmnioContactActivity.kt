@@ -106,6 +106,7 @@ class OmnioContactActivity : SimpleActivity() {
         binding.contactEdit.applyColorFilter(textColor)
         binding.contactAppsLabel.setTextColor(textColor)
         binding.contactVideo.compoundDrawablesRelative[1]?.mutate()?.setTint(OmnioColors.MESSAGES_SOFT)
+        binding.root.postDelayed({ if (!isFinishing) offerCapturedPhoto() }, 700)
     }
 
     internal fun showContact(contact: Contact) {

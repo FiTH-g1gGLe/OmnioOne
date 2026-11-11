@@ -220,6 +220,30 @@ object OmnioSheet {
         frame.show()
     }
 
+    /** A picture (e.g. a caught profile photo) with buttons. */
+    fun photo(
+        activity: Activity,
+        title: String,
+        message: String?,
+        bitmap: android.graphics.Bitmap,
+        positive: String,
+        negative: String = activity.getString(com.omnioone.commons.R.string.cancel),
+        onNegative: () -> Unit = {},
+        onPositive: () -> Unit
+    ) {
+        val frame = Frame(activity, title, message)
+        val size = activity.dp(150)
+        frame.body.addView(android.widget.ImageView(activity).apply {
+            layoutParams = LinearLayout.LayoutParams(size, size).apply {
+                gravity = android.view.Gravity.CENTER_HORIZONTAL
+                bottomMargin = activity.dp(8)
+            }
+            com.bumptech.glide.Glide.with(activity).load(bitmap).circleCrop().into(this)
+        })
+        frame.buttons(negative to onNegative, positive to onPositive, mainColor = GREEN)
+        frame.show()
+    }
+
     /** A text box with buttons. Returns the EditText so callers can tweak it. */
     fun input(
         activity: Activity,

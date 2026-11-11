@@ -317,6 +317,12 @@ class OmnioFacebookMatchActivity : SimpleActivity() {
             val profile = OmnioSocials.resolveFacebook(url) ?: url
             val existing = OmnioSocials.findSocials(this, match.person.contactId)
             var ok = existing.any { it.url.equals(profile, true) } || OmnioSocials.addSocial(this, match.person.contactId, profile)
+            // the Link helper may have caught their profile photo too: use it if they have none yet
+            val photoHelper = com.omnioone.app.helpers.OmnioPhotoCapture
+            photoHelper.captured(this, match.person.contactId)?.let { photo ->
+                if (match.person.photo.isEmpty()) photoHelper.saveToContact(this, match.person.rawId, photo)
+                photoHelper.discard(this, match.person.contactId)
+            }
             val messenger = OmnioSocials.messengerFromFacebook(profile)
             if (ok && messenger != null && existing.none { it.network.key == "messenger" }) {
                 ok = OmnioSocials.addSocial(this, match.person.contactId, messenger) || ok

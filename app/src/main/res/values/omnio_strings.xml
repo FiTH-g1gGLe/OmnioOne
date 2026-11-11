@@ -479,4 +479,8 @@
     <string name="omnio_fb_missed_desc">On their profile, tap ⋯ → Copy link, then come back to Omnio. Turning on Link helper makes this automatic.</string>
     <string name="omnio_fb_try_again">Try again</string>
     <string name="omnio_fb_skip">Skip</string>
+    <string name="omnio_photo_use_title">Use this as %s’s photo?</string>
+    <string name="omnio_photo_use_desc">Caught from their profile while you had it open.</string>
+    <string name="omnio_photo_use">Use photo</string>
+    <string name="omnio_photo_saved">Photo saved</string>
 </resources>

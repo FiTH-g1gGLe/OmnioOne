@@ -235,6 +235,12 @@ internal fun OmnioContactActivity.openSocial(social: OmnioSocials.FoundSocial) {
         tryStart(packageManager.getLaunchIntentForPackage(social.network.pkg))
         return
     }
+    // with Link helper on, their profile photo is caught on the way and offered when you come back
+    contact?.let { current ->
+        if (com.omnioone.app.services.OmnioLinkHelperService.isEnabled(this)) {
+            com.omnioone.app.helpers.OmnioPhotoCapture.setPending(this, current.contactId, current.rawId)
+        }
+    }
     val uri = Uri.parse(if (social.url.contains("://")) social.url else "https://${social.url}")
     // the app if it's installed, otherwise the browser
     val inApp = Intent(Intent.ACTION_VIEW, uri).setPackage(social.network.pkg)
@@ -333,6 +339,35 @@ internal fun OmnioContactActivity.confirmRemoveSocial(contact: Contact, social: 
         ensureBackgroundThread {
             OmnioSocials.removeSocial(this, social.dataId)
             runOnUiThread { loadApps(contact) }
+        }
+    }
+}
+
+/** A profile photo the Link helper caught for this contact: offer it as their contact photo. */
+internal fun OmnioContactActivity.offerCapturedPhoto() {
+    val current = contact ?: return
+    val helper = com.omnioone.app.helpers.OmnioPhotoCapture
+    val bitmap = helper.captured(this, current.contactId) ?: return
+    helper.discard(this, current.contactId)
+    helper.clearPending(this)
+    com.omnioone.app.helpers.OmnioSheet.photo(
+        this,
+        title = getString(R.string.omnio_photo_use_title, current.getNameToDisplay()),
+        message = getString(R.string.omnio_photo_use_desc),
+        bitmap = bitmap,
+        positive = getString(R.string.omnio_photo_use),
+        negative = getString(R.string.omnio_not_now)
+    ) {
+        ensureBackgroundThread {
+            val ok = helper.saveToContact(this, current.rawId, bitmap)
+            runOnUiThread {
+                if (ok) {
+                    com.bumptech.glide.Glide.with(this).load(bitmap).circleCrop().into(binding.contactPhoto)
+                    toast(R.string.omnio_photo_saved)
+                } else {
+                    toast(com.omnioone.commons.R.string.unknown_error_occurred)
+                }
+            }
         }
     }
 }
