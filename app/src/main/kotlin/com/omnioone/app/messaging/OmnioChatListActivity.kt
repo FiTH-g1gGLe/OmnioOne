@@ -23,6 +23,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.omnioone.app.R
+import com.omnioone.app.activities.SimpleActivity
 import com.omnioone.app.helpers.OmnioDisplay
 import com.omnioone.app.helpers.OmnioSheet
 import com.omnioone.commons.extensions.toast
