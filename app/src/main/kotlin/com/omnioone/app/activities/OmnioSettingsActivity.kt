@@ -181,6 +181,7 @@ class OmnioSettingsActivity : SimpleActivity() {
 
         section("⚙️", R.string.omnio_settings_advanced)
         card(
+            action(R.string.omnio_check_reader, getString(R.string.omnio_check_reader_desc)) { checkMessageReader() },
             action(R.string.omnio_settings_more_messages, getString(R.string.omnio_settings_more_messages_desc)) {
                 startActivity(Intent().setClassName(packageName, "com.omnioone.messages.activities.SettingsActivity"))
             },
@@ -224,6 +225,32 @@ class OmnioSettingsActivity : SimpleActivity() {
                 runOnUiThread {
                     if (count < 0) toast(R.string.omnio_import_failed) else toast(getString(R.string.omnio_imported_calls, count))
                 }
+            }
+        }
+    }
+
+    /** Messages rewrite, stage 1: compare Omnio's new message reader with the current Messages code. */
+    private fun checkMessageReader() {
+        toast(R.string.omnio_check_reader_running)
+        com.omnioone.commons.helpers.ensureBackgroundThread {
+            val result = com.omnioone.app.messaging.OmnioMessageStore.check(this)
+            runOnUiThread {
+                val lines = buildString {
+                    append(getString(R.string.omnio_check_reader_counts, result.newChats, result.oldChats, result.newUnread, result.oldUnread))
+                    if (result.onlyNew.isNotEmpty()) append("\n\n" + getString(R.string.omnio_check_reader_only_new, result.onlyNew.joinToString(", ")))
+                    if (result.onlyOld.isNotEmpty()) append("\n\n" + getString(R.string.omnio_check_reader_only_old, result.onlyOld.joinToString(", ")))
+                }
+                OmnioSheet.confirm(
+                    this,
+                    title = getString(if (result.matches) R.string.omnio_check_reader_match else R.string.omnio_check_reader_differ),
+                    message = lines,
+                    positive = getString(com.omnioone.commons.R.string.ok),
+                    negative = getString(R.string.omnio_check_reader_copy),
+                    onNegative = {
+                        (getSystemService(CLIPBOARD_SERVICE) as android.content.ClipboardManager).setPrimaryClip(android.content.ClipData.newPlainText("Omnio check", lines))
+                        toast(R.string.omnio_copied)
+                    }
+                ) {}
             }
         }
     }

@@ -489,4 +489,14 @@
     <string name="omnio_photo_full_size">Full-size photos</string>
     <string name="omnio_photo_full_size_desc">Taps the profile picture for you to save a sharper photo. You’ll see it open and close.</string>
     <string name="omnio_photo_getting">Getting their photo…</string>
+    <string name="omnio_check_reader">Check the new message reader</string>
+    <string name="omnio_check_reader_desc">Messages rewrite: compares Omnio’s new reader with the current one</string>
+    <string name="omnio_check_reader_running">Reading your messages both ways…</string>
+    <string name="omnio_check_reader_counts">New reader: %1$d chats · Current: %2$d chats
+Unread, new: %3$d · current: %4$d</string>
+    <string name="omnio_check_reader_only_new">Only the new reader found: %s</string>
+    <string name="omnio_check_reader_only_old">Only the current one found: %s</string>
+    <string name="omnio_check_reader_match">✓ Both readers match</string>
+    <string name="omnio_check_reader_differ">The readers differ</string>
+    <string name="omnio_check_reader_copy">Copy</string>
 </resources>
