@@ -477,18 +477,20 @@ class OmnioThreadActivity : SimpleActivity() {
     }
 
     private fun showMessageMenu(message: OmnioMessageStore.Message, reactions: List<OmnioReactions.Reaction> = emptyList()) {
-        val items = ArrayList<Pair<String, () -> Unit>>()
+        val items = ArrayList<Pair<OmnioSheet.Item, () -> Unit>>()
+        fun item(label: Int, emoji: String, colour: Int, labelColour: Int = OmnioColors.TEXT) =
+            OmnioSheet.Item(getString(label), icon = emojiBadge(emoji, colour), labelColor = labelColour)
         if (message.body.isNotBlank()) {
-            items += getString(R.string.omnio_thread_copy) to {
+            items += item(R.string.omnio_thread_copy, "📋", OmnioColors.CALLS) to {
                 (getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager).setPrimaryClip(ClipData.newPlainText("message", message.body))
                 toast(R.string.omnio_copied)
             }
-            items += getString(R.string.omnio_thread_forward) to {
+            items += item(R.string.omnio_thread_forward, "↪️", OmnioColors.MESSAGES) to {
                 startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, message.body), getString(R.string.omnio_thread_forward)))
             }
         }
-        if (message.failed) items += getString(R.string.omnio_thread_retry) to { retry(message) }
-        items += getString(R.string.omnio_thread_delete) to {
+        if (message.failed) items += item(R.string.omnio_thread_retry, "🔄", OmnioColors.CONTACTS) to { retry(message) }
+        items += item(R.string.omnio_thread_delete, "🗑️", OmnioColors.MISSED, OmnioColors.MISSED_SOFT) to {
             OmnioSheet.confirm(this, getString(R.string.omnio_thread_delete_question), null, positive = getString(com.omnioone.app.R.string.delete), mainColor = OmnioColors.MISSED) {
                 ensureBackgroundThread {
                     OmnioRecycleBin.delete(applicationContext, listOf(message))
@@ -498,7 +500,7 @@ class OmnioThreadActivity : SimpleActivity() {
         }
         val time = android.text.format.DateFormat.getMediumDateFormat(this).format(message.date) + " " + android.text.format.DateFormat.getTimeFormat(this).format(message.date)
         val top: ((() -> Unit) -> View)? = if (message.body.isNotBlank()) { dismiss -> emojiRow(message, reactions, dismiss) } else null
-        OmnioSheet.list(this, getString(if (message.incoming) R.string.omnio_thread_received else R.string.omnio_thread_sent), time, items.map { OmnioSheet.Item(it.first) }, top) { picked ->
+        OmnioSheet.list(this, getString(if (message.incoming) R.string.omnio_thread_received else R.string.omnio_thread_sent), time, items.map { it.first }, top) { picked ->
             items[picked].second()
         }
     }
