@@ -305,12 +305,12 @@ class RecentsFragment(
             actions += OmnioSheet.Item(host.getString(label), icon = drawable, labelColor = labelColour) to action
         }
         if (!entry.isPrivate) {
-            add(R.string.omnio_call, R.drawable.ic_call_accept, OmnioColors.CALLS) { call(entry) }
+            add(R.string.omnio_call, com.omnioone.commons.R.drawable.ic_phone_vector, OmnioColors.CALLS) { call(entry) }
             if (host.areMultipleSIMsAvailable()) {
-                add(R.string.omnio_call_sim_1, R.drawable.ic_call_accept, OmnioColors.CALLS) {
+                add(R.string.omnio_call_sim_1, com.omnioone.commons.R.drawable.ic_phone_vector, OmnioColors.CALLS) {
                     host.callContactWithSimWithConfirmationCheck(entry.number, entry.name, useMainSIM = true)
                 }
-                add(R.string.omnio_call_sim_2, R.drawable.ic_call_accept, OmnioColors.CALLS) {
+                add(R.string.omnio_call_sim_2, com.omnioone.commons.R.drawable.ic_phone_vector, OmnioColors.CALLS) {
                     host.callContactWithSimWithConfirmationCheck(entry.number, entry.name, useMainSIM = false)
                 }
             }
@@ -436,7 +436,7 @@ class RecentsFragment(
                 val rect = if (right) RectF(view.left.toFloat(), view.top.toFloat(), view.left + dX, view.bottom.toFloat())
                 else RectF(view.right + dX, view.top.toFloat(), view.right.toFloat(), view.bottom.toFloat())
                 canvas.drawRect(rect, paint)
-                val icon = ContextCompat.getDrawable(view.context, if (right) R.drawable.ic_call_accept else R.drawable.ic_omnio_chat)?.mutate()
+                val icon = ContextCompat.getDrawable(view.context, if (right) com.omnioone.commons.R.drawable.ic_phone_vector else R.drawable.ic_omnio_chat)?.mutate()
                 if (icon != null) {
                     val size = (26 * view.resources.displayMetrics.density).toInt()
                     val margin = (26 * view.resources.displayMetrics.density).toInt()

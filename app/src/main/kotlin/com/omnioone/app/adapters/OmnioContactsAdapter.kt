@@ -239,7 +239,7 @@ class OmnioContactsAdapter(
                     layoutParams = LinearLayout.LayoutParams(row.dp(42), row.dp(42)).apply { marginStart = row.dp(8) }
                 }
                 row.addView(roundButton(textButton, R.drawable.ic_omnio_chat, OmnioColors.MESSAGES))
-                row.addView(roundButton(callButton, R.drawable.ic_call_accept, OmnioColors.CALLS))
+                row.addView(roundButton(callButton, com.omnioone.commons.R.drawable.ic_phone_vector, OmnioColors.CALLS))
             }
         }
 

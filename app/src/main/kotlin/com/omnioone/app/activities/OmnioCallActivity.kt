@@ -389,7 +389,7 @@ class OmnioCallActivity : SimpleActivity() {
         val bottom = column().apply {
             addView(grid)
             addView(View(this@OmnioCallActivity), LinearLayout.LayoutParams(1, dp(34)))
-            addView(roundButton(R.drawable.ic_call_end, 0xFFE5484D.toInt(), null, sizeDp = 76) { hangUp() })
+            addView(roundButton(R.drawable.ic_phone_down_vector, 0xFFE5484D.toInt(), null, sizeDp = 76) { hangUp() })
         }
         root.addView(screen(top, bottom, padTop = 64))
     }
@@ -524,7 +524,7 @@ class OmnioCallActivity : SimpleActivity() {
                     setPadding(dp(20), dp(12), dp(28), dp(12))
                     setOnClickListener { root.removeView(overlay) }
                 })
-                addView(roundButton(R.drawable.ic_call_end, 0xFFE5484D.toInt(), null, sizeDp = 68) { hangUp() })
+                addView(roundButton(R.drawable.ic_phone_down_vector, 0xFFE5484D.toInt(), null, sizeDp = 68) { hangUp() })
             })
         })
         root.addView(overlay)

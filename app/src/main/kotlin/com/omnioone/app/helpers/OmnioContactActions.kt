@@ -61,12 +61,12 @@ object OmnioContactActions {
         }
         val favourite = if (OmnioFavourites.isLoaded) OmnioFavourites.isFavourite(person.contactId) else person.starred
 
-        add(activity.getString(R.string.omnio_call), R.drawable.ic_call_accept, OmnioColors.CALLS) { call(activity, person) }
+        add(activity.getString(R.string.omnio_call), com.omnioone.commons.R.drawable.ic_phone_vector, OmnioColors.CALLS) { call(activity, person) }
         if (activity.areMultipleSIMsAvailable()) {
-            add(activity.getString(R.string.omnio_call_sim_1), R.drawable.ic_call_accept, OmnioColors.CALLS) {
+            add(activity.getString(R.string.omnio_call_sim_1), com.omnioone.commons.R.drawable.ic_phone_vector, OmnioColors.CALLS) {
                 pickNumber(activity, person, R.string.omnio_call) { activity.callContactWithSimWithConfirmationCheck(it, person.name, useMainSIM = true) }
             }
-            add(activity.getString(R.string.omnio_call_sim_2), R.drawable.ic_call_accept, OmnioColors.CALLS) {
+            add(activity.getString(R.string.omnio_call_sim_2), com.omnioone.commons.R.drawable.ic_phone_vector, OmnioColors.CALLS) {
                 pickNumber(activity, person, R.string.omnio_call) { activity.callContactWithSimWithConfirmationCheck(it, person.name, useMainSIM = false) }
             }
         }

@@ -331,7 +331,7 @@ class MessagesFragment(context: Context, attributeSet: AttributeSet) :
             add(R.string.omnio_messages_mark_unread, com.omnioone.commons.R.drawable.ic_check_vector, OmnioColors.MESSAGES) { setRead(conversation, false) }
         }
         if (person != null) {
-            add(R.string.omnio_call, R.drawable.ic_call_accept, OmnioColors.CALLS) { host.startCallWithConfirmationCheck(person.address, person.label) }
+            add(R.string.omnio_call, com.omnioone.commons.R.drawable.ic_phone_vector, OmnioColors.CALLS) { host.startCallWithConfirmationCheck(person.address, person.label) }
             add(if (person.contactId != null) R.string.omnio_open_contact else R.string.omnio_add_to_contacts, com.omnioone.commons.R.drawable.ic_person_vector, OmnioColors.CONTACTS) {
                 openPerson(conversation)
             }

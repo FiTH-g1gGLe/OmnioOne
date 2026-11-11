@@ -539,7 +539,7 @@ class DialpadActivity : SimpleActivity() {
         root.addView(FrameLayout(this).apply {
             setPadding(0, dp(8), 0, dp(14))
             addView(ImageView(this@DialpadActivity).apply {
-                setImageResource(R.drawable.ic_call_accept)
+                setImageResource(com.omnioone.commons.R.drawable.ic_phone_vector)
                 imageTintList = ColorStateList.valueOf(0xFFFFFFFF.toInt())
                 setPadding(dp(20), dp(20), dp(20), dp(20))
                 background = GradientDrawable().apply {
