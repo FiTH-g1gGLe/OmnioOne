@@ -775,13 +775,25 @@ class OmnioEditContactActivity : SimpleActivity() {
         if (existing == null) target.source = chosenSource?.name ?: ""
 
         ensureBackgroundThread {
+            var photoKept = false
             val ok = try {
-                if (existing == null) ContactsHelper(this).insertContact(target) else ContactsHelper(this).updateContact(target, photoStatus)
+                if (existing == null) {
+                    ContactsHelper(this).insertContact(target)
+                } else {
+                    // details first, then the photo with Omnio's own code (works across linked entries)
+                    val saved = ContactsHelper(this).updateContact(target, PHOTO_UNCHANGED)
+                    if (saved) when (photoStatus) {
+                        PHOTO_REMOVED -> photoKept = !com.omnioone.app.helpers.OmnioContactPhoto.remove(this, target.id.toLong())
+                        PHOTO_ADDED, PHOTO_CHANGED -> com.omnioone.app.helpers.OmnioContactPhoto.set(this, target.id.toLong(), Uri.parse(photoUri))
+                    }
+                    saved
+                }
             } catch (e: Exception) {
                 false
             }
             runOnUiThread {
                 if (ok) {
+                    if (photoKept) toast(R.string.omnio_photo_came_back, android.widget.Toast.LENGTH_LONG)
                     toast(if (existing == null) R.string.omnio_contact_created else R.string.omnio_contact_saved)
                     setResult(RESULT_OK)
                     finish()

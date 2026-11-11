@@ -59,19 +59,8 @@ object OmnioPhotoCapture {
         file(context, contactId).delete()
     }
 
-    /** Sets the full-size contact photo (not just the small thumbnail). Run on a background thread. */
-    fun saveToContact(context: Context, rawId: Int, bitmap: Bitmap): Boolean = try {
-        val uri = Uri.withAppendedPath(
-            ContentUris.withAppendedId(ContactsContract.RawContacts.CONTENT_URI, rawId.toLong()),
-            ContactsContract.RawContacts.DisplayPhoto.CONTENT_DIRECTORY
-        )
-        context.contentResolver.openAssetFileDescriptor(uri, "rw")?.use { descriptor ->
-            descriptor.createOutputStream().use { bitmap.compress(Bitmap.CompressFormat.JPEG, 92, it) }
-        }
-        true
-    } catch (e: Exception) {
-        false
-    }
+    /** Sets the full-size contact photo and makes it the main one. Run on a background thread. */
+    fun saveToContact(context: Context, rawId: Int, bitmap: Bitmap): Boolean = OmnioContactPhoto.set(context, rawId.toLong(), bitmap)
 
     /** What the last photo attempt did, shown in Settings so problems can be reported. */
     fun note(context: Context, text: String) {
