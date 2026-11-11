@@ -51,6 +51,16 @@ class OmnioDisplayDialog(private val activity: SimpleActivity, private val callb
             OmnioDisplay.STYLE_SQUARES to (R.string.omnio_style_squares to R.string.omnio_style_squares_desc),
             OmnioDisplay.STYLE_TILES to (R.string.omnio_style_tiles to R.string.omnio_style_tiles_desc),
             OmnioDisplay.STYLE_SPEED_DIAL to (R.string.omnio_style_speed_dial to R.string.omnio_style_speed_dial_desc),
+            OmnioDisplay.STYLE_BUBBLES to (R.string.omnio_style_bubbles to R.string.omnio_style_bubbles_desc),
+            OmnioDisplay.STYLE_TIMELINE to (R.string.omnio_style_timeline to R.string.omnio_style_timeline_desc),
+            OmnioDisplay.STYLE_MINIMAL to (R.string.omnio_style_minimal to R.string.omnio_style_minimal_desc),
+            OmnioDisplay.STYLE_BUSINESS to (R.string.omnio_style_business to R.string.omnio_style_business_desc),
+            OmnioDisplay.STYLE_SPOTLIGHT to (R.string.omnio_style_spotlight to R.string.omnio_style_spotlight_desc),
+            OmnioDisplay.STYLE_PILLS to (R.string.omnio_style_pills to R.string.omnio_style_pills_desc),
+            OmnioDisplay.STYLE_POLAROID to (R.string.omnio_style_polaroid to R.string.omnio_style_polaroid_desc),
+            OmnioDisplay.STYLE_ORBIT to (R.string.omnio_style_orbit to R.string.omnio_style_orbit_desc),
+            OmnioDisplay.STYLE_HONEYCOMB to (R.string.omnio_style_honeycomb to R.string.omnio_style_honeycomb_desc),
+            OmnioDisplay.STYLE_MONOGRAM to (R.string.omnio_style_monogram to R.string.omnio_style_monogram_desc),
         )
         val styleGroup = RadioGroup(activity)
         styles.forEach { (value, labels) ->

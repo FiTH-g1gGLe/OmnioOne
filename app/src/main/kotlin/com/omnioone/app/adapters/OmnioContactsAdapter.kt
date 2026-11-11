@@ -51,7 +51,21 @@ class OmnioContactsAdapter(
     var density = OmnioDisplay.DENSITY_NORMAL
     var firstNameOnly = false
     var surnameFirst = false
+    /** Grid columns (Honeycomb staggers every other row). */
+    var columns = 3
     private var highlight = ""
+
+    private val styleHost = object : ContactStyleHost {
+        override val textColor get() = this@OmnioContactsAdapter.textColor
+        override val density get() = this@OmnioContactsAdapter.density
+        override fun name(person: OmnioPeople.Person) = this@OmnioContactsAdapter.name(person)
+        override fun badges(person: OmnioPeople.Person) = appTags[person.contactId].orEmpty()
+        override fun click(person: OmnioPeople.Person) = onClick(person)
+        override fun photo(person: OmnioPeople.Person) = onPhoto(person)
+        override fun longClick(person: OmnioPeople.Person, view: View) = onLongClick(person, view)
+        override fun call(person: OmnioPeople.Person) = onCall(person)
+        override fun text(person: OmnioPeople.Person) = onText(person)
+    }
 
     val isGrid get() = OmnioDisplay.isGrid(style)
 
@@ -61,7 +75,7 @@ class OmnioContactsAdapter(
         val list = ArrayList<Item>()
         var last = ""
         people.forEach { person ->
-            if (showHeaders && !isGrid && highlight.isEmpty()) {
+            if (showHeaders && !isGrid && style != OmnioDisplay.STYLE_SPOTLIGHT && highlight.isEmpty()) {
                 val letter = letterOf(person)
                 if (letter != last) {
                     list += Item.Header(letter)
@@ -93,7 +107,21 @@ class OmnioContactsAdapter(
 
     private fun View.dp(value: Int) = (value * resources.displayMetrics.density).toInt()
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder = if (viewType == 0) {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder = if (viewType == 0 && style == OmnioDisplay.STYLE_TIMELINE) {
+        TimelineHeaderHolder(LinearLayout(parent.context))
+    } else if (viewType == 1) when (style) {
+        OmnioDisplay.STYLE_BUBBLES -> BubbleHolder(LinearLayout(parent.context), styleHost)
+        OmnioDisplay.STYLE_TIMELINE -> TimelineHolder(LinearLayout(parent.context), styleHost)
+        OmnioDisplay.STYLE_MINIMAL -> MinimalHolder(TextView(parent.context), styleHost)
+        OmnioDisplay.STYLE_BUSINESS -> BusinessHolder(LinearLayout(parent.context), styleHost)
+        OmnioDisplay.STYLE_SPOTLIGHT -> SpotlightHolder(FrameLayout(parent.context), styleHost)
+        OmnioDisplay.STYLE_PILLS -> PillHolder(FrameLayout(parent.context), styleHost)
+        OmnioDisplay.STYLE_POLAROID -> PolaroidHolder(FrameLayout(parent.context), styleHost)
+        OmnioDisplay.STYLE_ORBIT -> OrbitHolder(FrameLayout(parent.context), styleHost)
+        OmnioDisplay.STYLE_HONEYCOMB -> HoneycombHolder(FrameLayout(parent.context), styleHost) { columns }
+        OmnioDisplay.STYLE_MONOGRAM -> MonogramHolder(FrameLayout(parent.context), styleHost)
+        else -> if (isGrid) GridHolder(FrameLayout(parent.context)) else RowHolder(LinearLayout(parent.context))
+    } else if (viewType == 0) {
         HeaderHolder(TextView(parent.context).apply {
             layoutParams = RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
@@ -108,10 +136,23 @@ class OmnioContactsAdapter(
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (val item = items[position]) {
-            is Item.Header -> (holder as HeaderHolder).bind(item.letter)
+            is Item.Header -> when (holder) {
+                is TimelineHeaderHolder -> holder.bind(item.letter)
+                is HeaderHolder -> holder.bind(item.letter)
+            }
             is Item.Row -> when (holder) {
                 is RowHolder -> holder.bind(item.person)
                 is GridHolder -> holder.bind(item.person)
+                is BubbleHolder -> holder.bind(item.person)
+                is TimelineHolder -> holder.bind(item.person)
+                is MinimalHolder -> holder.bind(item.person)
+                is BusinessHolder -> holder.bind(item.person)
+                is SpotlightHolder -> holder.bind(item.person)
+                is PillHolder -> holder.bind(item.person)
+                is PolaroidHolder -> holder.bind(item.person, position)
+                is OrbitHolder -> holder.bind(item.person)
+                is HoneycombHolder -> holder.bind(item.person, position)
+                is MonogramHolder -> holder.bind(item.person)
             }
         }
     }

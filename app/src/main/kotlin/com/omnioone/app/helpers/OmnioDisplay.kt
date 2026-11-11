@@ -25,6 +25,16 @@ object OmnioDisplay {
     const val STYLE_SQUARES = 5
     const val STYLE_TILES = 6
     const val STYLE_SPEED_DIAL = 7
+    const val STYLE_BUBBLES = 8
+    const val STYLE_TIMELINE = 9
+    const val STYLE_MINIMAL = 10
+    const val STYLE_BUSINESS = 11
+    const val STYLE_SPOTLIGHT = 12
+    const val STYLE_PILLS = 13
+    const val STYLE_POLAROID = 14
+    const val STYLE_ORBIT = 15
+    const val STYLE_HONEYCOMB = 16
+    const val STYLE_MONOGRAM = 17
 
     const val DENSITY_COMPACT = 0
     const val DENSITY_NORMAL = 1
@@ -34,9 +44,18 @@ object OmnioDisplay {
     const val NAMES_SURNAME_FIRST = 1
     const val NAMES_FIRST_ONLY = 2
 
-    fun isGrid(style: Int) = style == STYLE_CIRCLES || style == STYLE_SQUARES || style == STYLE_TILES || style == STYLE_SPEED_DIAL
+    fun isGrid(style: Int) = style in setOf(
+        STYLE_CIRCLES, STYLE_SQUARES, STYLE_TILES, STYLE_SPEED_DIAL, STYLE_PILLS, STYLE_POLAROID, STYLE_ORBIT, STYLE_HONEYCOMB, STYLE_MONOGRAM
+    )
 
-    fun isList(style: Int) = style == STYLE_LIST || style == STYLE_COMPACT || style == STYLE_DETAILED
+    /** Styles where the row spacing setting applies. */
+    fun isList(style: Int) = style in setOf(STYLE_LIST, STYLE_COMPACT, STYLE_DETAILED, STYLE_BUBBLES, STYLE_TIMELINE, STYLE_MINIMAL)
+
+    /** Styles that show A, B, C… letter headers. */
+    fun hasHeaders(style: Int) = isList(style) || style == STYLE_BUSINESS
+
+    /** A contact's own colour (the same one their letter tile uses). */
+    fun colourFor(name: String) = tileColors[Math.abs(name.hashCode()) % tileColors.size]
 
     private fun prefs(context: Context) = context.getSharedPreferences("omnio", Context.MODE_PRIVATE)
 
@@ -45,8 +64,8 @@ object OmnioDisplay {
 
     fun getColumns(context: Context, style: Int): Int {
         val default = when (style) {
-            STYLE_TILES -> 2
-            STYLE_SPEED_DIAL -> 3
+            STYLE_TILES, STYLE_PILLS, STYLE_POLAROID -> 2
+            STYLE_SPEED_DIAL, STYLE_ORBIT, STYLE_HONEYCOMB -> 3
             else -> 4
         }
         return prefs(context).getInt("contacts_columns_$style", default).coerceIn(2, 6)

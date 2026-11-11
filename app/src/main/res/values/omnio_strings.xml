@@ -649,4 +649,24 @@ Unread, new: %3$d · current: %4$d</string>
     <string name="omnio_code_copied_short">Code copied</string>
     <string name="omnio_settings_copy_codes">Copy verification codes</string>
     <string name="omnio_settings_copy_codes_desc">When a text has a login or verification code, copy it straight away, ready to paste</string>
+    <string name="omnio_style_bubbles">Bubbles</string>
+    <string name="omnio_style_bubbles_desc">Each name in a chat bubble beside their photo</string>
+    <string name="omnio_style_timeline">Timeline</string>
+    <string name="omnio_style_timeline_desc">A line down the side with letter markers</string>
+    <string name="omnio_style_minimal">Minimal</string>
+    <string name="omnio_style_minimal_desc">Big, clean names. No photos</string>
+    <string name="omnio_style_business">Business cards</string>
+    <string name="omnio_style_business_desc">Company, job, number and email, with call and text buttons</string>
+    <string name="omnio_style_spotlight">Spotlight</string>
+    <string name="omnio_style_spotlight_desc">A big photo banner for each person</string>
+    <string name="omnio_style_pills">Pills</string>
+    <string name="omnio_style_pills_desc">Rounded chips with a small photo and first name</string>
+    <string name="omnio_style_polaroid">Polaroid</string>
+    <string name="omnio_style_polaroid_desc">Photos in white frames with a handwritten caption</string>
+    <string name="omnio_style_orbit">Orbit</string>
+    <string name="omnio_style_orbit_desc">Photos inside the Omnio ring, which spins when tapped</string>
+    <string name="omnio_style_honeycomb">Honeycomb</string>
+    <string name="omnio_style_honeycomb_desc">Hexagon photos, staggered like a honeycomb</string>
+    <string name="omnio_style_monogram">Monogram</string>
+    <string name="omnio_style_monogram_desc">Bold coloured initials instead of photos</string>
 </resources>

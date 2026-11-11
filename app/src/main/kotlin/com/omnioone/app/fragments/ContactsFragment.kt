@@ -196,6 +196,7 @@ class ContactsFragment(context: Context, attributeSet: AttributeSet) :
             density = OmnioDisplay.getDensity(context)
             firstNameOnly = OmnioDisplay.isFirstNameOnly(context)
             surnameFirst = context.baseConfig.startNameWithSurname
+            columns = OmnioDisplay.getColumns(context, style)
         }
         val list = binding.fragmentList
         list.layoutManager = if (OmnioDisplay.isGrid(style)) {
@@ -218,7 +219,7 @@ class ContactsFragment(context: Context, attributeSet: AttributeSet) :
         val visible = if (searchQuery.isEmpty()) everyone else everyone.filter { OmnioPeople.matches(it, searchQuery) }
             .sortedByDescending { OmnioPeople.plain(it.name).startsWith(OmnioPeople.plain(searchQuery), true) }
         current.surnameFirst = context.baseConfig.startNameWithSurname
-        current.submit(visible, ::letterOf, showHeaders = OmnioDisplay.isList(OmnioDisplay.getStyle(context)), highlight = searchQuery)
+        current.submit(visible, ::letterOf, showHeaders = OmnioDisplay.hasHeaders(OmnioDisplay.getStyle(context)), highlight = searchQuery)
 
         val letters = if (current.isGrid || searchQuery.isNotEmpty()) emptyList() else visible.map(::letterOf).distinct()
         binding.letterBar.letters = letters
