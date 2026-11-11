@@ -183,6 +183,19 @@ object OmnioSocials {
 
     fun clearAutoTap(context: Context) = prefs(context).edit().remove("autotap_time").apply()
 
+    /** Where a caught profile link goes: the Facebook matching screen during a linking run, else the contact page. */
+    fun linkIntent(context: Context, pending: PendingLink, url: String): android.content.Intent {
+        val flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP or android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP
+        return if (pending.networkKey == "facebook" && OmnioFacebookFriends.isQueueActive(context)) {
+            android.content.Intent(context, com.omnioone.app.activities.OmnioFacebookMatchActivity::class.java)
+                .putExtra(com.omnioone.app.activities.OmnioFacebookMatchActivity.EXTRA_LINK, url).addFlags(flags)
+        } else {
+            android.content.Intent(context, com.omnioone.app.activities.OmnioContactActivity::class.java)
+                .putExtra(com.omnioone.app.activities.OmnioContactActivity.EXTRA_CONTACT_ID, pending.rawId)
+                .putExtra(com.omnioone.app.activities.OmnioContactActivity.EXTRA_SHARED_LINK, url).addFlags(flags)
+        }
+    }
+
     fun clearPendingLink(context: Context) = prefs(context).edit().remove("link_time").remove("link_contact").apply()
 
     /** First web link in a piece of text (a share or the clipboard). */

@@ -80,10 +80,6 @@ class OmnioShareLinkActivity : Activity() {
     }
 
     private fun handOver(pending: OmnioSocials.PendingLink, url: String) {
-        startActivity(Intent(this, OmnioContactActivity::class.java).apply {
-            putExtra(OmnioContactActivity.EXTRA_CONTACT_ID, pending.rawId)
-            putExtra(OmnioContactActivity.EXTRA_SHARED_LINK, url)
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-        })
+        startActivity(OmnioSocials.linkIntent(this, pending, url))
     }
 }

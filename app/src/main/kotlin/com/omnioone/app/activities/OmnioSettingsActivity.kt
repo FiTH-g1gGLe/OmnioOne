@@ -166,6 +166,9 @@ class OmnioSettingsActivity : SimpleActivity() {
             switch(R.string.omnio_settings_offer_helper, R.string.omnio_settings_offer_helper_desc, !prefs.getBoolean("link_helper_dont_ask", false)) {
                 prefs.edit().putBoolean("link_helper_dont_ask", !it).apply()
             },
+            action(R.string.omnio_fb_title, getString(R.string.omnio_fb_settings_desc)) {
+                startActivity(Intent(this, OmnioFacebookMatchActivity::class.java))
+            },
         )
 
         section("⚙️", R.string.omnio_settings_advanced)

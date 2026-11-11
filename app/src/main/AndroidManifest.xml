@@ -98,6 +98,12 @@
         </activity>
 
         <activity
+            android:name=".activities.OmnioFacebookMatchActivity"
+            android:exported="false"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait" />
+
+        <activity
             android:name=".activities.OmnioSpeedDialActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
