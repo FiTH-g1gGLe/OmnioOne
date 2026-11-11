@@ -342,8 +342,14 @@ class OmnioThreadActivity : SimpleActivity() {
     // ---- attachments ----
 
     private fun showAttachMenu() {
-        val options = listOf(R.string.omnio_thread_attach_media, R.string.omnio_thread_attach_camera, R.string.omnio_thread_attach_file)
-        OmnioSheet.list(this, getString(R.string.omnio_thread_attach), null, options.map { OmnioSheet.Item(getString(it)) }) { picked ->
+        val options = listOf(
+            Triple(R.string.omnio_thread_attach_media, "🖼️", OmnioColors.SOCIALS),
+            Triple(R.string.omnio_thread_attach_camera, "📷", OmnioColors.CALLS),
+            Triple(R.string.omnio_thread_attach_file, "📄", OmnioColors.MESSAGES),
+        )
+        OmnioSheet.list(this, getString(R.string.omnio_thread_attach), null, options.map { (label, emoji, colour) ->
+            OmnioSheet.Item(getString(label), icon = emojiBadge(emoji, colour))
+        }) { picked ->
             try {
                 when (picked) {
                     0 -> pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo))
@@ -359,6 +365,23 @@ class OmnioThreadActivity : SimpleActivity() {
                 toast(com.omnioone.commons.R.string.no_app_found)
             }
         }
+    }
+
+    /** An emoji on a soft coloured circle, for sheet rows. */
+    private fun emojiBadge(emoji: String, colour: Int): android.graphics.drawable.Drawable {
+        val size = dp(34)
+        val bitmap = android.graphics.Bitmap.createBitmap(size, size, android.graphics.Bitmap.Config.ARGB_8888)
+        val canvas = android.graphics.Canvas(bitmap)
+        val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply { color = (colour and 0x00FFFFFF) or 0x40000000 }
+        canvas.drawCircle(size / 2f, size / 2f, size / 2f, paint)
+        paint.apply {
+            color = android.graphics.Color.WHITE
+            textSize = size * 0.5f
+            textAlign = android.graphics.Paint.Align.CENTER
+        }
+        val y = size / 2f - (paint.descent() + paint.ascent()) / 2
+        canvas.drawText(emoji, size / 2f, y, paint)
+        return android.graphics.drawable.BitmapDrawable(resources, bitmap)
     }
 
     private fun addAttachments(uris: List<Uri>) {
@@ -627,17 +650,37 @@ class OmnioThreadActivity : SimpleActivity() {
                 layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply { marginStart = dp(4); marginEnd = dp(8) }
             }
             addView(input)
-            addView(ImageView(this@OmnioThreadActivity).apply {
-                setImageResource(com.omnioone.commons.R.drawable.ic_send_vector)
-                imageTintList = ColorStateList.valueOf(OmnioColors.ON_ACCENT)
-                setPadding(dp(11), dp(11), dp(11), dp(11))
-                background = GradientDrawable().apply {
-                    shape = GradientDrawable.OVAL
-                    setColor(OmnioColors.MESSAGES)
+            // send button with the Omnio ring that spins once on each press, like the keypad
+            addView(FrameLayout(this@OmnioThreadActivity).apply {
+                layoutParams = LinearLayout.LayoutParams(dp(56), dp(56))
+                val ring = com.omnioone.app.helpers.OrbitRing(this@OmnioThreadActivity, dp(3).toFloat()).apply {
+                    layoutParams = FrameLayout.LayoutParams(dp(56), dp(56), Gravity.CENTER)
+                    alpha = 0f
                 }
-                layoutParams = LinearLayout.LayoutParams(dp(46), dp(46))
-                contentDescription = getString(R.string.omnio_thread_send)
-                setOnClickListener { sendTyped() }
+                addView(ImageView(this@OmnioThreadActivity).apply {
+                    setImageResource(com.omnioone.commons.R.drawable.ic_send_vector)
+                    imageTintList = ColorStateList.valueOf(OmnioColors.ON_ACCENT)
+                    setPadding(dp(11), dp(11), dp(11), dp(11))
+                    background = GradientDrawable().apply {
+                        shape = GradientDrawable.OVAL
+                        setColor(OmnioColors.MESSAGES)
+                    }
+                    layoutParams = FrameLayout.LayoutParams(dp(46), dp(46), Gravity.CENTER)
+                    contentDescription = getString(R.string.omnio_thread_send)
+                    setOnClickListener { button ->
+                        if (input.text.isNotBlank() || attachments.isNotEmpty()) {
+                            ring.animate().cancel()
+                            ring.rotation = 0f
+                            ring.alpha = 1f
+                            ring.animate().rotation(360f).setDuration(480).setInterpolator(android.view.animation.DecelerateInterpolator())
+                                .withEndAction { ring.animate().alpha(0f).setDuration(160).start() }.start()
+                            button.animate().scaleX(0.9f).scaleY(0.9f).setDuration(70)
+                                .withEndAction { button.animate().scaleX(1f).scaleY(1f).setDuration(110).start() }.start()
+                        }
+                        sendTyped()
+                    }
+                })
+                addView(ring)
             })
         })
         return root
