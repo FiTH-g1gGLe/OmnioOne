@@ -59,6 +59,10 @@ class MainActivity : SimpleActivity() {
 
     private var launchedDialer = false
     private var storedShowTabs = 0
+    private var storedNewMessages = false
+
+    /** Messages rewrite, stage 2: the Messages tab lives inside the main screen when this is on. */
+    private val newMessages get() = OmnioMessagesSwitch.isOn(this)
     private var storedFontSize = 0
     private var storedStartNameWithSurname = false
 
@@ -122,11 +126,14 @@ class MainActivity : SimpleActivity() {
             System.exit(0)
             return
         }
+        if (storedNewMessages != newMessages) {
+            setupTabs()
+            refreshItems()
+        }
 
         updateMenuColors()
         val properPrimaryColor = getProperPrimaryColor()
-        val dialpadIcon = resources.getColoredDrawableWithColor(R.drawable.ic_dialpad_vector, properPrimaryColor.getContrastColor())
-        binding.mainDialpadButton.setImageDrawable(dialpadIcon)
+        updateFab()
 
         updateTextColors(binding.mainHolder)
         setupTabColors()
@@ -205,9 +212,10 @@ class MainActivity : SimpleActivity() {
     private fun refreshMenuItems() {
         val currentFragment = getCurrentFragment()
         binding.mainMenu.requireToolbar().menu.apply {
+            val onMessages = currentFragment != null && currentFragment == getMessagesFragment()
             findItem(R.id.clear_call_history).isVisible = currentFragment == getRecentsFragment()
-            findItem(R.id.sort).isVisible = currentFragment != getRecentsFragment()
-            findItem(R.id.filter).isVisible = currentFragment != getRecentsFragment()
+            findItem(R.id.sort).isVisible = currentFragment != getRecentsFragment() && !onMessages
+            findItem(R.id.filter).isVisible = currentFragment != getRecentsFragment() && !onMessages
             findItem(R.id.create_new_contact).isVisible = currentFragment == getContactsFragment()
             findItem(R.id.change_view_type).isVisible = currentFragment == getFavoritesFragment() || currentFragment == getContactsFragment()
             findItem(R.id.column_count).isVisible = currentFragment == getFavoritesFragment() && config.viewType == VIEW_TYPE_GRID
@@ -366,7 +374,7 @@ class MainActivity : SimpleActivity() {
             TAB_CONTACTS -> OmnioColors.CONTACTS
             TAB_FAVORITES -> OmnioColors.FAVOURITES
             TAB_CALL_HISTORY -> OmnioColors.CALLS
-            else -> return
+            else -> if (newMessages && position == visibleTabs.size) OmnioColors.MESSAGES else return
         }
         view?.findViewById<ImageView>(R.id.tab_item_icon)?.apply {
             applyColorFilter(color)
@@ -394,11 +402,11 @@ class MainActivity : SimpleActivity() {
 
     // Omnio One: the Messages tab sits after the phone tabs and opens the messages screen
     private val pageTabCount: Int
-        get() = tabsList.count { config.showTabs and it != 0 }
+        get() = tabsList.count { config.showTabs and it != 0 } + if (newMessages) 1 else 0
 
     private fun addMessagesTab() {
         binding.mainTabsHolder.newTab().setCustomView(R.layout.bottom_tablayout_item).apply {
-            tag = OMNIO_MESSAGES_TAB
+            tag = if (newMessages) null else OMNIO_MESSAGES_TAB
             customView?.findViewById<ImageView>(R.id.tab_item_icon)?.apply {
                 setImageResource(R.drawable.ic_omnio_chat)
                 applyColorFilter(OMNIO_MESSAGES_GREEN)
@@ -451,6 +459,8 @@ class MainActivity : SimpleActivity() {
             icons.add(R.drawable.ic_clock_filled_vector)
         }
 
+        if (newMessages) icons.add(R.drawable.ic_omnio_chat)
+
         return icons
     }
 
@@ -458,7 +468,7 @@ class MainActivity : SimpleActivity() {
     private fun getDeselectedTabDrawableIds(): ArrayList<Int> = ArrayList(getSelectedTabDrawableIds())
 
     private fun initFragments() {
-        binding.viewPager.offscreenPageLimit = 2
+        binding.viewPager.offscreenPageLimit = 3
         binding.viewPager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
             override fun onPageScrollStateChanged(state: Int) {}
 
@@ -470,6 +480,7 @@ class MainActivity : SimpleActivity() {
                     it?.finishActMode()
                 }
                 refreshMenuItems()
+                updateFab()
             }
         })
 
@@ -544,7 +555,8 @@ class MainActivity : SimpleActivity() {
                 updateBottomTabItemColors(it.customView, true, getSelectedTabDrawableIds()[it.position])
                 tintOmnioTab(it.customView, it.position)
 
-                val lastPosition = pageTabCount - 1
+                updateFab()
+                val lastPosition = tabsList.count { tab -> config.showTabs and tab != 0 } - 1
                 if (it.position == lastPosition && config.showTabs and TAB_CALL_HISTORY > 0) {
                     clearMissedCalls()
                 }
@@ -553,6 +565,7 @@ class MainActivity : SimpleActivity() {
 
         binding.mainTabsHolder.beGoneIf(binding.mainTabsHolder.tabCount == 1)
         storedShowTabs = config.showTabs
+        storedNewMessages = newMessages
         storedStartNameWithSurname = config.startNameWithSurname
     }
 
@@ -604,6 +617,7 @@ class MainActivity : SimpleActivity() {
         getContactsFragment()?.refreshItems()
         getFavoritesFragment()?.refreshItems()
         getRecentsFragment()?.refreshItems()
+        getMessagesFragment()?.refreshItems()
     }
 
     private fun getAllFragments(): ArrayList<MyViewPagerFragment<*>?> {
@@ -622,6 +636,8 @@ class MainActivity : SimpleActivity() {
             fragments.add(getRecentsFragment())
         }
 
+        if (newMessages) fragments.add(getMessagesFragment())
+
         return fragments
     }
 
@@ -632,6 +648,22 @@ class MainActivity : SimpleActivity() {
     private fun getFavoritesFragment(): FavoritesFragment? = findViewById(R.id.favorites_fragment)
 
     private fun getRecentsFragment(): RecentsFragment? = findViewById(R.id.recents_fragment)
+
+    private fun getMessagesFragment(): com.omnioone.app.fragments.MessagesFragment? = findViewById(R.id.messages_fragment)
+
+    /** The round button: keypad on the phone tabs, "new message" on Messages. */
+    private fun updateFab() {
+        val onMessages = newMessages && getCurrentFragment() == getMessagesFragment() && getMessagesFragment() != null
+        val icon = if (onMessages) com.omnioone.commons.R.drawable.ic_plus_vector else R.drawable.ic_dialpad_vector
+        binding.mainDialpadButton.setImageDrawable(resources.getColoredDrawableWithColor(icon, getProperPrimaryColor().getContrastColor()))
+        binding.mainDialpadButton.setOnClickListener {
+            if (onMessages) {
+                startActivity(Intent(this, com.omnioone.messages.activities.NewConversationActivity::class.java))
+            } else {
+                launchDialpad()
+            }
+        }
+    }
 
     private fun getDefaultTab(): Int {
         val showTabsMask = config.showTabs

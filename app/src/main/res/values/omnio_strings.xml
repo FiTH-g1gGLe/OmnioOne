@@ -499,4 +499,24 @@ Unread, new: %3$d · current: %4$d</string>
     <string name="omnio_check_reader_match">✓ Both readers match</string>
     <string name="omnio_check_reader_differ">The readers differ</string>
     <string name="omnio_check_reader_copy">Copy</string>
+    <string name="omnio_filter_unread">Unread</string>
+    <string name="omnio_filter_groups">Groups</string>
+    <string name="omnio_messages_pinned">Pinned</string>
+    <string name="omnio_messages_all_chats">Chats</string>
+    <string name="omnio_messages_archived">Archived chats (%d)</string>
+    <string name="omnio_messages_no_access">Omnio One needs permission to read your messages</string>
+    <string name="omnio_messages_no_matches">No chats match your search</string>
+    <string name="omnio_messages_all_read">You’re all caught up</string>
+    <string name="omnio_messages_none">No messages yet</string>
+    <string name="omnio_messages_archived_done">Chat archived</string>
+    <string name="omnio_messages_pin">Pin</string>
+    <string name="omnio_messages_unpin">Unpin</string>
+    <string name="omnio_messages_mark_read">Mark as read</string>
+    <string name="omnio_messages_mark_unread">Mark as unread</string>
+    <string name="omnio_messages_archive">Archive</string>
+    <string name="omnio_messages_delete">Delete chat</string>
+    <string name="omnio_messages_delete_question">Delete your chat with %s?</string>
+    <string name="omnio_messages_delete_desc">All its messages are deleted from your phone. This can’t be undone.</string>
+    <string name="omnio_new_messages">New Messages tab (preview)</string>
+    <string name="omnio_new_messages_desc">Messages rewrite: shows your chats inside the main screen. Switch off to go back to the current Messages screen.</string>
 </resources>
