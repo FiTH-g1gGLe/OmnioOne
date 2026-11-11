@@ -644,4 +644,9 @@ Unread, new: %3$d · current: %4$d</string>
     <string name="omnio_email_not_now">Not now</string>
     <string name="omnio_email_added">Email added to %s</string>
     <string name="omnio_email_chip">✉  %s  ·  Add to contact</string>
+    <string name="omnio_code_copy">Copy %s</string>
+    <string name="omnio_code_copied">Code %s copied</string>
+    <string name="omnio_code_copied_short">Code copied</string>
+    <string name="omnio_settings_copy_codes">Copy verification codes</string>
+    <string name="omnio_settings_copy_codes_desc">When a text has a login or verification code, copy it straight away, ready to paste</string>
 </resources>

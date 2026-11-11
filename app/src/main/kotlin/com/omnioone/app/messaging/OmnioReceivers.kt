@@ -26,7 +26,10 @@ private object OmnioIncoming {
         }
         keepOldScreensInStep(context, threadId)
         val message = find(OmnioMessageStore.messages(context, threadId, limit = 10)) ?: return
-        OmnioNotifications.showIncoming(context, message)
+        // a verification code: copy it straight away, ready to paste
+        val code = if (message.incoming) OmnioCodes.find(message.body)?.code else null
+        if (code != null && OmnioCodes.isOn(context)) Handler(Looper.getMainLooper()).post { OmnioCodes.copy(context, code) }
+        OmnioNotifications.showIncoming(context, message, code)
     }
 
     /** Tells open Messages screens to refresh. */
@@ -132,6 +135,12 @@ class OmnioNotificationActions : BroadcastReceiver() {
             try {
                 when (intent.action) {
                     OmnioNotifications.ACTION_REPLY -> if (!reply.isNullOrEmpty()) reply(app, threadId, reply)
+                    OmnioNotifications.ACTION_COPY -> intent.getStringExtra(OmnioNotifications.EXTRA_CODE)?.let { code ->
+                        Handler(Looper.getMainLooper()).post {
+                            OmnioCodes.copy(app, code)
+                            Toast.makeText(app, app.getString(R.string.omnio_code_copied, code), Toast.LENGTH_SHORT).show()
+                        }
+                    }
                     OmnioNotifications.ACTION_READ -> {
                         OmnioNotifications.cancel(app, threadId)
                         markRead(app, threadId)

@@ -41,6 +41,8 @@ object OmnioNotifications {
     const val ACTION_REPLY = "com.omnioone.app.action.MESSAGE_REPLY"
     const val ACTION_READ = "com.omnioone.app.action.MESSAGE_READ"
     const val ACTION_DELETE = "com.omnioone.app.action.MESSAGE_DELETE"
+    const val ACTION_COPY = "com.omnioone.app.action.MESSAGE_COPY_CODE"
+    const val EXTRA_CODE = "omnio_code"
     const val EXTRA_MESSAGE_ID = "omnio_message_id"
     const val EXTRA_IS_MMS = "omnio_is_mms"
 
@@ -78,7 +80,7 @@ object OmnioNotifications {
     // ---- incoming ----
 
     /** Shows (or adds to) the notification for a chat. Call on a background thread. */
-    fun showIncoming(context: Context, message: OmnioMessageStore.Message) {
+    fun showIncoming(context: Context, message: OmnioMessageStore.Message, code: String? = null) {
         val threadId = message.threadId
         if (threadId == OmnioSendReceiver.openThreadId) return // you're looking at it
         val chat = OmnioMessageStore.conversations(context, onlyThread = threadId).firstOrNull()
@@ -105,6 +107,12 @@ object OmnioNotifications {
             .setLargeIcon(if (chat?.isGroup == true) avatar(context, chat.photo, chat.title) else senderPhoto)
             .setWhen(message.date)
         lockScreenVersion(context, builder, chat?.title ?: senderName, threadId)
+        if (code != null) {
+            val copy = Intent(context, OmnioNotificationActions::class.java).setAction(ACTION_COPY).putExtra(THREAD_ID, threadId).putExtra(EXTRA_CODE, code)
+            val pending = PendingIntent.getBroadcast(context, idFor(threadId) + 1, copy, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+            builder.addAction(NotificationCompat.Action.Builder(com.omnioone.commons.R.drawable.ic_copy_vector, context.getString(R.string.omnio_code_copy, code), pending).setShowsUserInterface(false).build())
+            if (OmnioCodes.isOn(context)) builder.setSubText(context.getString(R.string.omnio_code_copied_short))
+        }
         if (allowReply) builder.addAction(replyAction(context, threadId))
         builder.addAction(action(context, ACTION_READ, threadId, com.omnioone.commons.R.drawable.ic_check_vector, R.string.omnio_notify_mark_read))
         if (!allowReply) {

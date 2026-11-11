@@ -563,6 +563,28 @@ class OmnioThreadActivity : SimpleActivity() {
         OmnioSheet.list(this, card.name, (card.numbers + card.emails).joinToString("  ·  "), actions.map { OmnioSheet.Item(it.first) }) { actions[it].second() }
     }
 
+    /** Turns a verification code into a link: tap to copy. */
+    private fun markCode(view: TextView, found: OmnioCodes.Found, mine: Boolean) {
+        val text = android.text.SpannableString(view.text)
+        if (found.end > text.length) return
+        // a phone-number link over the code would win the tap, so take it off
+        text.getSpans(found.start, found.end, android.text.style.URLSpan::class.java).forEach { text.removeSpan(it) }
+        text.setSpan(object : android.text.style.ClickableSpan() {
+            override fun onClick(widget: View) {
+                OmnioCodes.copy(this@OmnioThreadActivity, found.code)
+                toast(getString(R.string.omnio_code_copied, found.code))
+            }
+
+            override fun updateDrawState(ds: android.text.TextPaint) {
+                ds.isUnderlineText = true
+                ds.isFakeBoldText = true
+                ds.color = if (mine) OmnioColors.ON_ACCENT else OmnioColors.MESSAGES_SOFT
+            }
+        }, found.start, found.end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        view.text = text
+        view.movementMethod = android.text.method.LinkMovementMethod.getInstance()
+    }
+
     private fun openPart(part: OmnioMessageStore.Part) {
         try {
             startActivity(Intent(Intent.ACTION_VIEW).setDataAndType(part.uri, part.mime).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION))
@@ -906,6 +928,7 @@ class OmnioThreadActivity : SimpleActivity() {
                         setColor(if (mine) (if (message.failed) OmnioColors.MISSED else OmnioColors.MESSAGES) else OmnioColors.CARD)
                     }
                     Linkify.addLinks(this, Linkify.WEB_URLS or Linkify.PHONE_NUMBERS)
+                    if (message.incoming) OmnioCodes.find(message.body)?.let { found -> markCode(this, found, mine) }
                     setOnLongClickListener { showMessageMenu(message, row.reactions); true }
                 }, wrap())
                 OmnioEmail.findEmail(message.body)?.let { email ->

@@ -159,6 +159,9 @@ class OmnioSettingsActivity : SimpleActivity() {
                     buildRows()
                 }
             },
+            switch(R.string.omnio_settings_copy_codes, R.string.omnio_settings_copy_codes_desc, com.omnioone.app.messaging.OmnioCodes.isOn(this)) {
+                com.omnioone.app.messaging.OmnioCodes.setOn(this, it)
+            },
             action(R.string.omnio_settings_lock_screen, lockScreenText(messages.lockScreenVisibilitySetting)) { pickLockScreen() },
             action(R.string.omnio_settings_message_sound, getString(R.string.omnio_settings_message_sound_desc)) { openMessageSound() },
         )
