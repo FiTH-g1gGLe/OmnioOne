@@ -228,7 +228,7 @@ class OmnioLinkHelperService : AccessibilityService() {
     private fun capture(bounds: android.graphics.Rect, contactId: Int, session: String, then: () -> Unit) {
         capturing = true
         val badge = overlay
-        val node = photoNode
+        val node = bounds
         val finish = {
             capturing = false
             then()
@@ -238,7 +238,7 @@ class OmnioLinkHelperService : AccessibilityService() {
             snapshot(cropFor(bounds, badge), contactId) { ok ->
                 if (ok) photoTakenFor = session
                 val fullSize = getSharedPreferences("omnio", Context.MODE_PRIVATE).getBoolean("photo_full_size", false)
-                if (ok && fullSize && node != null) fullSizePhoto(node, contactId, finish) else finish()
+                if (ok && fullSize) fullSizePhoto(node, contactId, finish) else finish()
             }
         }, 700)
     }
@@ -253,29 +253,32 @@ class OmnioLinkHelperService : AccessibilityService() {
         return target?.takeIf { it.isClickable }
     }
 
+    /** Taps the middle of [bounds] like a finger would (works even when the app doesn't mark the picture as tappable). */
+    private fun tap(bounds: android.graphics.Rect, done: (Boolean) -> Unit) {
+        val path = android.graphics.Path().apply { moveTo(bounds.exactCenterX(), bounds.exactCenterY()) }
+        val gesture = android.accessibilityservice.GestureDescription.Builder()
+            .addStroke(android.accessibilityservice.GestureDescription.StrokeDescription(path, 0, 60))
+            .build()
+        val sent = try {
+            dispatchGesture(gesture, object : GestureResultCallback() {
+                override fun onCompleted(gestureDescription: android.accessibilityservice.GestureDescription?) = done(true)
+                override fun onCancelled(gestureDescription: android.accessibilityservice.GestureDescription?) = done(false)
+            }, handler)
+        } catch (e: Exception) {
+            false
+        }
+        if (!sent) done(false)
+    }
+
     /**
      * Taps the profile picture to open it full size (choosing "View profile picture" if a menu
-     * appears), keeps a sharper snapshot, then goes back. If anything unexpected opens, it just
-     * goes back and the first snapshot stays.
+     * appears), keeps a sharper snapshot, then goes back. If anything unexpected opens, it goes
+     * back and the first snapshot stays. Each step is noted in Settings → Last photo capture.
      */
-    private fun fullSizePhoto(photo: AccessibilityNodeInfo, contactId: Int, done: () -> Unit) {
-        val startWindow = try {
-            rootInActiveWindow?.windowId
-        } catch (e: Exception) {
-            null
-        }
-        val target = clickable(photo)
-        if (target == null || !target.performAction(AccessibilityNodeInfo.ACTION_CLICK)) {
-            done()
-            return
-        }
+    private fun fullSizePhoto(photo: android.graphics.Rect, contactId: Int, done: () -> Unit) {
+        var opened = false
         fun goBack() {
-            val now = try {
-                rootInActiveWindow?.windowId
-            } catch (e: Exception) {
-                null
-            }
-            if (now != startWindow) performGlobalAction(GLOBAL_ACTION_BACK)
+            if (opened) performGlobalAction(GLOBAL_ACTION_BACK)
             handler.postDelayed(done, 600)
         }
         fun shoot() {
@@ -284,46 +287,86 @@ class OmnioLinkHelperService : AccessibilityService() {
             } catch (e: Exception) {
                 null
             }
-            val big = root?.let { biggestPicture(it) }
-            if (big == null) {
-                OmnioPhotoCapture.note(this, "Opened the picture but couldn't find it full size; kept the profile snapshot")
+            val area = root?.let { biggestPicture(it) }
+            if (area == null) {
+                OmnioPhotoCapture.note(this, "Full size: the picture didn't open (kept the profile snapshot)")
                 goBack()
                 return
             }
-            val inset = big.width() / 100
-            snapshot(android.graphics.Rect(big.left + inset, big.top + inset, big.right - inset, big.bottom - inset), contactId) { goBack() }
+            opened = true
+            snapshot(area, contactId) { ok ->
+                if (ok) OmnioPhotoCapture.note(this, "Full-size photo caught (${area.width()}px)")
+                goBack()
+            }
         }
-        handler.postDelayed({
-            val root = try {
-                rootInActiveWindow
-            } catch (e: Exception) {
-                null
+        tap(photo) { tapped ->
+            if (!tapped) {
+                OmnioPhotoCapture.note(this, "Full size: Android didn't allow the tap. Switch Link helper off and on again (kept the profile snapshot)")
+                done()
+                return@tap
             }
-            // some profiles show a menu first: pick "View profile picture"
-            val menuItem = root?.let { findNode(it, 0) { node -> (node.text ?: node.contentDescription)?.toString()?.let { label -> label.length <= 40 && viewPhotoLabel.containsMatchIn(label) } == true } }
-            val menuTarget = clickable(menuItem)
-            if (menuTarget != null && menuTarget.performAction(AccessibilityNodeInfo.ACTION_CLICK)) {
-                handler.postDelayed({ shoot() }, 1300)
-            } else {
-                shoot()
-            }
-        }, 1300)
+            handler.postDelayed({
+                val root = try {
+                    rootInActiveWindow
+                } catch (e: Exception) {
+                    null
+                }
+                // some profiles show a menu first: pick "View profile picture"
+                val menuItem = root?.let {
+                    findNode(it, 0) { node -> (node.text ?: node.contentDescription)?.toString()?.let { label -> label.length <= 40 && viewPhotoLabel.containsMatchIn(label) } == true }
+                }
+                if (menuItem != null) {
+                    opened = true
+                    val bounds = android.graphics.Rect().also { menuItem.getBoundsInScreen(it) }
+                    val target = clickable(menuItem)
+                    val clicked = target?.performAction(AccessibilityNodeInfo.ACTION_CLICK) == true
+                    if (clicked) {
+                        opened = false // the menu closed itself; the viewer will set this again
+                        handler.postDelayed({ shoot() }, 1400)
+                    } else {
+                        tap(bounds) { ok ->
+                            if (ok) opened = false
+                            handler.postDelayed({ shoot() }, 1400)
+                        }
+                    }
+                } else {
+                    shoot()
+                }
+            }, 1400)
+        }
     }
 
-    /** The picture in a full-screen photo viewer: a big, roughly square area across most of the screen. */
+    /**
+     * The picture in a full-screen photo viewer: a big square across the screen, or, when the viewer
+     * fills the whole screen, the square in its middle where a profile picture is shown.
+     */
     private fun biggestPicture(root: AccessibilityNodeInfo): android.graphics.Rect? {
         val screenW = resources.displayMetrics.widthPixels
-        var best: android.graphics.Rect? = null
+        val screenH = resources.displayMetrics.heightPixels
+        var square: android.graphics.Rect? = null
+        var fullScreen = false
+        var pictureLike = false
         fun walk(node: AccessibilityNodeInfo?, depth: Int) {
             if (node == null || depth > 45) return
             val b = android.graphics.Rect()
             node.getBoundsInScreen(b)
             val ratio = if (b.height() > 0) b.width().toFloat() / b.height() else 0f
-            if (b.width() >= screenW * 0.7f && ratio in 0.85f..1.18f && (best == null || b.width() > best!!.width())) best = b
+            if (b.width() >= screenW * 0.7f && ratio in 0.85f..1.18f && (square == null || b.width() > square!!.width())) square = b
+            val label = (node.contentDescription ?: node.text)?.toString().orEmpty()
+            val cls = node.className?.toString().orEmpty()
+            if (b.width() >= screenW * 0.95f && b.height() >= screenH * 0.6f && (cls.contains("Image") || photoLabel.containsMatchIn(label) || label.contains("photo", true))) {
+                fullScreen = true
+            }
+            if (photoLabel.containsMatchIn(label) || label.contains("photo", true)) pictureLike = true
             for (i in 0 until node.childCount) walk(node.getChild(i), depth + 1)
         }
         walk(root, 0)
-        return best
+        square?.let { return android.graphics.Rect(it.left + it.width() / 100, it.top + it.width() / 100, it.right - it.width() / 100, it.bottom - it.width() / 100) }
+        if (fullScreen || pictureLike) {
+            val top = (screenH - screenW) / 2
+            return android.graphics.Rect(0, top, screenW, top + screenW)
+        }
+        return null
     }
 
     /**
