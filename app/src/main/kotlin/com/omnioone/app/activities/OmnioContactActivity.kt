@@ -18,8 +18,8 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import com.omnioone.app.core.applyColorFilter
 import com.omnioone.app.core.beGone
-import com.omnioone.commons.extensions.getProperBackgroundColor
-import com.omnioone.commons.extensions.getProperTextColor
+import com.omnioone.app.core.getProperBackgroundColor
+import com.omnioone.app.core.getProperTextColor
 import com.omnioone.app.core.launchSendSMSIntent
 import com.omnioone.app.core.sendEmailIntent
 import com.omnioone.app.core.showErrorToast
@@ -37,8 +37,8 @@ import com.omnioone.app.extensions.getAvailableSIMCardLabels
 import com.omnioone.app.extensions.openContactInSystemApp
 import com.omnioone.app.extensions.startCallWithConfirmationCheck
 import com.omnioone.app.core.beVisibleIf
-import com.omnioone.commons.extensions.setupDialogStuff
-import com.omnioone.commons.extensions.getAlertDialogBuilder
+import com.omnioone.app.core.setupDialogStuff
+import com.omnioone.app.core.getAlertDialogBuilder
 import com.omnioone.app.helpers.OmnioSocials
 import com.omnioone.app.helpers.OmnioSheet
 import com.omnioone.app.core.beVisible
@@ -73,7 +73,7 @@ class OmnioContactActivity : SimpleActivity() {
             val loaded = OmnioContactStore(this).getContactWithId(id, false)
             runOnUiThread {
                 if (loaded == null) {
-                    toast(com.omnioone.commons.R.string.unknown_error_occurred)
+                    toast(com.omnioone.app.R.string.unknown_error_occurred)
                     finish()
                 } else {
                     contact = loaded
@@ -212,7 +212,7 @@ class OmnioContactActivity : SimpleActivity() {
 
     internal fun showStar(favourite: Boolean) {
         binding.contactFavourite.setImageResource(
-            if (favourite) com.omnioone.commons.R.drawable.ic_star_vector else com.omnioone.commons.R.drawable.ic_star_outline_vector
+            if (favourite) com.omnioone.app.R.drawable.ic_star_vector else com.omnioone.app.R.drawable.ic_star_outline_vector
         )
     }
 

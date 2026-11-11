@@ -150,7 +150,12 @@ detekt {
 }
 
 dependencies {
-    implementation(project(":commons"))
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
+    implementation(libs.androidx.constraintlayout)
+    implementation(libs.gson)
+    implementation(libs.glide)
     testImplementation("junit:junit:4.13.2")
     // packages picture messages (MMS) for sending and downloading
     implementation(libs.mmslib)

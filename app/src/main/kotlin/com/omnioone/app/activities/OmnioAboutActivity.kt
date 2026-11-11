@@ -14,14 +14,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.widget.NestedScrollView
-import com.omnioone.commons.activities.LicenseActivity
 import com.omnioone.app.core.toast
-import com.omnioone.commons.helpers.APP_LICENSES
-import com.omnioone.commons.helpers.LICENSE_AUTOFITTEXTVIEW
-import com.omnioone.commons.helpers.LICENSE_EVENT_BUS
-import com.omnioone.commons.helpers.LICENSE_GLIDE
-import com.omnioone.commons.helpers.LICENSE_INDICATOR_FAST_SCROLL
-import com.omnioone.commons.helpers.LICENSE_SMS_MMS
 import com.omnioone.app.core.OMNIO_GITHUB_URL
 import com.omnioone.app.core.OmnioColors
 import com.omnioone.app.BuildConfig
@@ -45,7 +38,7 @@ class OmnioAboutActivity : SimpleActivity() {
             gravity = Gravity.CENTER_VERTICAL
             setPadding(dp(8), dp(36), dp(16), dp(8))
             addView(ImageView(this@OmnioAboutActivity).apply {
-                setImageResource(com.omnioone.commons.R.drawable.ic_arrow_left_vector)
+                setImageResource(com.omnioone.app.R.drawable.ic_arrow_left_vector)
                 imageTintList = ColorStateList.valueOf(OmnioColors.TEXT)
                 setPadding(dp(12), dp(12), dp(12), dp(12))
                 layoutParams = LinearLayout.LayoutParams(dp(48), dp(48))
@@ -142,8 +135,24 @@ class OmnioAboutActivity : SimpleActivity() {
             R.string.omnio_about_releases to "$OMNIO_GITHUB_URL/releases",
         )
         actionCard(R.string.omnio_about_licences) {
-            val licences = LICENSE_GLIDE or LICENSE_INDICATOR_FAST_SCROLL or LICENSE_AUTOFITTEXTVIEW or LICENSE_EVENT_BUS or LICENSE_SMS_MMS
-            startActivity(Intent(this, LicenseActivity::class.java).putExtra(APP_LICENSES, licences))
+            // the open-source libraries Omnio One uses, each opening its own page
+            val libraries = listOf(
+                "Glide (images)" to "https://github.com/bumptech/glide",
+                "EventBus" to "https://github.com/greenrobot/EventBus",
+                "android-smsmms (picture messages)" to "https://github.com/klinker41/android-smsmms",
+                "libphonenumber" to "https://github.com/google/libphonenumber",
+                "Indicator Fast Scroll" to "https://github.com/reddit/IndicatorFastScroll",
+                "AutoFitTextView" to "https://github.com/grantland/android-autofittextview",
+                "Gson" to "https://github.com/google/gson",
+                "AndroidX & Material Components" to "https://developer.android.com/jetpack/androidx",
+            )
+            com.omnioone.app.helpers.OmnioSheet.list(this, getString(R.string.omnio_about_licences), null, libraries.map { com.omnioone.app.helpers.OmnioSheet.Item(it.first) }) { picked ->
+                try {
+                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(libraries[picked].second)))
+                } catch (e: Exception) {
+                    toast(R.string.omnio_no_app_found)
+                }
+            }
         }
 
         form.addView(TextView(this).apply {
@@ -211,7 +220,7 @@ class OmnioAboutActivity : SimpleActivity() {
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         })
         addView(ImageView(this@OmnioAboutActivity).apply {
-            setImageResource(com.omnioone.commons.R.drawable.ic_chevron_right_vector)
+            setImageResource(com.omnioone.app.R.drawable.ic_chevron_right_vector)
             imageTintList = ColorStateList.valueOf(0x80FFFFFF.toInt())
             layoutParams = LinearLayout.LayoutParams(dp(28), dp(28))
         })
@@ -235,7 +244,7 @@ class OmnioAboutActivity : SimpleActivity() {
         try {
             startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
         } catch (e: Exception) {
-            toast(com.omnioone.commons.R.string.no_app_found)
+            toast(com.omnioone.app.R.string.no_app_found)
         }
     }
 }

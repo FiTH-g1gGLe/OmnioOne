@@ -61,29 +61,29 @@ object OmnioContactActions {
         }
         val favourite = if (OmnioFavourites.isLoaded) OmnioFavourites.isFavourite(person.contactId) else person.starred
 
-        add(activity.getString(R.string.omnio_call), com.omnioone.commons.R.drawable.ic_phone_vector, OmnioColors.CALLS) { call(activity, person) }
+        add(activity.getString(R.string.omnio_call), com.omnioone.app.R.drawable.ic_phone_vector, OmnioColors.CALLS) { call(activity, person) }
         if (activity.areMultipleSIMsAvailable()) {
-            add(activity.getString(R.string.omnio_call_sim_1), com.omnioone.commons.R.drawable.ic_phone_vector, OmnioColors.CALLS) {
+            add(activity.getString(R.string.omnio_call_sim_1), com.omnioone.app.R.drawable.ic_phone_vector, OmnioColors.CALLS) {
                 pickNumber(activity, person, R.string.omnio_call) { activity.callContactWithSimWithConfirmationCheck(it, person.name, useMainSIM = true) }
             }
-            add(activity.getString(R.string.omnio_call_sim_2), com.omnioone.commons.R.drawable.ic_phone_vector, OmnioColors.CALLS) {
+            add(activity.getString(R.string.omnio_call_sim_2), com.omnioone.app.R.drawable.ic_phone_vector, OmnioColors.CALLS) {
                 pickNumber(activity, person, R.string.omnio_call) { activity.callContactWithSimWithConfirmationCheck(it, person.name, useMainSIM = false) }
             }
         }
         add(activity.getString(R.string.omnio_text), R.drawable.ic_omnio_chat, OmnioColors.MESSAGES) { text(activity, person) }
-        add(activity.getString(R.string.omnio_open_contact), com.omnioone.commons.R.drawable.ic_person_vector, OmnioColors.CONTACTS) { open(activity, person) }
-        add(activity.getString(R.string.omnio_edit_contact), com.omnioone.commons.R.drawable.ic_edit_vector, OmnioColors.CONTACTS) {
+        add(activity.getString(R.string.omnio_open_contact), com.omnioone.app.R.drawable.ic_person_vector, OmnioColors.CONTACTS) { open(activity, person) }
+        add(activity.getString(R.string.omnio_edit_contact), com.omnioone.app.R.drawable.ic_edit_vector, OmnioColors.CONTACTS) {
             activity.startActivity(Intent(activity, OmnioEditContactActivity::class.java).putExtra(OmnioEditContactActivity.EXTRA_CONTACT_ID, person.rawId))
         }
         add(
             activity.getString(if (favourite) R.string.omnio_remove_favourite else R.string.omnio_add_favourite),
-            if (favourite) com.omnioone.commons.R.drawable.ic_star_vector else com.omnioone.commons.R.drawable.ic_star_outline_vector,
+            if (favourite) com.omnioone.app.R.drawable.ic_star_vector else com.omnioone.app.R.drawable.ic_star_outline_vector,
             OmnioColors.FAVOURITES
         ) { OmnioFavourites.set(activity, person.contactId, !favourite) }
-        add(activity.getString(R.string.omnio_share_contact), com.omnioone.commons.R.drawable.ic_share_vector, OmnioColors.TEXT_MUTED) { share(activity, person) }
-        add(activity.getString(R.string.omnio_add_to_home), com.omnioone.commons.R.drawable.ic_add_person_vector, OmnioColors.TEXT_MUTED) { addShortcut(activity, person) }
-        add(activity.getString(R.string.omnio_block_number), com.omnioone.commons.R.drawable.ic_block_vector, OmnioColors.MISSED, OmnioColors.MISSED) { confirmBlock(activity, person) }
-        add(activity.getString(R.string.omnio_delete_contact), com.omnioone.commons.R.drawable.ic_delete_vector, OmnioColors.MISSED, OmnioColors.MISSED) { confirmDelete(activity, person) }
+        add(activity.getString(R.string.omnio_share_contact), com.omnioone.app.R.drawable.ic_share_vector, OmnioColors.TEXT_MUTED) { share(activity, person) }
+        add(activity.getString(R.string.omnio_add_to_home), com.omnioone.app.R.drawable.ic_add_person_vector, OmnioColors.TEXT_MUTED) { addShortcut(activity, person) }
+        add(activity.getString(R.string.omnio_block_number), com.omnioone.app.R.drawable.ic_block_vector, OmnioColors.MISSED, OmnioColors.MISSED) { confirmBlock(activity, person) }
+        add(activity.getString(R.string.omnio_delete_contact), com.omnioone.app.R.drawable.ic_delete_vector, OmnioColors.MISSED, OmnioColors.MISSED) { confirmDelete(activity, person) }
 
         val subtitle = listOfNotNull(person.mainNumber.ifEmpty { null }, person.company.ifEmpty { null }).joinToString("  ·  ").ifEmpty { null }
         OmnioSheet.list(activity, person.name, subtitle, actions.map { it.first }) { picked -> actions[picked].second() }
@@ -98,7 +98,7 @@ object OmnioContactActions {
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }, activity.getString(R.string.omnio_share_contact)))
         } catch (e: Exception) {
-            activity.toast(com.omnioone.commons.R.string.no_app_found)
+            activity.toast(com.omnioone.app.R.string.no_app_found)
         }
     }
 
@@ -163,7 +163,7 @@ object OmnioContactActions {
             activity,
             title = activity.getString(R.string.omnio_delete_contact_question, person.name),
             message = activity.getString(R.string.omnio_delete_contact_desc),
-            positive = activity.getString(com.omnioone.commons.R.string.delete),
+            positive = activity.getString(com.omnioone.app.R.string.delete),
             mainColor = OmnioColors.MISSED
         ) {
             activity.handlePermission(PERMISSION_WRITE_CONTACTS) { granted ->

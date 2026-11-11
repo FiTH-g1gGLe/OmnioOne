@@ -1,18 +1,18 @@
 package com.omnioone.app.extensions
 
+import com.omnioone.app.R
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.telecom.PhoneAccount
 import android.telecom.PhoneAccountHandle
 import android.telecom.TelecomManager
-import com.omnioone.commons.R
-import com.omnioone.commons.activities.BaseSimpleActivity
-import com.omnioone.commons.dialogs.CallConfirmationDialog
-import com.omnioone.commons.dialogs.PermissionRequiredDialog
+import com.omnioone.app.core.OmnioActivity
+import com.omnioone.app.core.confirmCall
+import com.omnioone.app.core.explainPermission
+import com.omnioone.app.core.launchCallIntent
+import com.omnioone.app.core.initiateCall
 import com.omnioone.app.core.canUseFullScreenIntent
-import com.omnioone.commons.extensions.initiateCall
 import com.omnioone.app.core.isDefaultDialer
-import com.omnioone.commons.extensions.launchCallIntent
 import com.omnioone.app.core.openFullScreenIntentSettings
 import com.omnioone.app.core.openNotificationSettings
 import com.omnioone.app.core.telecomManager
@@ -46,7 +46,7 @@ fun SimpleActivity.startCallWithConfirmationCheck(
     forceSimSelector: Boolean = false
 ) {
     if (config.showCallConfirmation) {
-        CallConfirmationDialog(this, name) {
+        confirmCall(name) {
             startCallIntent(recipient, forceSimSelector)
         }
     } else {
@@ -56,10 +56,7 @@ fun SimpleActivity.startCallWithConfirmationCheck(
 
 fun SimpleActivity.startCallWithConfirmationCheck(contact: Contact) {
     if (config.showCallConfirmation) {
-        CallConfirmationDialog(
-            activity = this,
-            callee = contact.getNameToDisplay()
-        ) {
+        confirmCall(contact.getNameToDisplay()) {
             initiateCall(contact) { launchCallIntent(it) }
         }
     } else {
@@ -67,7 +64,7 @@ fun SimpleActivity.startCallWithConfirmationCheck(contact: Contact) {
     }
 }
 
-fun BaseSimpleActivity.callContactWithSim(
+fun OmnioActivity.callContactWithSim(
     recipient: String,
     useMainSIM: Boolean
 ) {
@@ -80,13 +77,13 @@ fun BaseSimpleActivity.callContactWithSim(
     }
 }
 
-fun BaseSimpleActivity.callContactWithSimWithConfirmationCheck(
+fun OmnioActivity.callContactWithSimWithConfirmationCheck(
     recipient: String,
     name: String,
     useMainSIM: Boolean
 ) {
     if (config.showCallConfirmation) {
-        CallConfirmationDialog(this, name) {
+        confirmCall(name) {
             callContactWithSim(recipient, useMainSIM)
         }
     } else {
@@ -144,29 +141,19 @@ fun SimpleActivity.handleFullScreenNotificationsPermission(callback: (granted: B
             if (canUseFullScreenIntent()) {
                 callback(true)
             } else {
-                PermissionRequiredDialog(
-                    activity = this,
-                    textId = R.string.allow_full_screen_notifications_incoming_calls,
-                    positiveActionCallback = {
+                explainPermission(R.string.allow_full_screen_notifications_incoming_calls, onOpenSettings = {
                         @SuppressLint("NewApi")
                         openFullScreenIntentSettings(BuildConfig.APPLICATION_ID)
-                    },
-                    negativeActionCallback = {
+                    }, onNotNow = {
                         callback(false)
-                    }
-                )
+                    })
             }
         } else {
-            PermissionRequiredDialog(
-                activity = this,
-                textId = R.string.allow_notifications_incoming_calls,
-                positiveActionCallback = {
+            explainPermission(R.string.allow_notifications_incoming_calls, onOpenSettings = {
                     openNotificationSettings()
-                },
-                negativeActionCallback = {
+                }, onNotNow = {
                     callback(false)
-                }
-            )
+                })
         }
     }
 }

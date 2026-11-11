@@ -18,8 +18,8 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import com.omnioone.app.core.applyColorFilter
 import com.omnioone.app.core.beGone
-import com.omnioone.commons.extensions.getProperBackgroundColor
-import com.omnioone.commons.extensions.getProperTextColor
+import com.omnioone.app.core.getProperBackgroundColor
+import com.omnioone.app.core.getProperTextColor
 import com.omnioone.app.core.launchSendSMSIntent
 import com.omnioone.app.core.sendEmailIntent
 import com.omnioone.app.core.showErrorToast
@@ -37,8 +37,8 @@ import com.omnioone.app.extensions.getAvailableSIMCardLabels
 import com.omnioone.app.extensions.openContactInSystemApp
 import com.omnioone.app.extensions.startCallWithConfirmationCheck
 import com.omnioone.app.core.beVisibleIf
-import com.omnioone.commons.extensions.setupDialogStuff
-import com.omnioone.commons.extensions.getAlertDialogBuilder
+import com.omnioone.app.core.setupDialogStuff
+import com.omnioone.app.core.getAlertDialogBuilder
 import com.omnioone.app.helpers.OmnioSocials
 import com.omnioone.app.helpers.OmnioSheet
 import com.omnioone.app.core.beVisible
@@ -110,8 +110,8 @@ internal fun OmnioContactActivity.addInfoLine(holder: LinearLayout, label: Strin
             setOnClickListener { onClick() }
         })
         listOf(
-            com.omnioone.commons.R.drawable.ic_copy_vector to { copyToClipboard(value) },
-            com.omnioone.commons.R.drawable.ic_share_vector to { shareText(value) }
+            com.omnioone.app.R.drawable.ic_copy_vector to { copyToClipboard(value) },
+            com.omnioone.app.R.drawable.ic_share_vector to { shareText(value) }
         ).forEach { (icon, action) ->
             addView(ImageView(this@addInfoLine).apply {
                 setImageResource(icon)
@@ -158,9 +158,9 @@ internal fun OmnioContactActivity.shareText(text: String) {
         startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).apply {
             type = "text/plain"
             putExtra(Intent.EXTRA_TEXT, text)
-        }, getString(com.omnioone.commons.R.string.share)))
+        }, getString(com.omnioone.app.R.string.share)))
     } catch (e: Exception) {
-        toast(com.omnioone.commons.R.string.no_app_found)
+        toast(com.omnioone.app.R.string.no_app_found)
     }
 }
 
@@ -185,7 +185,7 @@ internal fun OmnioContactActivity.askEmail(contact: Contact) {
             )
             val reloaded = OmnioContactStore(this).getContactWithId(contact.rawId, false)
             runOnUiThread {
-                if (!ok) toast(com.omnioone.commons.R.string.unknown_error_occurred)
+                if (!ok) toast(com.omnioone.app.R.string.unknown_error_occurred)
                 if (reloaded != null) {
                     this.contact = reloaded
                     showContact(reloaded)

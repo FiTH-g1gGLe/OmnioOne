@@ -7,14 +7,14 @@ import android.telephony.PhoneNumberUtils
 import android.telephony.TelephonyManager
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.omnioone.commons.helpers.BaseConfig
+import com.omnioone.app.core.OmnioBaseConfig
 import com.omnioone.app.extensions.getPhoneAccountHandleModel
 import com.omnioone.app.extensions.putPhoneAccountHandle
 import com.omnioone.app.models.SpeedDial
 import androidx.core.content.edit
 import java.util.Locale
 
-class Config(context: Context) : BaseConfig(context) {
+class Config(context: Context) : OmnioBaseConfig(context) {
     companion object {
         fun newInstance(context: Context) = Config(context)
     }

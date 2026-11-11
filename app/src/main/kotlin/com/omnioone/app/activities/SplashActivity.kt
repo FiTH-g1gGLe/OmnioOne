@@ -1,10 +1,13 @@
 package com.omnioone.app.activities
 
+import android.app.Activity
 import android.content.Intent
-import com.omnioone.commons.activities.BaseSplashActivity
+import android.os.Bundle
 
-class SplashActivity : BaseSplashActivity() {
-    override fun initActivity() {
+/** Opens Omnio One's main screen straight away. */
+class SplashActivity : Activity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
         startActivity(Intent(this, MainActivity::class.java))
         finish()
     }

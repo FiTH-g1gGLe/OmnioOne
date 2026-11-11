@@ -30,7 +30,7 @@ import com.omnioone.app.helpers.OmnioDisplay
 import com.omnioone.app.helpers.OmnioFavourites
 import com.omnioone.app.helpers.OmnioPeople
 import com.omnioone.app.interfaces.RefreshItemsListener
-import com.omnioone.commons.extensions.baseConfig
+import com.omnioone.app.core.baseConfig
 import com.omnioone.app.core.hasPermission
 import com.omnioone.app.core.OmnioColors
 import com.omnioone.app.core.PERMISSION_READ_CONTACTS
@@ -331,7 +331,7 @@ class ContactsFragment(context: Context, attributeSet: AttributeSet) :
             addView(ImageView(context).apply {
                 layoutParams = LinearLayout.LayoutParams(size, size)
                 if (person == null) {
-                    setImageResource(com.omnioone.commons.R.drawable.ic_plus_vector)
+                    setImageResource(com.omnioone.app.R.drawable.ic_plus_vector)
                     imageTintList = ColorStateList.valueOf(OmnioColors.ON_ACCENT)
                     setPadding(dp(14), dp(14), dp(14), dp(14))
                     background = context.getDrawable(R.drawable.omnio_circle_bg)

@@ -12,7 +12,7 @@ import com.omnioone.app.extensions.config
 import com.omnioone.app.helpers.OmnioPeople
 import com.omnioone.app.helpers.OmnioSheet
 import com.omnioone.app.models.SpeedDial
-import com.omnioone.commons.extensions.baseConfig
+import com.omnioone.app.core.baseConfig
 import com.omnioone.app.core.OmnioColors
 import com.omnioone.app.core.ensureBackgroundThread
 
@@ -55,7 +55,7 @@ class OmnioSpeedDialActivity : SimpleActivity() {
                 title = if (set) dial!!.displayName.ifEmpty { dial.number } else getString(R.string.omnio_speed_dial_add),
                 subtitle = subtitle,
                 leading = keyBadge(key, set),
-                trailing = if (set) screen.iconButton(com.omnioone.commons.R.drawable.ic_cross_vector, OmnioColors.TEXT_MUTED, getString(R.string.omnio_speed_dial_remove)) {
+                trailing = if (set) screen.iconButton(com.omnioone.app.R.drawable.ic_cross_vector, OmnioColors.TEXT_MUTED, getString(R.string.omnio_speed_dial_remove)) {
                     dial!!.apply { number = ""; displayName = ""; type = null; label = null }
                     save()
                     build()

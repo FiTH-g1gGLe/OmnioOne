@@ -444,12 +444,12 @@ class DialpadActivity : SimpleActivity() {
             gravity = Gravity.CENTER_VERTICAL
             setPadding(dp(6), dp(6), dp(16), 0)
             addView(ImageView(this@DialpadActivity).apply {
-                setImageResource(com.omnioone.commons.R.drawable.ic_arrow_left_vector)
+                setImageResource(com.omnioone.app.R.drawable.ic_arrow_left_vector)
                 imageTintList = ColorStateList.valueOf(OmnioColors.TEXT)
                 setPadding(dp(12), dp(12), dp(12), dp(12))
                 layoutParams = LinearLayout.LayoutParams(dp(48), dp(48))
                 background = getDrawable(android.R.drawable.list_selector_background)
-                contentDescription = getString(com.omnioone.commons.R.string.back)
+                contentDescription = getString(com.omnioone.app.R.string.back)
                 setOnClickListener { finish() }
             })
             suggestionsHeader = TextView(this@DialpadActivity).apply {
@@ -539,7 +539,7 @@ class DialpadActivity : SimpleActivity() {
         root.addView(FrameLayout(this).apply {
             setPadding(0, dp(8), 0, dp(14))
             addView(ImageView(this@DialpadActivity).apply {
-                setImageResource(com.omnioone.commons.R.drawable.ic_phone_vector)
+                setImageResource(com.omnioone.app.R.drawable.ic_phone_vector)
                 imageTintList = ColorStateList.valueOf(0xFFFFFFFF.toInt())
                 setPadding(dp(20), dp(20), dp(20), dp(20))
                 background = GradientDrawable().apply {

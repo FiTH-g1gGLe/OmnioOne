@@ -139,7 +139,7 @@ class OmnioCallDesignerActivity : SimpleActivity() {
         gravity = Gravity.CENTER_VERTICAL
         setPadding(dp(8), dp(36), dp(16), dp(8))
         addView(ImageView(this@OmnioCallDesignerActivity).apply {
-            setImageResource(com.omnioone.commons.R.drawable.ic_cross_vector)
+            setImageResource(com.omnioone.app.R.drawable.ic_cross_vector)
             imageTintList = ColorStateList.valueOf(OmnioColors.TEXT)
             setPadding(dp(12), dp(12), dp(12), dp(12))
             layoutParams = LinearLayout.LayoutParams(dp(48), dp(48))
@@ -155,7 +155,7 @@ class OmnioCallDesignerActivity : SimpleActivity() {
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         })
         addView(TextView(this@OmnioCallDesignerActivity).apply {
-            text = getString(com.omnioone.commons.R.string.save)
+            text = getString(com.omnioone.app.R.string.save)
             setTextColor(OmnioColors.ON_ACCENT)
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
             setTypeface(typeface, Typeface.BOLD)
@@ -346,7 +346,7 @@ class OmnioCallDesignerActivity : SimpleActivity() {
             this,
             title = getString(R.string.omnio_designer_delete_question, design.name),
             message = getString(R.string.omnio_designer_delete_desc),
-            positive = getString(com.omnioone.commons.R.string.delete),
+            positive = getString(com.omnioone.app.R.string.delete),
             mainColor = OmnioColors.MISSED
         ) {
             OmnioCallStyle.deleteCustom(this, key)
@@ -412,7 +412,7 @@ class OmnioCallDesignerActivity : SimpleActivity() {
     private fun action(titleRes: Int, value: String?, onClick: () -> Unit) = row().apply {
         addView(title(getString(titleRes), value))
         addView(ImageView(this@OmnioCallDesignerActivity).apply {
-            setImageResource(com.omnioone.commons.R.drawable.ic_chevron_right_vector)
+            setImageResource(com.omnioone.app.R.drawable.ic_chevron_right_vector)
             imageTintList = ColorStateList.valueOf(0x80FFFFFF.toInt())
             layoutParams = LinearLayout.LayoutParams(dp(28), dp(28))
         })

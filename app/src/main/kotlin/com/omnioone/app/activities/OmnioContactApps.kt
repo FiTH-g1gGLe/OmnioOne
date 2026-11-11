@@ -18,8 +18,8 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import com.omnioone.app.core.applyColorFilter
 import com.omnioone.app.core.beGone
-import com.omnioone.commons.extensions.getProperBackgroundColor
-import com.omnioone.commons.extensions.getProperTextColor
+import com.omnioone.app.core.getProperBackgroundColor
+import com.omnioone.app.core.getProperTextColor
 import com.omnioone.app.core.launchSendSMSIntent
 import com.omnioone.app.core.sendEmailIntent
 import com.omnioone.app.core.showErrorToast
@@ -37,8 +37,8 @@ import com.omnioone.app.extensions.getAvailableSIMCardLabels
 import com.omnioone.app.extensions.openContactInSystemApp
 import com.omnioone.app.extensions.startCallWithConfirmationCheck
 import com.omnioone.app.core.beVisibleIf
-import com.omnioone.commons.extensions.setupDialogStuff
-import com.omnioone.commons.extensions.getAlertDialogBuilder
+import com.omnioone.app.core.setupDialogStuff
+import com.omnioone.app.core.getAlertDialogBuilder
 import com.omnioone.app.helpers.OmnioSocials
 import com.omnioone.app.helpers.OmnioSheet
 import com.omnioone.app.core.beVisible
@@ -82,7 +82,7 @@ internal fun OmnioContactActivity.showApps(contact: Contact, chats: List<OmnioSo
             actions = actions.map { chat ->
                 val iconRes = when (chat.action.kind) {
                     OmnioSocials.Kind.CHAT -> R.drawable.ic_omnio_chat
-                    OmnioSocials.Kind.VOICE -> com.omnioone.commons.R.drawable.ic_phone_vector
+                    OmnioSocials.Kind.VOICE -> com.omnioone.app.R.drawable.ic_phone_vector
                     OmnioSocials.Kind.VIDEO -> R.drawable.ic_omnio_video
                 }
                 iconRes to { openChat(chat) }
@@ -104,11 +104,11 @@ internal fun OmnioContactActivity.showApps(contact: Contact, chats: List<OmnioSo
                 // like WhatsApp: message, voice call, video call
                 listOf(
                     R.drawable.ic_omnio_chat to { openSocial(social) },
-                    com.omnioone.commons.R.drawable.ic_phone_vector to { messengerCall(social, OmnioSocials.AutoTap.VOICE) },
+                    com.omnioone.app.R.drawable.ic_phone_vector to { messengerCall(social, OmnioSocials.AutoTap.VOICE) },
                     R.drawable.ic_omnio_video to { messengerCall(social, OmnioSocials.AutoTap.VIDEO) },
                 )
             } else {
-                listOf(com.omnioone.commons.R.drawable.ic_arrow_right_vector to { openSocial(social) })
+                listOf(com.omnioone.app.R.drawable.ic_arrow_right_vector to { openSocial(social) })
             }
         )
     }
@@ -116,7 +116,7 @@ internal fun OmnioContactActivity.showApps(contact: Contact, chats: List<OmnioSo
     addAppRow(
         holder = holder,
         showDivider = rows > 0,
-        icon = getDrawable(com.omnioone.commons.R.drawable.ic_plus_vector)?.mutate()?.apply { setTint(OmnioColors.CONTACTS) },
+        icon = getDrawable(com.omnioone.app.R.drawable.ic_plus_vector)?.mutate()?.apply { setTint(OmnioColors.CONTACTS) },
         title = getString(R.string.omnio_add_social),
         subtitle = null,
         color = OmnioColors.CONTACTS,
@@ -220,7 +220,7 @@ internal fun OmnioContactActivity.openChat(chat: OmnioSocials.FoundChat) {
             setPackage(chat.app.pkg)
         })
     } catch (e: Exception) {
-        toast(com.omnioone.commons.R.string.no_app_found)
+        toast(com.omnioone.app.R.string.no_app_found)
     }
 }
 
@@ -248,7 +248,7 @@ internal fun OmnioContactActivity.openSocial(social: OmnioSocials.FoundSocial) {
         try {
             startActivity(Intent(Intent.ACTION_VIEW, uri))
         } catch (e2: Exception) {
-            toast(com.omnioone.commons.R.string.no_app_found)
+            toast(com.omnioone.app.R.string.no_app_found)
         }
     }
 }
@@ -320,7 +320,7 @@ internal fun OmnioContactActivity.askUsername(contact: Contact, network: OmnioSo
         ensureBackgroundThread {
             val ok = OmnioSocials.addSocial(this, contact.contactId, url)
             runOnUiThread {
-                if (ok) loadApps(contact) else toast(com.omnioone.commons.R.string.unknown_error_occurred)
+                if (ok) loadApps(contact) else toast(com.omnioone.app.R.string.unknown_error_occurred)
             }
         }
     }
@@ -363,7 +363,7 @@ internal fun OmnioContactActivity.offerCapturedPhoto() {
                     com.bumptech.glide.Glide.with(this).load(bitmap).circleCrop().into(binding.contactPhoto)
                     toast(R.string.omnio_photo_saved)
                 } else {
-                    toast(com.omnioone.commons.R.string.unknown_error_occurred)
+                    toast(com.omnioone.app.R.string.unknown_error_occurred)
                 }
             }
         }

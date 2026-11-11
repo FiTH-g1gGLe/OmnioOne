@@ -3,13 +3,11 @@ package com.omnioone.app.fragments
 import android.content.Context
 import android.util.AttributeSet
 import android.widget.RelativeLayout
-import com.omnioone.commons.adapters.MyRecyclerViewAdapter
-import com.omnioone.commons.extensions.getProperPrimaryColor
-import com.omnioone.commons.extensions.getProperTextColor
-import com.omnioone.commons.extensions.getTextSize
+import com.omnioone.app.core.getProperPrimaryColor
+import com.omnioone.app.core.getProperTextColor
 import com.omnioone.app.core.SORT_BY_FIRST_NAME
 import com.omnioone.app.core.SORT_BY_SURNAME
-import com.omnioone.commons.views.MyRecyclerView
+import androidx.recyclerview.widget.RecyclerView
 import com.omnioone.app.activities.MainActivity
 import com.omnioone.app.activities.SimpleActivity
 import com.omnioone.app.databinding.FragmentRecentsBinding
@@ -39,10 +37,8 @@ abstract class MyViewPagerFragment<BINDING : MyViewPagerFragment.InnerBinding>(c
         }
     }
 
-    fun finishActMode() {
-        (innerBinding.fragmentList?.adapter as? MyRecyclerViewAdapter)?.finishActMode()
-        (innerBinding.recentsList?.adapter as? MyRecyclerViewAdapter)?.finishActMode()
-    }
+    /** Kept for screens that still call it; Omnio lists have no selection mode to close. */
+    fun finishActMode() {}
 
     fun fontSizeChanged() {
         innerBinding.fragmentList?.adapter?.notifyDataSetChanged()
@@ -57,11 +53,11 @@ abstract class MyViewPagerFragment<BINDING : MyViewPagerFragment.InnerBinding>(c
     abstract fun onSearchQueryChanged(text: String)
 
     interface InnerBinding {
-        val fragmentList: MyRecyclerView?
-        val recentsList: MyRecyclerView?
+        val fragmentList: RecyclerView?
+        val recentsList: RecyclerView?
     }
 
-    class ListInnerBinding(override val fragmentList: MyRecyclerView) : InnerBinding {
+    class ListInnerBinding(override val fragmentList: RecyclerView) : InnerBinding {
         override val recentsList = null
     }
 

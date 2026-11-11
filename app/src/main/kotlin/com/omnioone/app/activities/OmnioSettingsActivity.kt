@@ -70,7 +70,6 @@ class OmnioSettingsActivity : SimpleActivity() {
 
         section("🎨", R.string.omnio_settings_appearance)
         card(
-            action(R.string.omnio_settings_theme, getString(R.string.omnio_settings_theme_desc)) { startCustomizationActivity() },
             action(R.string.omnio_display_style, getString(R.string.omnio_settings_display_desc)) { OmnioDisplayDialog(this) { buildRows() } },
             action(R.string.omnio_settings_language, getString(R.string.omnio_settings_language_desc)) { openLanguage() },
         )
@@ -272,7 +271,7 @@ class OmnioSettingsActivity : SimpleActivity() {
                     title = getString(R.string.omnio_restore_done_title),
                     message = getString(R.string.omnio_restore_done, result.written, result.skipped) +
                         (if (result.failed > 0) "\n" + getString(R.string.omnio_restore_some_failed, result.failed) else ""),
-                    positive = getString(com.omnioone.commons.R.string.ok),
+                    positive = getString(com.omnioone.app.R.string.ok),
                 ) {}
             }
         }
@@ -375,7 +374,7 @@ class OmnioSettingsActivity : SimpleActivity() {
         } catch (e: Exception) {
             false
         }
-        if (!opened) toast(com.omnioone.commons.R.string.no_app_found)
+        if (!opened) toast(com.omnioone.app.R.string.no_app_found)
     }
 
     @Suppress("DEPRECATION")
@@ -388,7 +387,7 @@ class OmnioSettingsActivity : SimpleActivity() {
         try {
             startActivityForResult(roleManager.createRequestRoleIntent(role), 4120)
         } catch (e: Exception) {
-            toast(com.omnioone.commons.R.string.no_app_found)
+            toast(com.omnioone.app.R.string.no_app_found)
         }
     }
 
@@ -425,7 +424,7 @@ class OmnioSettingsActivity : SimpleActivity() {
         gravity = Gravity.CENTER_VERTICAL
         setPadding(dp(8), dp(36), dp(16), dp(8))
         addView(ImageView(this@OmnioSettingsActivity).apply {
-            setImageResource(com.omnioone.commons.R.drawable.ic_arrow_left_vector)
+            setImageResource(com.omnioone.app.R.drawable.ic_arrow_left_vector)
             imageTintList = ColorStateList.valueOf(OmnioColors.TEXT)
             setPadding(dp(12), dp(12), dp(12), dp(12))
             layoutParams = LinearLayout.LayoutParams(dp(48), dp(48))
@@ -472,7 +471,7 @@ class OmnioSettingsActivity : SimpleActivity() {
                 .putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
                 .putExtra(Settings.EXTRA_CHANNEL_ID, "omnio_messages"))
         } catch (e: Exception) {
-            toast(com.omnioone.commons.R.string.no_app_found)
+            toast(com.omnioone.app.R.string.no_app_found)
         }
     }
 
@@ -564,7 +563,7 @@ class OmnioSettingsActivity : SimpleActivity() {
     private fun action(titleRes: Int, subtitle: String?, subtitleColor: Int? = null, onClick: () -> Unit) = row().apply {
         addView(texts(getString(titleRes), subtitle, subtitleColor))
         addView(ImageView(this@OmnioSettingsActivity).apply {
-            setImageResource(com.omnioone.commons.R.drawable.ic_chevron_right_vector)
+            setImageResource(com.omnioone.app.R.drawable.ic_chevron_right_vector)
             imageTintList = ColorStateList.valueOf(0x80FFFFFF.toInt())
             layoutParams = LinearLayout.LayoutParams(dp(28), dp(28))
         })

@@ -7,7 +7,7 @@ import android.net.Uri
 import android.provider.ContactsContract
 import android.util.Patterns
 import com.omnioone.app.core.copyToClipboard
-import com.omnioone.commons.extensions.getAlertDialogBuilder
+import com.omnioone.app.core.getAlertDialogBuilder
 import com.omnioone.app.core.toast
 import com.omnioone.app.core.ensureBackgroundThread
 import com.omnioone.app.R
@@ -127,14 +127,14 @@ object OmnioEmail {
                 actions.add { emailIt(activity, email) }
                 labels.add(activity.getString(R.string.omnio_email_add_other))
                 actions.add { addToAnother(activity, email) }
-                labels.add(activity.getString(com.omnioone.commons.R.string.copy))
+                labels.add(activity.getString(com.omnioone.app.R.string.copy))
                 actions.add { activity.copyToClipboard(email) }
 
                 val title = if (alreadySaved) activity.getString(R.string.omnio_email_already_saved, email) else email
                 activity.getAlertDialogBuilder()
                     .setTitle(title)
                     .setItems(labels.toTypedArray()) { _, which -> actions[which]() }
-                    .setNegativeButton(com.omnioone.commons.R.string.cancel, null)
+                    .setNegativeButton(com.omnioone.app.R.string.cancel, null)
                     .show()
             }
         }
@@ -166,7 +166,7 @@ object OmnioEmail {
             val ok = addEmail(activity, sender.contactId, email)
             if (ok) clearAsked(activity, senderNumber)
             activity.runOnUiThread {
-                activity.toast(if (ok) activity.getString(R.string.omnio_email_added, sender.name) else activity.getString(com.omnioone.commons.R.string.unknown_error_occurred))
+                activity.toast(if (ok) activity.getString(R.string.omnio_email_added, sender.name) else activity.getString(com.omnioone.app.R.string.unknown_error_occurred))
             }
         }
     }
@@ -175,7 +175,7 @@ object OmnioEmail {
         try {
             activity.startActivity(Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:$email")))
         } catch (e: Exception) {
-            activity.toast(com.omnioone.commons.R.string.no_app_found)
+            activity.toast(com.omnioone.app.R.string.no_app_found)
         }
     }
 
@@ -187,7 +187,7 @@ object OmnioEmail {
                 putExtra(ContactsContract.Intents.Insert.EMAIL, email)
             })
         } catch (e: Exception) {
-            activity.toast(com.omnioone.commons.R.string.no_app_found)
+            activity.toast(com.omnioone.app.R.string.no_app_found)
         }
     }
 
@@ -199,7 +199,7 @@ object OmnioEmail {
                 putExtra(ContactsContract.Intents.Insert.PHONE, number)
             })
         } catch (e: Exception) {
-            activity.toast(com.omnioone.commons.R.string.no_app_found)
+            activity.toast(com.omnioone.app.R.string.no_app_found)
         }
     }
 }

@@ -17,5 +17,4 @@ dependencyResolutionManagement {
 }
 include(":app")
 // Fossify Commons, brought into the project so Omnio One can change it
-include(":commons")
 // Fossify Messages, for the Messages tab

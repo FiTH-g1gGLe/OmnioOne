@@ -110,13 +110,13 @@ object OmnioNotifications {
         if (code != null) {
             val copy = Intent(context, OmnioNotificationActions::class.java).setAction(ACTION_COPY).putExtra(THREAD_ID, threadId).putExtra(EXTRA_CODE, code)
             val pending = PendingIntent.getBroadcast(context, idFor(threadId) + 1, copy, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-            builder.addAction(NotificationCompat.Action.Builder(com.omnioone.commons.R.drawable.ic_copy_vector, context.getString(R.string.omnio_code_copy, code), pending).setShowsUserInterface(false).build())
+            builder.addAction(NotificationCompat.Action.Builder(com.omnioone.app.R.drawable.ic_copy_vector, context.getString(R.string.omnio_code_copy, code), pending).setShowsUserInterface(false).build())
             if (OmnioCodes.isOn(context)) builder.setSubText(context.getString(R.string.omnio_code_copied_short))
         }
         if (allowReply) builder.addAction(replyAction(context, threadId))
-        builder.addAction(action(context, ACTION_READ, threadId, com.omnioone.commons.R.drawable.ic_check_vector, R.string.omnio_notify_mark_read))
+        builder.addAction(action(context, ACTION_READ, threadId, com.omnioone.app.R.drawable.ic_check_vector, R.string.omnio_notify_mark_read))
         if (!allowReply) {
-            builder.addAction(action(context, ACTION_DELETE, threadId, com.omnioone.commons.R.drawable.ic_delete_vector, R.string.omnio_notify_delete) {
+            builder.addAction(action(context, ACTION_DELETE, threadId, com.omnioone.app.R.drawable.ic_delete_vector, R.string.omnio_notify_delete) {
                 putExtra(EXTRA_MESSAGE_ID, message.id).putExtra(EXTRA_IS_MMS, message.isMms)
             })
         }
@@ -138,7 +138,7 @@ object OmnioNotifications {
             .setOnlyAlertOnce(true)
             .setSilent(true)
             .addAction(replyAction(context, threadId))
-            .addAction(action(context, ACTION_READ, threadId, com.omnioone.commons.R.drawable.ic_check_vector, R.string.omnio_notify_mark_read))
+            .addAction(action(context, ACTION_READ, threadId, com.omnioone.app.R.drawable.ic_check_vector, R.string.omnio_notify_mark_read))
         active.notification.shortcutId?.let { builder.setShortcutId(it) }
         notify(context, idFor(threadId), builder.build())
     }
@@ -183,7 +183,7 @@ object OmnioNotifications {
         val intent = Intent(context, OmnioNotificationActions::class.java).setAction(ACTION_REPLY).putExtra(THREAD_ID, threadId)
         val pending = PendingIntent.getBroadcast(context, idFor(threadId), intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE)
         val input = RemoteInput.Builder(REPLY_KEY).setLabel(context.getString(R.string.omnio_notify_reply)).build()
-        return NotificationCompat.Action.Builder(com.omnioone.commons.R.drawable.ic_send_vector, context.getString(R.string.omnio_notify_reply), pending)
+        return NotificationCompat.Action.Builder(com.omnioone.app.R.drawable.ic_send_vector, context.getString(R.string.omnio_notify_reply), pending)
             .addRemoteInput(input)
             .setSemanticAction(NotificationCompat.Action.SEMANTIC_ACTION_REPLY)
             .setShowsUserInterface(false)

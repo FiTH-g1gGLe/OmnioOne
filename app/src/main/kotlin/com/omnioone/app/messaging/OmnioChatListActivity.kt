@@ -126,7 +126,7 @@ class OmnioChatListActivity : SimpleActivity() {
     private fun archiveMenu(conversation: OmnioMessageStore.Conversation) {
         val items = listOf(
             sheetItem(R.string.omnio_archive_unarchive, R.drawable.ic_unarchive_vector, OmnioColors.MESSAGES),
-            sheetItem(R.string.omnio_messages_delete, com.omnioone.commons.R.drawable.ic_delete_vector, OmnioColors.MISSED, OmnioColors.MISSED),
+            sheetItem(R.string.omnio_messages_delete, com.omnioone.app.R.drawable.ic_delete_vector, OmnioColors.MISSED, OmnioColors.MISSED),
         )
         OmnioSheet.list(this, conversation.title, null, items) { picked ->
             if (picked == 0) {
@@ -147,7 +147,7 @@ class OmnioChatListActivity : SimpleActivity() {
             this,
             title = getString(R.string.omnio_messages_delete_question, title),
             message = getString(if (bin) R.string.omnio_bin_moved_desc else R.string.omnio_messages_delete_desc),
-            positive = getString(com.omnioone.commons.R.string.delete),
+            positive = getString(com.omnioone.app.R.string.delete),
             mainColor = OmnioColors.MISSED
         ) {
             ensureBackgroundThread {
@@ -163,7 +163,7 @@ class OmnioChatListActivity : SimpleActivity() {
     private fun binMenu(chat: BinChat) {
         val items = listOf(
             sheetItem(R.string.omnio_bin_restore, R.drawable.ic_unarchive_vector, OmnioColors.MESSAGES),
-            sheetItem(R.string.omnio_bin_delete_forever, com.omnioone.commons.R.drawable.ic_delete_vector, OmnioColors.MISSED, OmnioColors.MISSED),
+            sheetItem(R.string.omnio_bin_delete_forever, com.omnioone.app.R.drawable.ic_delete_vector, OmnioColors.MISSED, OmnioColors.MISSED),
         )
         OmnioSheet.list(this, chat.title, resources.getQuantityString(R.plurals.omnio_bin_count, chat.count, chat.count), items) { picked ->
             if (picked == 0) {
@@ -214,7 +214,7 @@ class OmnioChatListActivity : SimpleActivity() {
             gravity = Gravity.CENTER_VERTICAL
             setPadding(dp(4), dp(6), dp(12), dp(6))
             addView(ImageView(this@OmnioChatListActivity).apply {
-                setImageResource(com.omnioone.commons.R.drawable.ic_arrow_left_vector)
+                setImageResource(com.omnioone.app.R.drawable.ic_arrow_left_vector)
                 imageTintList = ColorStateList.valueOf(OmnioColors.TEXT)
                 setPadding(dp(11), dp(11), dp(11), dp(11))
                 layoutParams = LinearLayout.LayoutParams(dp(46), dp(46))

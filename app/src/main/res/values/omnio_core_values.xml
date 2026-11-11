@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Omnio One: colours and sizes the app uses -->
+<resources>
+    <color name="activated_item_foreground">#44888888</color>
+    <color name="color_primary">#4F7CFF</color>
+    <color name="md_amber_700">#FFA000</color>
+    <color name="md_blue_300">#64B5F6</color>
+    <color name="md_blue_600">#1E88E5</color>
+    <color name="md_blue_700">#1976D2</color>
+    <color name="md_blue_grey_700">#455A64</color>
+    <color name="md_brown_700">#5D4037</color>
+    <color name="md_cyan_700">#0097A7</color>
+    <color name="md_deep_orange_700">#E64A19</color>
+    <color name="md_deep_purple_700">#512DA8</color>
+    <color name="md_green_300">#FF9ED984</color>
+    <color name="md_green_600">#FF64B846</color>
+    <color name="md_green_700">#FF50A43B</color>
+    <color name="md_grey_black">#000000</color>
+    <color name="md_indigo_700">#303F9F</color>
+    <color name="md_light_blue_700">#0288D1</color>
+    <color name="md_light_green_700">#689F38</color>
+    <color name="md_lime_700">#A4B42B</color>
+    <color name="md_orange_700">#F57C00</color>
+    <color name="md_pink_700">#C2185B</color>
+    <color name="md_purple_700">#7B1FA2</color>
+    <color name="md_red_400">#EF5350</color>
+    <color name="md_red_500_dark">#F21F0F</color>
+    <color name="md_red_700">#D32F2F</color>
+    <color name="md_teal_700">#00796B</color>
+    <color name="md_yellow_700">#FBC02D</color>
+    <color name="pressed_item_foreground">#08000000</color>
+    <dimen name="activity_margin">16dp</dimen>
+    <dimen name="bigger_margin">20dp</dimen>
+    <dimen name="material_button_corner_radius">24dp</dimen>
+    <dimen name="medium_margin">8dp</dimen>
+    <dimen name="normal_margin">12dp</dimen>
+    <dimen name="normal_text_size">14sp</dimen>
+    <dimen name="one_dp">1dp</dimen>
+    <dimen name="small_margin">4dp</dimen>
+    <color name="divider_grey">#55808080</color>
+    <dimen name="divider_height">2px</dimen>
+    <dimen name="material_dialog_corner_radius">28dp</dimen>
+    <dimen name="small_text_size">10sp</dimen>
+    <dimen name="big_text_size">18sp</dimen>
+</resources>

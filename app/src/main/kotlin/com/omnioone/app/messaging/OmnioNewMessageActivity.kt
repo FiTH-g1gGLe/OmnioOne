@@ -30,7 +30,7 @@ import com.omnioone.app.activities.SimpleActivity
 import com.omnioone.app.helpers.OmnioDisplay
 import com.omnioone.app.helpers.OmnioPeople
 import com.omnioone.app.helpers.OmnioSheet
-import com.omnioone.commons.extensions.baseConfig
+import com.omnioone.app.core.baseConfig
 import com.omnioone.app.extensions.config
 import com.omnioone.app.core.toast
 import com.omnioone.app.core.OmnioColors
@@ -224,7 +224,7 @@ class OmnioNewMessageActivity : SimpleActivity() {
             gravity = Gravity.CENTER_VERTICAL
             setPadding(dp(4), dp(6), dp(16), dp(6))
             addView(ImageView(this@OmnioNewMessageActivity).apply {
-                setImageResource(com.omnioone.commons.R.drawable.ic_arrow_left_vector)
+                setImageResource(com.omnioone.app.R.drawable.ic_arrow_left_vector)
                 imageTintList = ColorStateList.valueOf(OmnioColors.TEXT)
                 setPadding(dp(11), dp(11), dp(11), dp(11))
                 layoutParams = LinearLayout.LayoutParams(dp(46), dp(46))

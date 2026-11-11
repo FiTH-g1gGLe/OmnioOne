@@ -10,7 +10,7 @@ import android.text.InputType
 import androidx.appcompat.widget.SwitchCompat
 import com.omnioone.app.R
 import com.omnioone.app.helpers.OmnioSheet
-import com.omnioone.commons.extensions.baseConfig
+import com.omnioone.app.core.baseConfig
 import com.omnioone.app.core.toast
 import com.omnioone.app.core.OmnioColors
 import com.omnioone.app.core.ensureBackgroundThread
@@ -86,7 +86,7 @@ class OmnioBlockedActivity : SimpleActivity() {
             screen.note(getString(R.string.omnio_blocked_none))
         } else {
             screen.card(blocked.map { (id, number) ->
-                screen.row(number, null, trailing = screen.iconButton(com.omnioone.commons.R.drawable.ic_cross_vector, OmnioColors.TEXT_MUTED, getString(R.string.omnio_unblock)) {
+                screen.row(number, null, trailing = screen.iconButton(com.omnioone.app.R.drawable.ic_cross_vector, OmnioColors.TEXT_MUTED, getString(R.string.omnio_unblock)) {
                     unblock(id)
                 }, onClick = null)
             })

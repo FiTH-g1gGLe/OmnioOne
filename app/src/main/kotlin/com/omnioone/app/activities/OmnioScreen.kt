@@ -39,7 +39,7 @@ class OmnioScreen(private val activity: Activity, title: String) {
             gravity = Gravity.CENTER_VERTICAL
             setPadding(dp(8), dp(8), dp(16), dp(8))
             addView(ImageView(activity).apply {
-                setImageResource(com.omnioone.commons.R.drawable.ic_arrow_left_vector)
+                setImageResource(com.omnioone.app.R.drawable.ic_arrow_left_vector)
                 imageTintList = ColorStateList.valueOf(OmnioColors.TEXT)
                 setPadding(dp(12), dp(12), dp(12), dp(12))
                 layoutParams = LinearLayout.LayoutParams(dp(48), dp(48))

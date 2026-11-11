@@ -111,7 +111,7 @@ object OmnioCallNotification {
             }
         )
         val builder = Notification.Builder(context, if (loud) CHANNEL_RINGING else CHANNEL_ONGOING)
-            .setSmallIcon(com.omnioone.commons.R.drawable.ic_phone_vector)
+            .setSmallIcon(com.omnioone.app.R.drawable.ic_phone_vector)
             .setContentTitle(name)
             .setContentText(status)
             .setContentIntent(open)
@@ -125,7 +125,7 @@ object OmnioCallNotification {
         }
         if (ringing) {
             builder.addAction(Notification.Action.Builder(Icon.createWithResource(context, R.drawable.ic_phone_down_vector), context.getString(R.string.omnio_call_decline), broadcast(context, ACTION_DECLINE, 1)).build())
-            builder.addAction(Notification.Action.Builder(Icon.createWithResource(context, com.omnioone.commons.R.drawable.ic_phone_vector), context.getString(R.string.omnio_call_answer), broadcast(context, ACTION_ANSWER, 2)).build())
+            builder.addAction(Notification.Action.Builder(Icon.createWithResource(context, com.omnioone.app.R.drawable.ic_phone_vector), context.getString(R.string.omnio_call_answer), broadcast(context, ACTION_ANSWER, 2)).build())
             if (loud) builder.setFullScreenIntent(open, true)
         } else {
             builder.addAction(Notification.Action.Builder(Icon.createWithResource(context, R.drawable.ic_phone_down_vector), context.getString(R.string.omnio_hang_up), broadcast(context, ACTION_HANG_UP, 3)).build())

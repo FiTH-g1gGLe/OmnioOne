@@ -18,8 +18,8 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import com.omnioone.app.core.applyColorFilter
 import com.omnioone.app.core.beGone
-import com.omnioone.commons.extensions.getProperBackgroundColor
-import com.omnioone.commons.extensions.getProperTextColor
+import com.omnioone.app.core.getProperBackgroundColor
+import com.omnioone.app.core.getProperTextColor
 import com.omnioone.app.core.launchSendSMSIntent
 import com.omnioone.app.core.sendEmailIntent
 import com.omnioone.app.core.showErrorToast
@@ -37,8 +37,8 @@ import com.omnioone.app.extensions.getAvailableSIMCardLabels
 import com.omnioone.app.extensions.openContactInSystemApp
 import com.omnioone.app.extensions.startCallWithConfirmationCheck
 import com.omnioone.app.core.beVisibleIf
-import com.omnioone.commons.extensions.setupDialogStuff
-import com.omnioone.commons.extensions.getAlertDialogBuilder
+import com.omnioone.app.core.setupDialogStuff
+import com.omnioone.app.core.getAlertDialogBuilder
 import com.omnioone.app.helpers.OmnioSocials
 import com.omnioone.app.helpers.OmnioSheet
 import com.omnioone.app.core.beVisible
@@ -92,7 +92,7 @@ internal fun OmnioContactActivity.openFinding(contact: Contact, network: OmnioSo
         toast(getString(tip, name), android.widget.Toast.LENGTH_LONG)
     } else {
         OmnioSocials.clearPendingLink(this)
-        toast(com.omnioone.commons.R.string.no_app_found)
+        toast(com.omnioone.app.R.string.no_app_found)
     }
 }
 
@@ -166,8 +166,8 @@ internal fun OmnioContactActivity.offerMessengerFromFacebook(contact: Contact, f
                 this,
                 title = getString(R.string.omnio_add_messenger_title, contact.getNameToDisplay()),
                 message = messengerUrl,
-                positive = getString(com.omnioone.commons.R.string.yes),
-                negative = getString(com.omnioone.commons.R.string.no)
+                positive = getString(com.omnioone.app.R.string.yes),
+                negative = getString(com.omnioone.app.R.string.no)
             ) {
                 ensureBackgroundThread {
                     OmnioSocials.addSocial(this, contact.contactId, messengerUrl)
@@ -202,7 +202,7 @@ internal fun OmnioContactActivity.saveDiscord(contact: Contact, input: String, a
         ensureBackgroundThread {
             val ok = OmnioSocials.addSocial(this, contact.contactId, url)
             if (ok) existing.forEach { OmnioSocials.removeSocial(this, it.dataId) }
-            runOnUiThread { if (ok) loadApps(contact) else toast(com.omnioone.commons.R.string.unknown_error_occurred) }
+            runOnUiThread { if (ok) loadApps(contact) else toast(com.omnioone.app.R.string.unknown_error_occurred) }
         }
     }
     if (!ask) {
@@ -214,7 +214,7 @@ internal fun OmnioContactActivity.saveDiscord(contact: Contact, input: String, a
         this,
         title = getString(R.string.omnio_add_discord_title, contact.getNameToDisplay()),
         message = OmnioSocials.discordId(url) ?: "",
-        positive = getString(com.omnioone.commons.R.string.ok),
+        positive = getString(com.omnioone.app.R.string.ok),
         onNegative = { linkDialogShowing = false }
     ) {
         linkDialogShowing = false
@@ -231,7 +231,7 @@ internal fun OmnioContactActivity.offerLink(contact: Contact, network: OmnioSoci
         this,
         title = getString(R.string.omnio_add_link_title, network.name, contact.getNameToDisplay()),
         message = url,
-        positive = getString(com.omnioone.commons.R.string.ok),
+        positive = getString(com.omnioone.app.R.string.ok),
         onNegative = { linkDialogShowing = false }
     ) {
         ensureBackgroundThread {
@@ -244,7 +244,7 @@ internal fun OmnioContactActivity.offerLink(contact: Contact, network: OmnioSoci
             runOnUiThread {
                 linkDialogShowing = false
                 if (!ok) {
-                    toast(com.omnioone.commons.R.string.unknown_error_occurred)
+                    toast(com.omnioone.app.R.string.unknown_error_occurred)
                     return@runOnUiThread
                 }
                 loadApps(contact)
@@ -298,8 +298,8 @@ internal fun OmnioContactActivity.offerMessenger(contact: Contact, handle: Strin
         this,
         title = getString(R.string.omnio_add_messenger_title, contact.getNameToDisplay()),
         message = getString(R.string.omnio_add_messenger_help),
-        positive = getString(com.omnioone.commons.R.string.yes),
-        negative = getString(com.omnioone.commons.R.string.no)
+        positive = getString(com.omnioone.app.R.string.yes),
+        negative = getString(com.omnioone.app.R.string.no)
     ) {
         ensureBackgroundThread {
             OmnioSocials.addSocial(this, contact.contactId, messenger.urlFor(handle))

@@ -395,7 +395,7 @@ class OmnioThreadActivity : SimpleActivity() {
                     else -> pickContact.launch(null)
                 }
             } catch (e: Exception) {
-                toast(com.omnioone.commons.R.string.no_app_found)
+                toast(com.omnioone.app.R.string.no_app_found)
             }
         }
     }
@@ -489,7 +489,7 @@ class OmnioThreadActivity : SimpleActivity() {
         }
         if (message.failed) items += getString(R.string.omnio_thread_retry) to { retry(message) }
         items += getString(R.string.omnio_thread_delete) to {
-            OmnioSheet.confirm(this, getString(R.string.omnio_thread_delete_question), null, positive = getString(com.omnioone.commons.R.string.delete), mainColor = OmnioColors.MISSED) {
+            OmnioSheet.confirm(this, getString(R.string.omnio_thread_delete_question), null, positive = getString(com.omnioone.app.R.string.delete), mainColor = OmnioColors.MISSED) {
                 ensureBackgroundThread {
                     OmnioRecycleBin.delete(applicationContext, listOf(message))
                     handler.post { load() }
@@ -556,7 +556,7 @@ class OmnioThreadActivity : SimpleActivity() {
                 try {
                     startActivity(Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:$email")))
                 } catch (e: Exception) {
-                    toast(com.omnioone.commons.R.string.no_app_found)
+                    toast(com.omnioone.app.R.string.no_app_found)
                 }
             }
         }
@@ -589,7 +589,7 @@ class OmnioThreadActivity : SimpleActivity() {
         try {
             startActivity(Intent(Intent.ACTION_VIEW).setDataAndType(part.uri, part.mime).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION))
         } catch (e: Exception) {
-            toast(com.omnioone.commons.R.string.no_app_found)
+            toast(com.omnioone.app.R.string.no_app_found)
         }
     }
 
@@ -615,7 +615,7 @@ class OmnioThreadActivity : SimpleActivity() {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
             setPadding(dp(4), dp(6), dp(8), dp(6))
-            addView(icon(com.omnioone.commons.R.drawable.ic_arrow_left_vector, OmnioColors.TEXT) { finish() })
+            addView(icon(com.omnioone.app.R.drawable.ic_arrow_left_vector, OmnioColors.TEXT) { finish() })
             avatar = ImageView(this@OmnioThreadActivity).apply {
                 layoutParams = LinearLayout.LayoutParams(dp(40), dp(40))
                 setOnClickListener { openContact() }
@@ -641,7 +641,7 @@ class OmnioThreadActivity : SimpleActivity() {
                 addView(titleView)
                 addView(subtitleView)
             })
-            callButton = icon(com.omnioone.commons.R.drawable.ic_phone_vector, OmnioColors.CALLS) {
+            callButton = icon(com.omnioone.app.R.drawable.ic_phone_vector, OmnioColors.CALLS) {
                 conversation?.people?.singleOrNull()?.let { startCallWithConfirmationCheck(it.address, it.label) }
             }
             addView(callButton)
@@ -771,7 +771,7 @@ class OmnioThreadActivity : SimpleActivity() {
                     alpha = 0f
                 }
                 addView(ImageView(this@OmnioThreadActivity).apply {
-                    setImageResource(com.omnioone.commons.R.drawable.ic_send_vector)
+                    setImageResource(com.omnioone.app.R.drawable.ic_send_vector)
                     imageTintList = ColorStateList.valueOf(OmnioColors.ON_ACCENT)
                     setPadding(dp(11), dp(11), dp(11), dp(11))
                     background = GradientDrawable().apply {

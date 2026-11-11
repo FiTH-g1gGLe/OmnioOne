@@ -132,7 +132,7 @@ class OmnioEditContactActivity : SimpleActivity() {
                 val loaded = OmnioContactStore(this).getContactWithId(id, false)
                 runOnUiThread {
                     if (loaded == null) {
-                        toast(com.omnioone.commons.R.string.unknown_error_occurred)
+                        toast(com.omnioone.app.R.string.unknown_error_occurred)
                         finish()
                     } else {
                         fill(loaded)
@@ -157,7 +157,7 @@ class OmnioEditContactActivity : SimpleActivity() {
             gravity = Gravity.CENTER_VERTICAL
             setPadding(dp(8), dp(36), dp(16), dp(8))
             addView(ImageView(this@OmnioEditContactActivity).apply {
-                setImageResource(com.omnioone.commons.R.drawable.ic_cross_vector)
+                setImageResource(com.omnioone.app.R.drawable.ic_cross_vector)
                 imageTintList = ColorStateList.valueOf(OmnioSheet.TEXT)
                 setPadding(dp(12), dp(12), dp(12), dp(12))
                 layoutParams = LinearLayout.LayoutParams(dp(48), dp(48))
@@ -173,7 +173,7 @@ class OmnioEditContactActivity : SimpleActivity() {
                 layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
             })
             addView(TextView(this@OmnioEditContactActivity).apply {
-                text = getString(com.omnioone.commons.R.string.save)
+                text = getString(com.omnioone.app.R.string.save)
                 setTextColor(OmnioColors.ON_ACCENT)
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
                 setTypeface(typeface, Typeface.BOLD)
@@ -200,7 +200,7 @@ class OmnioEditContactActivity : SimpleActivity() {
             setOnClickListener { photoChoices() }
             addView(photoView)
             addView(ImageView(this@OmnioEditContactActivity).apply {
-                setImageResource(com.omnioone.commons.R.drawable.ic_camera_vector)
+                setImageResource(com.omnioone.app.R.drawable.ic_camera_vector)
                 imageTintList = ColorStateList.valueOf(OmnioColors.ON_ACCENT)
                 setPadding(dp(7), dp(7), dp(7), dp(7))
                 background = getDrawable(R.drawable.omnio_circle_bg)
@@ -435,7 +435,7 @@ class OmnioEditContactActivity : SimpleActivity() {
             }
         }
         val remove = ImageView(this).apply {
-            setImageResource(com.omnioone.commons.R.drawable.ic_cross_vector)
+            setImageResource(com.omnioone.app.R.drawable.ic_cross_vector)
             imageTintList = ColorStateList.valueOf(0x99FFFFFF.toInt())
             setPadding(dp(12), dp(12), dp(12), dp(12))
             layoutParams = LinearLayout.LayoutParams(dp(44), dp(44))
@@ -692,7 +692,7 @@ class OmnioEditContactActivity : SimpleActivity() {
             }
             if (onRemove != null) {
                 addView(ImageView(this@OmnioEditContactActivity).apply {
-                    setImageResource(com.omnioone.commons.R.drawable.ic_cross_vector)
+                    setImageResource(com.omnioone.app.R.drawable.ic_cross_vector)
                     imageTintList = ColorStateList.valueOf(0x99FFFFFF.toInt())
                     setPadding(dp(12), dp(12), dp(12), dp(12))
                     layoutParams = LinearLayout.LayoutParams(dp(44), dp(44))
@@ -807,7 +807,7 @@ class OmnioEditContactActivity : SimpleActivity() {
                     setResult(RESULT_OK)
                     finish()
                 } else {
-                    toast(com.omnioone.commons.R.string.unknown_error_occurred)
+                    toast(com.omnioone.app.R.string.unknown_error_occurred)
                 }
             }
         }
@@ -819,7 +819,7 @@ class OmnioEditContactActivity : SimpleActivity() {
             this,
             title = getString(R.string.omnio_delete_contact_question, current.getNameToDisplay()),
             message = getString(R.string.omnio_delete_contact_help),
-            positive = getString(com.omnioone.commons.R.string.delete),
+            positive = getString(com.omnioone.app.R.string.delete),
             mainColor = OmnioSheet.RED
         ) {
             OmnioContactStore(this).deleteContact(current, false) { ok ->
@@ -829,7 +829,7 @@ class OmnioEditContactActivity : SimpleActivity() {
                         setResult(RESULT_FIRST_USER)
                         finish()
                     } else {
-                        toast(com.omnioone.commons.R.string.unknown_error_occurred)
+                        toast(com.omnioone.app.R.string.unknown_error_occurred)
                     }
                 }
             }

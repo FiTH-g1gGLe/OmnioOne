@@ -303,7 +303,7 @@ class BusinessHolder(private val card: LinearLayout, private val host: ContactSt
     private val numberView = TextView(card.context)
     private val emailView = TextView(card.context)
     private val textButton = roundButton(card, R.drawable.ic_omnio_chat, OmnioColors.MESSAGES)
-    private val callButton = roundButton(card, com.omnioone.commons.R.drawable.ic_phone_vector, OmnioColors.CALLS)
+    private val callButton = roundButton(card, com.omnioone.app.R.drawable.ic_phone_vector, OmnioColors.CALLS)
 
     init {
         card.orientation = LinearLayout.HORIZONTAL
@@ -387,7 +387,7 @@ class SpotlightHolder(private val frame: FrameLayout, private val host: ContactS
     private val nameView = TextView(frame.context)
     private val numberView = TextView(frame.context)
     private val textButton = roundButton(frame, R.drawable.ic_omnio_chat, OmnioColors.MESSAGES, 44, onDark = true)
-    private val callButton = roundButton(frame, com.omnioone.commons.R.drawable.ic_phone_vector, OmnioColors.CALLS, 44, onDark = true)
+    private val callButton = roundButton(frame, com.omnioone.app.R.drawable.ic_phone_vector, OmnioColors.CALLS, 44, onDark = true)
 
     init {
         frame.layoutParams = frame.listParams(frame.dp(14), frame.dp(7), frame.dp(14), frame.dp(7))

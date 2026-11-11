@@ -1,16 +1,16 @@
 package com.omnioone.app.dialogs
 
-import com.omnioone.commons.activities.BaseSimpleActivity
+import com.omnioone.app.core.OmnioActivity
 import com.omnioone.app.core.beGoneIf
-import com.omnioone.commons.extensions.getAlertDialogBuilder
-import com.omnioone.commons.extensions.setupDialogStuff
+import com.omnioone.app.core.getAlertDialogBuilder
+import com.omnioone.app.core.setupDialogStuff
 import com.omnioone.app.core.viewBinding
-import com.omnioone.commons.helpers.*
+import com.omnioone.app.core.*
 import com.omnioone.app.R
 import com.omnioone.app.databinding.DialogChangeSortingBinding
 import com.omnioone.app.extensions.config
 
-class ChangeSortingDialog(val activity: BaseSimpleActivity, private val showCustomSorting: Boolean = false, private val callback: () -> Unit) {
+class ChangeSortingDialog(val activity: OmnioActivity, private val showCustomSorting: Boolean = false, private val callback: () -> Unit) {
     private val binding by activity.viewBinding(DialogChangeSortingBinding::inflate)
 
     private var currSorting = 0

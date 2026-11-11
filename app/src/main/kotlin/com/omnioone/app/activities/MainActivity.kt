@@ -18,14 +18,8 @@ import android.widget.Toast
 import androidx.viewpager.widget.ViewPager
 import com.google.android.material.snackbar.Snackbar
 import me.grantland.widget.AutofitHelper
-import com.omnioone.commons.dialogs.ChangeViewTypeDialog
-import com.omnioone.commons.dialogs.ConfirmationDialog
-import com.omnioone.commons.dialogs.PermissionRequiredDialog
-import com.omnioone.commons.dialogs.RadioGroupDialog
-import com.omnioone.commons.extensions.*
-import com.omnioone.commons.helpers.*
-import com.omnioone.commons.models.FAQItem
-import com.omnioone.commons.models.RadioItem
+import com.omnioone.app.core.*
+import com.omnioone.app.core.RadioItem
 import com.omnioone.app.core.Contact
 import com.omnioone.app.BuildConfig
 import com.omnioone.app.R
@@ -61,10 +55,8 @@ class MainActivity : SimpleActivity() {
     private var storedStartNameWithSurname = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        applyOmnioThemeOnce()
-        super.onCreate(savedInstanceState)
+                super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        appLaunched(BuildConfig.APPLICATION_ID)
         setupOptionsMenu()
         refreshMenuItems()
         setupEdgeToEdge(padBottomImeAndSystem = listOf(binding.mainTabsHolder))
@@ -93,7 +85,7 @@ class MainActivity : SimpleActivity() {
 
             handleFullScreenNotificationsPermission { granted ->
                 if (!granted) {
-                    toast(com.omnioone.commons.R.string.notifications_disabled)
+                    toast(com.omnioone.app.R.string.notifications_disabled)
                 }
             }
         } else {
@@ -208,7 +200,6 @@ class MainActivity : SimpleActivity() {
             findItem(R.id.create_new_contact).isVisible = currentFragment == getContactsFragment()
             findItem(R.id.change_view_type).isVisible = currentFragment == getFavoritesFragment() || currentFragment == getContactsFragment()
             findItem(R.id.column_count).isVisible = currentFragment == getFavoritesFragment() && config.viewType == VIEW_TYPE_GRID
-            findItem(R.id.more_apps_from_us).isVisible = resources.getBoolean(R.bool.is_google_play_build)
         }
     }
 
@@ -234,7 +225,6 @@ class MainActivity : SimpleActivity() {
                     R.id.create_new_contact -> launchCreateNewContactIntent()
                     R.id.sort -> showSortingDialog(showCustomSorting = getCurrentFragment() is FavoritesFragment)
                     R.id.filter -> showFilterDialog()
-                    R.id.more_apps_from_us -> launchMoreAppsFromUsIntent()
                     R.id.settings -> launchSettings()
                     R.id.change_view_type -> if (getCurrentFragment() is ContactsFragment) showOmnioDisplayDialog() else changeViewType()
                     R.id.column_count -> changeColumnCount()
@@ -253,7 +243,7 @@ class MainActivity : SimpleActivity() {
         }
 
         val currentColumnCount = config.contactsGridColumnCount
-        RadioGroupDialog(this, ArrayList(items), currentColumnCount) {
+        pickOne(getString(R.string.column_count), items, currentColumnCount) {
             val newColumnCount = it as Int
             if (currentColumnCount != newColumnCount) {
                 config.contactsGridColumnCount = newColumnCount
@@ -275,7 +265,10 @@ class MainActivity : SimpleActivity() {
     }
 
     private fun changeViewType() {
-        ChangeViewTypeDialog(this) {
+        // Favourites: grid or list
+        val options = listOf(RadioItem(VIEW_TYPE_GRID, getString(R.string.omnio_view_grid)), RadioItem(VIEW_TYPE_LIST, getString(R.string.omnio_view_list)))
+        pickOne(getString(R.string.omnio_view), options, config.viewType) {
+            config.viewType = it as Int
             refreshMenuItems()
             getFavoritesFragment()?.refreshItems()
         }
@@ -293,7 +286,7 @@ class MainActivity : SimpleActivity() {
 
     private fun clearCallHistory() {
         val confirmationText = "${getString(R.string.clear_history_confirmation)}\n\n${getString(R.string.cannot_be_undone)}"
-        ConfirmationDialog(this, confirmationText) {
+        confirm(confirmationText) {
             handlePermission(com.omnioone.app.core.PERMISSION_WRITE_CALL_LOG) { granted ->
                 if (granted) com.omnioone.app.core.ensureBackgroundThread {
                     com.omnioone.app.helpers.OmnioCallLog.clearAll(this)
@@ -307,15 +300,12 @@ class MainActivity : SimpleActivity() {
 
     @SuppressLint("NewApi")
     private fun checkShortcuts() {
-        val appIconColor = config.appIconColor
-        if (isNougatMR1Plus() && config.lastHandledShortcutColor != appIconColor) {
-            val launchDialpad = getLaunchDialpadShortcut(appIconColor)
-
-            try {
-                shortcutManager.dynamicShortcuts = listOf(launchDialpad)
-                config.lastHandledShortcutColor = appIconColor
-            } catch (ignored: Exception) {
+        // the long-press launcher shortcut to the keypad
+        try {
+            if (shortcutManager.dynamicShortcuts.none { it.id == "launch_dialpad" }) {
+                shortcutManager.addDynamicShortcuts(listOf(getLaunchDialpadShortcut(OmnioColors.CALLS)))
             }
+        } catch (ignored: Exception) {
         }
     }
 
@@ -334,26 +324,6 @@ class MainActivity : SimpleActivity() {
             .setIcon(Icon.createWithBitmap(bmp))
             .setIntent(intent)
             .build()
-    }
-
-    /** Omnio One: switch to the Omnio dark theme the first time this version runs. */
-    private fun applyOmnioThemeOnce() {
-        val omnioPrefs = getSharedPreferences("omnio", MODE_PRIVATE)
-        if (omnioPrefs.getBoolean("omnio_theme_v1", false)) return
-        val text = OmnioColors.TEXT
-        val background = OmnioColors.ON_ACCENT
-        val primary = OmnioColors.CALLS
-        config.isSystemThemeEnabled = false
-        config.isGlobalThemeEnabled = false
-        config.textColor = text
-        config.backgroundColor = background
-        config.primaryColor = primary
-        config.accentColor = primary
-        config.customTextColor = text
-        config.customBackgroundColor = background
-        config.customPrimaryColor = primary
-        config.customAccentColor = primary
-        omnioPrefs.edit().putBoolean("omnio_theme_v1", true).apply()
     }
 
     /** Omnio One: each tab lights up in its own brand colour. */
@@ -619,7 +589,7 @@ class MainActivity : SimpleActivity() {
     /** The round button: keypad on the phone tabs, "new message" on Messages. */
     private fun updateFab() {
         val onMessages = getCurrentFragment() == getMessagesFragment() && getMessagesFragment() != null
-        val icon = if (onMessages) com.omnioone.commons.R.drawable.ic_plus_vector else R.drawable.ic_dialpad_vector
+        val icon = if (onMessages) com.omnioone.app.R.drawable.ic_plus_vector else R.drawable.ic_dialpad_vector
         binding.mainDialpadButton.setImageDrawable(resources.getColoredDrawableWithColor(icon, getProperPrimaryColor().getContrastColor()))
         binding.mainDialpadButton.setOnClickListener {
             if (onMessages) {

@@ -5,7 +5,7 @@ import android.provider.BlockedNumberContract
 import android.provider.ContactsContract
 import android.telecom.Call
 import android.telecom.CallScreeningService
-import com.omnioone.commons.extensions.baseConfig
+import com.omnioone.app.core.baseConfig
 
 /** Omnio One: turns away blocked numbers, and unknown or hidden callers if you've chosen that. */
 class SimpleCallScreeningService : CallScreeningService() {

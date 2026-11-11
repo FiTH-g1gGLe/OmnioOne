@@ -322,25 +322,25 @@ class MessagesFragment(context: Context, attributeSet: AttributeSet) :
             actions += OmnioSheet.Item(host.getString(label), icon = drawable, labelColor = labelColour) to action
         }
         val person = conversation.people.singleOrNull()
-        add(if (conversation.isPinned) R.string.omnio_messages_unpin else R.string.omnio_messages_pin, com.omnioone.commons.R.drawable.ic_pin_vector, OmnioColors.FAVOURITES) {
+        add(if (conversation.isPinned) R.string.omnio_messages_unpin else R.string.omnio_messages_pin, com.omnioone.app.R.drawable.ic_pin_vector, OmnioColors.FAVOURITES) {
             setPinned(conversation, !conversation.isPinned)
         }
         if (conversation.unread > 0) {
-            add(R.string.omnio_messages_mark_read, com.omnioone.commons.R.drawable.ic_check_vector, OmnioColors.MESSAGES) { setRead(conversation, true) }
+            add(R.string.omnio_messages_mark_read, com.omnioone.app.R.drawable.ic_check_vector, OmnioColors.MESSAGES) { setRead(conversation, true) }
         } else {
-            add(R.string.omnio_messages_mark_unread, com.omnioone.commons.R.drawable.ic_check_vector, OmnioColors.MESSAGES) { setRead(conversation, false) }
+            add(R.string.omnio_messages_mark_unread, com.omnioone.app.R.drawable.ic_check_vector, OmnioColors.MESSAGES) { setRead(conversation, false) }
         }
         if (person != null) {
-            add(R.string.omnio_call, com.omnioone.commons.R.drawable.ic_phone_vector, OmnioColors.CALLS) { host.startCallWithConfirmationCheck(person.address, person.label) }
-            add(if (person.contactId != null) R.string.omnio_open_contact else R.string.omnio_add_to_contacts, com.omnioone.commons.R.drawable.ic_person_vector, OmnioColors.CONTACTS) {
+            add(R.string.omnio_call, com.omnioone.app.R.drawable.ic_phone_vector, OmnioColors.CALLS) { host.startCallWithConfirmationCheck(person.address, person.label) }
+            add(if (person.contactId != null) R.string.omnio_open_contact else R.string.omnio_add_to_contacts, com.omnioone.app.R.drawable.ic_person_vector, OmnioColors.CONTACTS) {
                 openPerson(conversation)
             }
         }
         add(R.string.omnio_messages_archive, R.drawable.ic_archive_vector, OmnioColors.TEXT_MUTED) { archive(conversation) }
         if (person != null) {
-            add(R.string.omnio_block_number, com.omnioone.commons.R.drawable.ic_block_vector, OmnioColors.MISSED, OmnioColors.MISSED) { confirmBlock(person.address, person.label) }
+            add(R.string.omnio_block_number, com.omnioone.app.R.drawable.ic_block_vector, OmnioColors.MISSED, OmnioColors.MISSED) { confirmBlock(person.address, person.label) }
         }
-        add(R.string.omnio_messages_delete, com.omnioone.commons.R.drawable.ic_delete_vector, OmnioColors.MISSED, OmnioColors.MISSED) { confirmDelete(conversation) }
+        add(R.string.omnio_messages_delete, com.omnioone.app.R.drawable.ic_delete_vector, OmnioColors.MISSED, OmnioColors.MISSED) { confirmDelete(conversation) }
         OmnioSheet.list(host, conversation.title, person?.address?.takeIf { person.name != null }, actions.map { it.first }) { picked -> actions[picked].second() }
     }
 
@@ -373,7 +373,7 @@ class MessagesFragment(context: Context, attributeSet: AttributeSet) :
             host,
             title = host.getString(R.string.omnio_messages_delete_question, conversation.title),
             message = host.getString(if (com.omnioone.app.messaging.OmnioRecycleBin.isOn(host)) R.string.omnio_bin_moved_desc else R.string.omnio_messages_delete_desc),
-            positive = host.getString(com.omnioone.commons.R.string.delete),
+            positive = host.getString(com.omnioone.app.R.string.delete),
             mainColor = OmnioColors.MISSED
         ) {
             ensureBackgroundThread {
@@ -413,7 +413,7 @@ class MessagesFragment(context: Context, attributeSet: AttributeSet) :
                 val rect = if (right) RectF(view.left.toFloat(), view.top.toFloat(), view.left + dX, view.bottom.toFloat())
                 else RectF(view.right + dX, view.top.toFloat(), view.right.toFloat(), view.bottom.toFloat())
                 canvas.drawRect(rect, paint)
-                val icon = ContextCompat.getDrawable(view.context, if (right) com.omnioone.commons.R.drawable.ic_check_vector else R.drawable.ic_archive_vector)?.mutate()
+                val icon = ContextCompat.getDrawable(view.context, if (right) com.omnioone.app.R.drawable.ic_check_vector else R.drawable.ic_archive_vector)?.mutate()
                 if (icon != null) {
                     val size = (26 * view.resources.displayMetrics.density).toInt()
                     val margin = size

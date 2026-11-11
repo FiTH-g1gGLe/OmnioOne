@@ -196,9 +196,9 @@ class OmnioAnswerControls(
 
     /** Two round buttons with labels. */
     private fun classicButtons() = row().apply {
-        addView(screen.roundButton(com.omnioone.commons.R.drawable.ic_cross_vector, design.declineColor, str(R.string.omnio_call_decline)) { onDecline() })
+        addView(screen.roundButton(com.omnioone.app.R.drawable.ic_cross_vector, design.declineColor, str(R.string.omnio_call_decline)) { onDecline() })
         addView(gap(110, 1))
-        addView(screen.roundButton(com.omnioone.commons.R.drawable.ic_check_vector, design.acceptColor, str(R.string.omnio_call_accept)) { onAnswer() })
+        addView(screen.roundButton(com.omnioone.app.R.drawable.ic_check_vector, design.acceptColor, str(R.string.omnio_call_accept)) { onAnswer() })
     }
 
     private fun pillButton(iconRes: Int, label: Int, colour: Int, heightDp: Int, onClick: () -> Unit) = LinearLayout(activity).apply {
@@ -222,20 +222,20 @@ class OmnioAnswerControls(
 
     /** Two wide pills side by side. */
     private fun pillButtons() = row().apply {
-        addView(pillButton(com.omnioone.commons.R.drawable.ic_cross_vector, R.string.omnio_call_decline, design.declineColor, 64) { onDecline() }.apply {
+        addView(pillButton(com.omnioone.app.R.drawable.ic_cross_vector, R.string.omnio_call_decline, design.declineColor, 64) { onDecline() }.apply {
             layoutParams = LinearLayout.LayoutParams(0, dp(64), 1f).apply { marginEnd = dp(8) }
         })
-        addView(pillButton(com.omnioone.commons.R.drawable.ic_check_vector, R.string.omnio_call_answer, design.acceptColor, 64) { onAnswer() }.apply {
+        addView(pillButton(com.omnioone.app.R.drawable.ic_check_vector, R.string.omnio_call_answer, design.acceptColor, 64) { onAnswer() }.apply {
             layoutParams = LinearLayout.LayoutParams(0, dp(64), 1f).apply { marginStart = dp(8) }
         })
     }
 
     /** A big answer bar with decline underneath. */
     private fun stackedButtons() = column().apply {
-        addView(pillButton(com.omnioone.commons.R.drawable.ic_check_vector, R.string.omnio_call_answer, design.acceptColor, 68) { onAnswer() }.apply {
+        addView(pillButton(com.omnioone.app.R.drawable.ic_check_vector, R.string.omnio_call_answer, design.acceptColor, 68) { onAnswer() }.apply {
             layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(68))
         })
-        addView(pillButton(com.omnioone.commons.R.drawable.ic_cross_vector, R.string.omnio_call_decline, faded(design.declineColor, 0xD9), 56) { onDecline() }.apply {
+        addView(pillButton(com.omnioone.app.R.drawable.ic_cross_vector, R.string.omnio_call_decline, faded(design.declineColor, 0xD9), 56) { onDecline() }.apply {
             layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(56)).apply { topMargin = dp(14) }
         })
     }
@@ -243,14 +243,14 @@ class OmnioAnswerControls(
     /** A big breathing answer bubble with a smaller decline button. */
     private fun bubbleButtons() = row().apply {
         gravity = Gravity.CENTER_VERTICAL or Gravity.CENTER_HORIZONTAL
-        addView(screen.roundButton(com.omnioone.commons.R.drawable.ic_cross_vector, design.declineColor, str(R.string.omnio_call_decline), sizeDp = 60) { onDecline() })
+        addView(screen.roundButton(com.omnioone.app.R.drawable.ic_cross_vector, design.declineColor, str(R.string.omnio_call_decline), sizeDp = 60) { onDecline() })
         addView(gap(70, 1))
         val holder = FrameLayout(activity).apply { layoutParams = LinearLayout.LayoutParams(dp(130), dp(130)) }
         val glow = View(activity).apply {
             background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(faded(design.acceptColor, 0x55)) }
             layoutParams = FrameLayout.LayoutParams(dp(100), dp(100), Gravity.CENTER)
         }
-        val bubble = icon(com.omnioone.commons.R.drawable.ic_check_vector, design.acceptColor, 100).apply {
+        val bubble = icon(com.omnioone.app.R.drawable.ic_check_vector, design.acceptColor, 100).apply {
             layoutParams = FrameLayout.LayoutParams(dp(100), dp(100), Gravity.CENTER)
             contentDescription = str(R.string.omnio_call_answer)
             setOnClickListener { onAnswer() }
@@ -281,9 +281,9 @@ class OmnioAnswerControls(
 
     /** Rounded-square tiles. */
     private fun tileButtons() = row().apply {
-        addView(tile(com.omnioone.commons.R.drawable.ic_cross_vector, R.string.omnio_call_decline, design.declineColor) { onDecline() })
+        addView(tile(com.omnioone.app.R.drawable.ic_cross_vector, R.string.omnio_call_decline, design.declineColor) { onDecline() })
         addView(gap(80, 1))
-        addView(tile(com.omnioone.commons.R.drawable.ic_check_vector, R.string.omnio_call_answer, design.acceptColor) { onAnswer() })
+        addView(tile(com.omnioone.app.R.drawable.ic_check_vector, R.string.omnio_call_answer, design.acceptColor) { onAnswer() })
     }
 
     // ---- swipe up / down ----
@@ -293,11 +293,11 @@ class OmnioAnswerControls(
         orientation = LinearLayout.HORIZONTAL
         gravity = Gravity.CENTER_VERTICAL
         layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
-        addView(screen.roundButton(com.omnioone.commons.R.drawable.ic_cross_vector, design.declineColor, str(R.string.omnio_call_decline), sizeDp = 60) { onDecline() })
+        addView(screen.roundButton(com.omnioone.app.R.drawable.ic_cross_vector, design.declineColor, str(R.string.omnio_call_decline), sizeDp = 60) { onDecline() })
         addView(View(activity), LinearLayout.LayoutParams(0, 1, 1f))
         // short, so it fits under the button at the screen edge
         val hint = screen.text("↑ " + str(R.string.omnio_call_answer), 14f, alpha = 0.8f)
-        val handle = icon(com.omnioone.commons.R.drawable.ic_check_vector, design.acceptColor, 76).apply { contentDescription = str(R.string.omnio_call_accept) }
+        val handle = icon(com.omnioone.app.R.drawable.ic_check_vector, design.acceptColor, 76).apply { contentDescription = str(R.string.omnio_call_accept) }
         drag(handle, vertical = true, range = { -dp(160).toFloat()..0f }, onTap = { nudge(hint) }) { offset ->
             if (offset < -dp(110)) { onAnswer(); true } else false
         }
@@ -313,7 +313,7 @@ class OmnioAnswerControls(
     private fun centreHandle() = column().apply {
         val up = screen.text("▲  " + str(R.string.omnio_call_answer), 14f, bold = true, color = design.acceptColor)
         val down = screen.text("▼  " + str(R.string.omnio_call_decline), 14f, bold = true, color = design.declineColor)
-        val handle = icon(com.omnioone.commons.R.drawable.ic_check_vector, design.textColor, 80, tint = OmnioColors.ON_ACCENT)
+        val handle = icon(com.omnioone.app.R.drawable.ic_check_vector, design.textColor, 80, tint = OmnioColors.ON_ACCENT)
         val handleBg = handle.background as GradientDrawable
         drag(
             handle, vertical = true, range = { -dp(110).toFloat()..dp(70).toFloat() },
@@ -350,18 +350,18 @@ class OmnioAnswerControls(
             ).apply { cornerRadius = dp(44).toFloat() }
         }
         track.addView(ImageView(activity).apply {
-            setImageResource(com.omnioone.commons.R.drawable.ic_check_vector)
+            setImageResource(com.omnioone.app.R.drawable.ic_check_vector)
             imageTintList = ColorStateList.valueOf(0xFFFFFFFF.toInt())
             alpha = 0.8f
             layoutParams = FrameLayout.LayoutParams(dp(26), dp(26), Gravity.TOP or Gravity.CENTER_HORIZONTAL).apply { topMargin = dp(18) }
         })
         track.addView(ImageView(activity).apply {
-            setImageResource(com.omnioone.commons.R.drawable.ic_cross_vector)
+            setImageResource(com.omnioone.app.R.drawable.ic_cross_vector)
             imageTintList = ColorStateList.valueOf(0xFFFFFFFF.toInt())
             alpha = 0.8f
             layoutParams = FrameLayout.LayoutParams(dp(26), dp(26), Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL).apply { bottomMargin = dp(18) }
         })
-        val knob = icon(com.omnioone.commons.R.drawable.ic_check_vector, design.textColor, 70, tint = OmnioColors.ON_ACCENT).apply {
+        val knob = icon(com.omnioone.app.R.drawable.ic_check_vector, design.textColor, 70, tint = OmnioColors.ON_ACCENT).apply {
             layoutParams = FrameLayout.LayoutParams(knobSize, knobSize, Gravity.CENTER)
         }
         val knobBg = knob.background as GradientDrawable
@@ -393,7 +393,7 @@ class OmnioAnswerControls(
                 startDelay = index * 230L
             })
         }
-        val handle = icon(com.omnioone.commons.R.drawable.ic_check_vector, design.acceptColor, 82)
+        val handle = icon(com.omnioone.app.R.drawable.ic_check_vector, design.acceptColor, 82)
         val hint = screen.text(str(R.string.omnio_answer_up_down_hint), 13f, alpha = 0.7f)
         drag(handle, vertical = true, range = { -dp(150).toFloat()..dp(60).toFloat() }, onTap = { nudge(arrows) }, onMove = { offset ->
             arrows.alpha = 1f - abs(offset) / dp(100)
@@ -429,7 +429,7 @@ class OmnioAnswerControls(
                 gravity = Gravity.CENTER
                 setPadding(0, dp(14), 0, 0)
                 addView(ImageView(activity).apply {
-                    setImageResource(com.omnioone.commons.R.drawable.ic_check_vector)
+                    setImageResource(com.omnioone.app.R.drawable.ic_check_vector)
                     imageTintList = ColorStateList.valueOf(0xFFFFFFFF.toInt())
                     layoutParams = LinearLayout.LayoutParams(dp(24), dp(24))
                 })
@@ -464,7 +464,7 @@ class OmnioAnswerControls(
         track.addView(screen.text(str(R.string.omnio_call_answer) + "  ›", 14f, alpha = 0.75f, color = design.acceptColor).apply {
             layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.MATCH_PARENT, Gravity.END).apply { marginEnd = dp(20) }
         })
-        val knob = icon(com.omnioone.commons.R.drawable.ic_check_vector, design.textColor, 64, tint = OmnioColors.ON_ACCENT).apply {
+        val knob = icon(com.omnioone.app.R.drawable.ic_check_vector, design.textColor, 64, tint = OmnioColors.ON_ACCENT).apply {
             layoutParams = FrameLayout.LayoutParams(dp(64), dp(64), Gravity.CENTER)
             contentDescription = str(R.string.omnio_call_answer)
         }
@@ -493,7 +493,7 @@ class OmnioAnswerControls(
         }
         loop(ObjectAnimator.ofFloat(label, View.ALPHA, 0.35f, 1f).apply { duration = 1000 })
         track.addView(label)
-        val knob = icon(com.omnioone.commons.R.drawable.ic_check_vector, design.acceptColor, 64).apply {
+        val knob = icon(com.omnioone.app.R.drawable.ic_check_vector, design.acceptColor, 64).apply {
             layoutParams = FrameLayout.LayoutParams(dp(64), dp(64), Gravity.START or Gravity.CENTER_VERTICAL).apply { marginStart = dp(6) }
         }
         val limit = { (track.width - knob.width - dp(12)).toFloat() }
@@ -514,23 +514,23 @@ class OmnioAnswerControls(
             layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(80))
         }
         track.addView(ImageView(activity).apply {
-            setImageResource(com.omnioone.commons.R.drawable.ic_cross_vector)
+            setImageResource(com.omnioone.app.R.drawable.ic_cross_vector)
             imageTintList = ColorStateList.valueOf(0xFFFFFFFF.toInt())
             layoutParams = FrameLayout.LayoutParams(dp(28), dp(28), Gravity.START or Gravity.CENTER_VERTICAL).apply { marginStart = dp(24) }
         })
         track.addView(ImageView(activity).apply {
-            setImageResource(com.omnioone.commons.R.drawable.ic_check_vector)
+            setImageResource(com.omnioone.app.R.drawable.ic_check_vector)
             imageTintList = ColorStateList.valueOf(0xFFFFFFFF.toInt())
             layoutParams = FrameLayout.LayoutParams(dp(28), dp(28), Gravity.END or Gravity.CENTER_VERTICAL).apply { marginEnd = dp(24) }
         })
-        val knob = icon(com.omnioone.commons.R.drawable.ic_check_vector, design.textColor, 66, tint = OmnioColors.ON_ACCENT).apply {
+        val knob = icon(com.omnioone.app.R.drawable.ic_check_vector, design.textColor, 66, tint = OmnioColors.ON_ACCENT).apply {
             layoutParams = FrameLayout.LayoutParams(dp(66), dp(66), Gravity.CENTER)
         }
         val knobBg = knob.background as GradientDrawable
         val limit = { (track.width - knob.width) / 2f - dp(7) }
         drag(knob, vertical = false, range = { -limit()..limit() }, onMove = { offset ->
             knobBg.setColor(mix(design.textColor, if (offset > 0) design.acceptColor else design.declineColor, abs(offset) / limit()))
-            knob.setImageResource(if (offset < 0) com.omnioone.commons.R.drawable.ic_cross_vector else com.omnioone.commons.R.drawable.ic_check_vector)
+            knob.setImageResource(if (offset < 0) com.omnioone.app.R.drawable.ic_cross_vector else com.omnioone.app.R.drawable.ic_check_vector)
             knob.imageTintList = ColorStateList.valueOf(if (abs(offset) > limit() / 2) 0xFFFFFFFF.toInt() else OmnioColors.ON_ACCENT)
         }, onTap = { nudge(knob) }) { offset ->
             when {
@@ -558,7 +558,7 @@ class OmnioAnswerControls(
         loop(ObjectAnimator.ofFloat(right, View.TRANSLATION_X, 0f, dp(8).toFloat()).apply { duration = 700 })
         holder.addView(left)
         holder.addView(right)
-        val circle = icon(com.omnioone.commons.R.drawable.ic_check_vector, design.textColor, 100, tint = OmnioColors.ON_ACCENT).apply {
+        val circle = icon(com.omnioone.app.R.drawable.ic_check_vector, design.textColor, 100, tint = OmnioColors.ON_ACCENT).apply {
             layoutParams = FrameLayout.LayoutParams(dp(100), dp(100), Gravity.CENTER)
         }
         val circleBg = circle.background as GradientDrawable
@@ -589,14 +589,14 @@ class OmnioAnswerControls(
             background = pill(trackColour, 31)
             layoutParams = LinearLayout.LayoutParams(dp(250), dp(62))
         }
-        val knob = icon(com.omnioone.commons.R.drawable.ic_check_vector, design.acceptColor, 50).apply {
+        val knob = icon(com.omnioone.app.R.drawable.ic_check_vector, design.acceptColor, 50).apply {
             layoutParams = FrameLayout.LayoutParams(dp(50), dp(50), Gravity.CENTER)
         }
         val knobBg = knob.background as GradientDrawable
         val limit = { (track.width - knob.width) / 2f - dp(6) }
         drag(knob, vertical = false, range = { -limit()..limit() }, onMove = { offset ->
             knobBg.setColor(if (offset < 0) mix(design.acceptColor, design.declineColor, -offset / (limit() / 3)) else design.acceptColor)
-            knob.setImageResource(if (offset < -limit() / 3) com.omnioone.commons.R.drawable.ic_cross_vector else com.omnioone.commons.R.drawable.ic_check_vector)
+            knob.setImageResource(if (offset < -limit() / 3) com.omnioone.app.R.drawable.ic_cross_vector else com.omnioone.app.R.drawable.ic_check_vector)
         }, onTap = { nudge(knob) }) { offset ->
             when {
                 offset > limit() * 0.75f -> { onAnswer(); true }

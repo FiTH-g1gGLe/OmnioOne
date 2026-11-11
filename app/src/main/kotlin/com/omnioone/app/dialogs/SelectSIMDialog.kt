@@ -6,9 +6,9 @@ import android.view.ViewGroup
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import androidx.appcompat.app.AlertDialog
-import com.omnioone.commons.activities.BaseSimpleActivity
-import com.omnioone.commons.extensions.getAlertDialogBuilder
-import com.omnioone.commons.extensions.setupDialogStuff
+import com.omnioone.app.core.OmnioActivity
+import com.omnioone.app.core.getAlertDialogBuilder
+import com.omnioone.app.core.setupDialogStuff
 import com.omnioone.app.core.viewBinding
 import com.omnioone.app.R
 import com.omnioone.app.databinding.DialogSelectSimBinding
@@ -17,7 +17,7 @@ import com.omnioone.app.extensions.getAvailableSIMCardLabels
 
 @SuppressLint("MissingPermission")
 class SelectSIMDialog(
-    val activity: BaseSimpleActivity,
+    val activity: OmnioActivity,
     val phoneNumber: String,
     onDismiss: () -> Unit = {},
     val callback: (handle: PhoneAccountHandle?) -> Unit

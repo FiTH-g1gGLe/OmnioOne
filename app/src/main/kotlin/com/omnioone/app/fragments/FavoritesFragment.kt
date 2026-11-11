@@ -21,7 +21,7 @@ import com.omnioone.app.helpers.OmnioDisplay
 import com.omnioone.app.helpers.OmnioFavourites
 import com.omnioone.app.helpers.OmnioPeople
 import com.omnioone.app.interfaces.RefreshItemsListener
-import com.omnioone.commons.extensions.baseConfig
+import com.omnioone.app.core.baseConfig
 import com.omnioone.app.core.hasPermission
 import com.omnioone.app.core.ON_CLICK_CALL_CONTACT
 import com.omnioone.app.core.OmnioColors

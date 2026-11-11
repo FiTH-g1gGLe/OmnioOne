@@ -651,4 +651,11 @@
     <string name="omnio_filter_sources">Show contacts from</string>
     <string name="omnio_filter_sources_help">Tap an account to show or hide its contacts.</string>
     <string name="omnio_hidden">Hidden</string>
+    <string name="omnio_no_number">No phone number saved</string>
+    <string name="omnio_call_question">Call %s?</string>
+    <string name="omnio_open_settings">Open settings</string>
+    <string name="omnio_permission_needed">Permission needed</string>
+    <string name="omnio_search">Search</string>
+    <string name="omnio_view_grid">Grid</string>
+    <string name="omnio_view_list">List</string>
 </resources>

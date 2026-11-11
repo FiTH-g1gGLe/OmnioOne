@@ -265,7 +265,7 @@ class OmnioCallActivity : SimpleActivity() {
             com.omnioone.app.messaging.OmnioSender.send(this, text, listOf(number), -1)
             toast(R.string.omnio_reply_sent)
         } catch (e: Exception) {
-            toast(com.omnioone.commons.R.string.unknown_error_occurred)
+            toast(com.omnioone.app.R.string.unknown_error_occurred)
         }
     }
 

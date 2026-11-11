@@ -10,9 +10,9 @@ import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.ScrollView
 import android.widget.TextView
-import com.omnioone.commons.extensions.getAlertDialogBuilder
-import com.omnioone.commons.extensions.getProperTextColor
-import com.omnioone.commons.extensions.setupDialogStuff
+import com.omnioone.app.core.getAlertDialogBuilder
+import com.omnioone.app.core.getProperTextColor
+import com.omnioone.app.core.setupDialogStuff
 import com.omnioone.app.R
 import com.omnioone.app.activities.SimpleActivity
 import com.omnioone.app.extensions.config
@@ -134,7 +134,7 @@ class OmnioDisplayDialog(private val activity: SimpleActivity, private val callb
 
         val scroll = ScrollView(activity).apply { addView(content) }
         activity.getAlertDialogBuilder()
-            .setPositiveButton(com.omnioone.commons.R.string.ok) { _, _ ->
+            .setPositiveButton(com.omnioone.app.R.string.ok) { _, _ ->
                 OmnioDisplay.setStyle(activity, style)
                 columnsByStyle.forEach { (s, c) -> OmnioDisplay.setColumns(activity, s, c) }
                 (spacingGroup.findViewById<View>(spacingGroup.checkedRadioButtonId)?.tag as? Int)?.let {
@@ -147,7 +147,7 @@ class OmnioDisplayDialog(private val activity: SimpleActivity, private val callb
                 if (surnameChanged) activity.config.startNameWithSurname = wantSurname
                 callback(surnameChanged)
             }
-            .setNegativeButton(com.omnioone.commons.R.string.cancel, null)
+            .setNegativeButton(com.omnioone.app.R.string.cancel, null)
             .apply {
                 activity.setupDialogStuff(scroll, this, R.string.omnio_display_style)
             }

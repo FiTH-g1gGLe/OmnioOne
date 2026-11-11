@@ -305,28 +305,28 @@ class RecentsFragment(
             actions += OmnioSheet.Item(host.getString(label), icon = drawable, labelColor = labelColour) to action
         }
         if (!entry.isPrivate) {
-            add(R.string.omnio_call, com.omnioone.commons.R.drawable.ic_phone_vector, OmnioColors.CALLS) { call(entry) }
+            add(R.string.omnio_call, com.omnioone.app.R.drawable.ic_phone_vector, OmnioColors.CALLS) { call(entry) }
             if (host.areMultipleSIMsAvailable()) {
-                add(R.string.omnio_call_sim_1, com.omnioone.commons.R.drawable.ic_phone_vector, OmnioColors.CALLS) {
+                add(R.string.omnio_call_sim_1, com.omnioone.app.R.drawable.ic_phone_vector, OmnioColors.CALLS) {
                     host.callContactWithSimWithConfirmationCheck(entry.number, entry.name, useMainSIM = true)
                 }
-                add(R.string.omnio_call_sim_2, com.omnioone.commons.R.drawable.ic_phone_vector, OmnioColors.CALLS) {
+                add(R.string.omnio_call_sim_2, com.omnioone.app.R.drawable.ic_phone_vector, OmnioColors.CALLS) {
                     host.callContactWithSimWithConfirmationCheck(entry.number, entry.name, useMainSIM = false)
                 }
             }
             add(R.string.omnio_text, R.drawable.ic_omnio_chat, OmnioColors.MESSAGES) { text(entry) }
             if (entry.isSaved) {
-                add(R.string.omnio_open_contact, com.omnioone.commons.R.drawable.ic_person_vector, OmnioColors.CONTACTS) { open(entry) }
+                add(R.string.omnio_open_contact, com.omnioone.app.R.drawable.ic_person_vector, OmnioColors.CONTACTS) { open(entry) }
             } else {
-                add(R.string.omnio_add_to_contacts, com.omnioone.commons.R.drawable.ic_add_person_vector, OmnioColors.CONTACTS) { open(entry) }
+                add(R.string.omnio_add_to_contacts, com.omnioone.app.R.drawable.ic_add_person_vector, OmnioColors.CONTACTS) { open(entry) }
             }
-            add(R.string.omnio_copy_number, com.omnioone.commons.R.drawable.ic_copy_vector, OmnioColors.TEXT_MUTED) { copy(entry) }
+            add(R.string.omnio_copy_number, com.omnioone.app.R.drawable.ic_copy_vector, OmnioColors.TEXT_MUTED) { copy(entry) }
         }
-        add(R.string.omnio_call_history, com.omnioone.commons.R.drawable.ic_info_outline_vector, OmnioColors.TEXT_MUTED) { showHistory(entry) }
+        add(R.string.omnio_call_history, com.omnioone.app.R.drawable.ic_info_outline_vector, OmnioColors.TEXT_MUTED) { showHistory(entry) }
         if (!entry.isPrivate) {
-            add(R.string.omnio_block_number, com.omnioone.commons.R.drawable.ic_block_vector, OmnioColors.MISSED, OmnioColors.MISSED) { confirmBlock(entry) }
+            add(R.string.omnio_block_number, com.omnioone.app.R.drawable.ic_block_vector, OmnioColors.MISSED, OmnioColors.MISSED) { confirmBlock(entry) }
         }
-        add(R.string.omnio_delete_from_recents, com.omnioone.commons.R.drawable.ic_delete_vector, OmnioColors.MISSED, OmnioColors.MISSED) { confirmDelete(entry) }
+        add(R.string.omnio_delete_from_recents, com.omnioone.app.R.drawable.ic_delete_vector, OmnioColors.MISSED, OmnioColors.MISSED) { confirmDelete(entry) }
 
         val subtitle = listOfNotNull(
             if (entry.isSaved && !entry.isPrivate) entry.number else null,
@@ -390,7 +390,7 @@ class RecentsFragment(
             host,
             title = host.getString(R.string.omnio_delete_recents_question),
             message = host.getString(R.string.omnio_delete_recents_desc, entry.calls.size, entry.name),
-            positive = host.getString(com.omnioone.commons.R.string.delete),
+            positive = host.getString(com.omnioone.app.R.string.delete),
             mainColor = OmnioColors.MISSED
         ) {
             host.handlePermission(PERMISSION_WRITE_CALL_LOG) { granted ->
@@ -436,7 +436,7 @@ class RecentsFragment(
                 val rect = if (right) RectF(view.left.toFloat(), view.top.toFloat(), view.left + dX, view.bottom.toFloat())
                 else RectF(view.right + dX, view.top.toFloat(), view.right.toFloat(), view.bottom.toFloat())
                 canvas.drawRect(rect, paint)
-                val icon = ContextCompat.getDrawable(view.context, if (right) com.omnioone.commons.R.drawable.ic_phone_vector else R.drawable.ic_omnio_chat)?.mutate()
+                val icon = ContextCompat.getDrawable(view.context, if (right) com.omnioone.app.R.drawable.ic_phone_vector else R.drawable.ic_omnio_chat)?.mutate()
                 if (icon != null) {
                     val size = (26 * view.resources.displayMetrics.density).toInt()
                     val margin = (26 * view.resources.displayMetrics.density).toInt()

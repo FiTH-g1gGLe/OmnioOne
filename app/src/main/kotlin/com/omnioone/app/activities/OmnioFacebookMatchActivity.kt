@@ -26,7 +26,7 @@ import com.omnioone.app.helpers.OmnioPeople
 import com.omnioone.app.helpers.OmnioSheet
 import com.omnioone.app.helpers.OmnioSocials
 import com.omnioone.app.services.OmnioLinkHelperService
-import com.omnioone.commons.extensions.baseConfig
+import com.omnioone.app.core.baseConfig
 import com.omnioone.app.core.toast
 import com.omnioone.app.core.OmnioColors
 import com.omnioone.app.core.ensureBackgroundThread
@@ -139,7 +139,7 @@ class OmnioFacebookMatchActivity : SimpleActivity() {
             }
             runOnUiThread {
                 if (count == 0) {
-                    OmnioSheet.confirm(this, getString(R.string.omnio_fb_no_friends_title), getString(R.string.omnio_fb_no_friends_desc), positive = getString(com.omnioone.commons.R.string.ok)) {}
+                    OmnioSheet.confirm(this, getString(R.string.omnio_fb_no_friends_title), getString(R.string.omnio_fb_no_friends_desc), positive = getString(com.omnioone.app.R.string.ok)) {}
                 } else {
                     toast(getString(R.string.omnio_fb_found, count))
                     refresh()
@@ -159,7 +159,7 @@ class OmnioFacebookMatchActivity : SimpleActivity() {
             try {
                 startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://accountscenter.facebook.com/info_and_permissions/dyi/")))
             } catch (e: Exception) {
-                toast(com.omnioone.commons.R.string.no_app_found)
+                toast(com.omnioone.app.R.string.no_app_found)
             }
         }
         screen.section("2", getString(R.string.omnio_fb_step2_title))
@@ -213,7 +213,7 @@ class OmnioFacebookMatchActivity : SimpleActivity() {
                 importFile.launch(arrayOf("application/zip", "application/json", "application/octet-stream", "*/*"))
             },
             screen.row(getString(R.string.omnio_fb_forget), getString(R.string.omnio_fb_forget_desc), subtitleColor = OmnioColors.MISSED) {
-                OmnioSheet.confirm(this, getString(R.string.omnio_fb_forget), getString(R.string.omnio_fb_forget_desc), positive = getString(com.omnioone.commons.R.string.delete), mainColor = OmnioColors.MISSED) {
+                OmnioSheet.confirm(this, getString(R.string.omnio_fb_forget), getString(R.string.omnio_fb_forget_desc), positive = getString(com.omnioone.app.R.string.delete), mainColor = OmnioColors.MISSED) {
                     OmnioFacebookFriends.forget(this)
                     result = null
                     showIntro()
@@ -230,7 +230,7 @@ class OmnioFacebookMatchActivity : SimpleActivity() {
         val buttons = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
-            addView(screen.iconButton(com.omnioone.commons.R.drawable.ic_cross_vector, OmnioColors.TEXT_MUTED, getString(R.string.omnio_fb_not_them)) { notThem(match) })
+            addView(screen.iconButton(com.omnioone.app.R.drawable.ic_cross_vector, OmnioColors.TEXT_MUTED, getString(R.string.omnio_fb_not_them)) { notThem(match) })
             addView(pill(getString(R.string.omnio_fb_link)) { startQueue(listOf(match)) })
         }
         return screen.row(match.person.name, subtitle, leading = avatar, trailing = buttons) { startQueue(listOf(match)) }
@@ -290,7 +290,7 @@ class OmnioFacebookMatchActivity : SimpleActivity() {
         val opened = search != null && (open(Intent(Intent.ACTION_VIEW, Uri.parse(search)).setPackage(facebook.pkg)) || open(Intent(Intent.ACTION_VIEW, Uri.parse(search))))
         if (!opened) {
             stopQueue()
-            toast(com.omnioone.commons.R.string.no_app_found)
+            toast(com.omnioone.app.R.string.no_app_found)
             return
         }
         val left = queue.size
@@ -329,7 +329,7 @@ class OmnioFacebookMatchActivity : SimpleActivity() {
             }
             runOnUiThread {
                 if (!ok) {
-                    toast(com.omnioone.commons.R.string.unknown_error_occurred)
+                    toast(com.omnioone.app.R.string.unknown_error_occurred)
                     missed(match)
                     return@runOnUiThread
                 }

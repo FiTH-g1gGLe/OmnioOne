@@ -229,7 +229,7 @@ object OmnioSheet {
                         })
                     }
                     addView(ImageView(this@with).apply {
-                        setImageResource(com.omnioone.commons.R.drawable.ic_chevron_right_vector)
+                        setImageResource(com.omnioone.app.R.drawable.ic_chevron_right_vector)
                         imageTintList = ColorStateList.valueOf(0x80FFFFFF.toInt())
                         layoutParams = LinearLayout.LayoutParams(dp(28), dp(28))
                     })
@@ -250,7 +250,7 @@ object OmnioSheet {
         title: String,
         message: String? = null,
         positive: String,
-        negative: String = activity.getString(com.omnioone.commons.R.string.cancel),
+        negative: String = activity.getString(com.omnioone.app.R.string.cancel),
         neutral: String? = null,
         onNeutral: () -> Unit = {},
         onNegative: () -> Unit = {},
@@ -273,7 +273,7 @@ object OmnioSheet {
         message: String?,
         bitmap: android.graphics.Bitmap,
         positive: String,
-        negative: String = activity.getString(com.omnioone.commons.R.string.cancel),
+        negative: String = activity.getString(com.omnioone.app.R.string.cancel),
         onNegative: () -> Unit = {},
         onPositive: () -> Unit
     ) {
@@ -297,12 +297,12 @@ object OmnioSheet {
         message: String? = null,
         hint: String = "",
         initial: String = "",
-        positive: String = activity.getString(com.omnioone.commons.R.string.ok),
+        positive: String = activity.getString(com.omnioone.app.R.string.ok),
         inputType: Int = InputType.TYPE_CLASS_TEXT,
         multiLine: Boolean = false,
         neutral: String? = null,
         onNeutral: () -> Unit = {},
-        negative: String = activity.getString(com.omnioone.commons.R.string.cancel),
+        negative: String = activity.getString(com.omnioone.app.R.string.cancel),
         onPositive: (String) -> Unit
     ): EditText {
         val frame = Frame(activity, title, message)
