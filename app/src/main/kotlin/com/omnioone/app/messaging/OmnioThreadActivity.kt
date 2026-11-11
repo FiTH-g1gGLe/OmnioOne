@@ -64,6 +64,8 @@ import java.util.Calendar
 class OmnioThreadActivity : SimpleActivity() {
 
     companion object {
+        /** Who the chat is with, for a brand-new chat that has no messages yet. */
+        const val EXTRA_ADDRESSES = "omnio_addresses"
         private val QUICK_EMOJIS = listOf("👍", "❤️", "😂", "😮", "😢", "🙏", "‼️", "❓", "👎")
     }
 
@@ -132,7 +134,8 @@ class OmnioThreadActivity : SimpleActivity() {
         setContentView(buildScreen())
         window.decorView.post { (input.parent?.parent as? View)?.requestFocus() }
         titleView.text = intent.getStringExtra(THREAD_TITLE).orEmpty()
-        input.setText(getSmsDraft(threadId))
+        input.setText(intent.getStringExtra(com.omnioone.messages.helpers.THREAD_TEXT) ?: getSmsDraft(threadId))
+        sharedAttachments()
         setUpSim()
         contentResolver.registerContentObserver(Uri.parse("content://mms-sms/"), true, observer)
         load()
@@ -231,7 +234,16 @@ class OmnioThreadActivity : SimpleActivity() {
         }
     }
 
-    private fun addresses() = conversation?.people?.map { it.address }.orEmpty()
+    private fun addresses() = conversation?.people?.map { it.address }?.takeIf { it.isNotEmpty() }
+        ?: intent.getStringArrayListExtra(EXTRA_ADDRESSES).orEmpty()
+
+    /** Photos or files shared from another app arrive ready to send. */
+    @Suppress("DEPRECATION")
+    private fun sharedAttachments() {
+        val uris = if (android.os.Build.VERSION.SDK_INT >= 33) intent.getParcelableArrayListExtra(com.omnioone.messages.helpers.THREAD_ATTACHMENT_URIS, Uri::class.java)
+        else intent.getParcelableArrayListExtra<Uri>(com.omnioone.messages.helpers.THREAD_ATTACHMENT_URIS)
+        if (!uris.isNullOrEmpty()) addAttachments(uris)
+    }
 
     /** Sends straight away (reactions, resends and the end of the undo wait). */
     private fun send(text: String, files: List<OmnioSender.Attachment> = emptyList(), sim: Int = subId) {

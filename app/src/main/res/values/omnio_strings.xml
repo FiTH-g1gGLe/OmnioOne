@@ -561,4 +561,16 @@ Unread, new: %3$d · current: %4$d</string>
     <string name="omnio_notify_contact">Contact card</string>
     <string name="omnio_notify_attachment">Attachment</string>
     <string name="omnio_notify_mms_failed">Couldn\'t download a picture message</string>
+    <string name="omnio_new_title">New message</string>
+    <string name="omnio_new_group_title">New group</string>
+    <string name="omnio_new_search">🔎 Name or number</string>
+    <string name="omnio_new_group">New group message</string>
+    <string name="omnio_new_group_on">Picking people for a group · tap to cancel</string>
+    <string name="omnio_new_send_to">Send to %s</string>
+    <string name="omnio_new_all_contacts">All contacts</string>
+    <string name="omnio_new_matches">%d found</string>
+    <string name="omnio_new_which_number">Which number?</string>
+    <string name="omnio_new_numbers">%1$s · +%2$d more</string>
+    <string name="omnio_new_start_chat">Start chat</string>
+    <string name="omnio_new_start_group">Start group chat (%d)</string>
 </resources>

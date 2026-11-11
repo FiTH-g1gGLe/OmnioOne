@@ -143,6 +143,34 @@
         </receiver>
 
         <activity
+            android:name=".messaging.OmnioNewMessageActivity"
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize|stateVisible"
+            android:screenOrientation="portrait">
+
+            <intent-filter>
+                <action android:name="android.intent.action.SENDTO" />
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="sms" />
+                <data android:scheme="smsto" />
+                <data android:scheme="mms" />
+                <data android:scheme="mmsto" />
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:mimeType="*/*" />
+            </intent-filter>
+        </activity>
+
+        <activity
             android:name=".messaging.OmnioThreadActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize"

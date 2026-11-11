@@ -658,7 +658,7 @@ class MainActivity : SimpleActivity() {
         binding.mainDialpadButton.setImageDrawable(resources.getColoredDrawableWithColor(icon, getProperPrimaryColor().getContrastColor()))
         binding.mainDialpadButton.setOnClickListener {
             if (onMessages) {
-                startActivity(Intent(this, com.omnioone.messages.activities.NewConversationActivity::class.java))
+                startActivity(Intent(this, com.omnioone.app.messaging.OmnioNewMessageActivity::class.java))
             } else {
                 launchDialpad()
             }

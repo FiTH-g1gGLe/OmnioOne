@@ -65,36 +65,8 @@
         <activity
             android:name=".activities.NewConversationActivity"
             android:configChanges="orientation"
-            android:exported="true"
-            android:parentActivityName=".activities.MainActivity">
-
-            <intent-filter>
-                <action android:name="android.intent.action.SENDTO" />
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data android:scheme="sms" />
-                <data android:scheme="smsto" />
-                <data android:scheme="mms" />
-                <data android:scheme="mmsto" />
-            </intent-filter>
-
-            <intent-filter>
-                <action android:name="android.intent.action.SEND" />
-                <category android:name="android.intent.category.DEFAULT" />
-
-                <data android:mimeType="*/*" />
-            </intent-filter>
-
-            <intent-filter>
-                <action android:name="android.intent.action.SEND_MULTIPLE" />
-                <category android:name="android.intent.category.DEFAULT" />
-
-                <data android:mimeType="*/*" />
-            </intent-filter>
-        </activity>
+            android:exported="false"
+            android:parentActivityName=".activities.MainActivity" />
 
         <activity
             android:name=".activities.SettingsActivity"
