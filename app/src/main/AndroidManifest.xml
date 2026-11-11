@@ -171,6 +171,11 @@
         </activity>
 
         <activity
+            android:name=".messaging.OmnioChatListActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <activity
             android:name=".messaging.OmnioThreadActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize"

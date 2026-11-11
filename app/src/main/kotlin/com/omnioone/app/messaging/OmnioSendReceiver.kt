@@ -11,7 +11,6 @@ import android.provider.ContactsContract
 import android.provider.Telephony.Mms
 import android.provider.Telephony.Sms
 import android.telephony.SmsMessage
-import com.omnioone.messages.extensions.deleteMessage
 import com.omnioone.messages.extensions.messagesDB
 import com.omnioone.messages.helpers.refreshConversations
 import com.omnioone.messages.helpers.refreshMessages
@@ -93,7 +92,7 @@ class OmnioSendReceiver : BroadcastReceiver() {
         // a resend replaces the failed original
         val retryOf = intent.getLongExtra(OmnioSender.EXTRA_RETRY_OF, -1L)
         if (retryOf > 0) try {
-            context.deleteMessage(retryOf, true)
+            context.contentResolver.delete(android.content.ContentUris.withAppendedId(Mms.CONTENT_URI, retryOf), null, null)
         } catch (ignored: Exception) {
         }
         intent.getStringExtra("file_path")?.let { File(it).delete() }

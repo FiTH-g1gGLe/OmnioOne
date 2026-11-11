@@ -94,15 +94,11 @@ object OmnioMessageStore {
         context.getSharedPreferences("Prefs", Context.MODE_PRIVATE).getStringSet("pinned_conversations", emptySet()).orEmpty()
             .mapNotNull { it.toLongOrNull() }.toSet()
 
-    /** Archived chats, from the current Messages database (moved into Omnio's own in a later stage). */
-    fun archived(context: Context): Set<Long> = try {
-        com.omnioone.messages.databases.MessagesDatabase.getInstance(context).ConversationsDao().getAllArchived().map { it.threadId }.toSet()
-    } catch (e: Exception) {
-        emptySet()
-    }
+    /** Archived chats (kept by Omnio itself). */
+    fun archived(context: Context): Set<Long> = OmnioArchive.ids(context)
 
     /** Every conversation, newest first (or just [onlyThread]). */
-    fun conversations(context: Context, onlyThread: Long? = null): List<Conversation> {
+    fun conversations(context: Context, onlyThread: Long? = null, showBinned: Boolean = false): List<Conversation> {
         val addressBook = addresses(context)
         val unread = unreadByThread(context)
         val pins = pinned(context)
@@ -139,17 +135,31 @@ object OmnioMessageStore {
             }
         } catch (ignored: Exception) {
         }
-        return list
+        return if (showBinned) list else hideBinned(context, list)
+    }
+
+    /** Chats with messages in the recycle bin: show their latest remaining message, or hide them if nothing's left. */
+    private fun hideBinned(context: Context, list: List<Conversation>): List<Conversation> {
+        val binnedThreads = OmnioRecycleBin.entries(context).map { it.threadId }.toSet()
+        if (binnedThreads.isEmpty()) return list
+        return list.mapNotNull { chat ->
+            if (chat.threadId !in binnedThreads) return@mapNotNull chat
+            val last = messages(context, chat.threadId, limit = 1).lastOrNull() ?: return@mapNotNull null
+            chat.copy(snippet = last.body.ifBlank { if (last.parts.isNotEmpty()) "📎" else "" }, date = last.date)
+        }.sortedByDescending { it.date }
     }
 
     /** The latest [limit] texts and picture messages in a conversation, oldest first. */
-    fun messages(context: Context, threadId: Long, limit: Int = 200): List<Message> {
+    fun messages(context: Context, threadId: Long, limit: Int = 200, includeBinned: Boolean = false): List<Message> {
+        val binned = if (includeBinned) emptySet() else OmnioRecycleBin.keys(context)
+        // binned messages are skipped, so look a little further back to still fill [limit]
         val all = ArrayList<Message>()
+        val fetch = limit + binned.size
         try {
             context.contentResolver.query(
                 Sms.CONTENT_URI,
                 arrayOf(Sms._ID, Sms.TYPE, Sms.ADDRESS, Sms.BODY, Sms.DATE, Sms.READ, Sms.STATUS),
-                "${Sms.THREAD_ID} = ?", arrayOf(threadId.toString()), "${Sms.DATE} DESC LIMIT $limit"
+                "${Sms.THREAD_ID} = ?", arrayOf(threadId.toString()), "${Sms.DATE} DESC LIMIT $fetch"
             )?.use { cursor ->
                 while (cursor.moveToNext()) {
                     val type = cursor.getInt(1)
@@ -173,7 +183,7 @@ object OmnioMessageStore {
             context.contentResolver.query(
                 Mms.CONTENT_URI,
                 arrayOf(Mms._ID, Mms.MESSAGE_BOX, Mms.DATE, Mms.READ),
-                "${Mms.THREAD_ID} = ?", arrayOf(threadId.toString()), "${Mms.DATE} DESC LIMIT $limit"
+                "${Mms.THREAD_ID} = ?", arrayOf(threadId.toString()), "${Mms.DATE} DESC LIMIT $fetch"
             )?.use { cursor ->
                 while (cursor.moveToNext()) {
                     val id = cursor.getLong(0)
@@ -196,7 +206,7 @@ object OmnioMessageStore {
             }
         } catch (ignored: Exception) {
         }
-        return all.sortedBy { it.date }.takeLast(limit)
+        return all.filter { binned.isEmpty() || OmnioRecycleBin.keyOf(it.isMms, it.id) !in binned }.sortedBy { it.date }.takeLast(limit)
     }
 
     private fun mmsParts(context: Context, mmsId: Long): List<Part> {

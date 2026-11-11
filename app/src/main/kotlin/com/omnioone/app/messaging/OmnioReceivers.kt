@@ -18,8 +18,6 @@ import com.omnioone.app.R
 import com.omnioone.messages.extensions.conversationsDB
 import com.omnioone.messages.extensions.getConversations
 import com.omnioone.messages.extensions.insertOrUpdateConversation
-import com.omnioone.messages.extensions.shouldUnarchive
-import com.omnioone.messages.extensions.updateConversationArchivedStatus
 import com.omnioone.messages.helpers.THREAD_ID
 import com.omnioone.messages.helpers.refreshConversations
 import com.omnioone.messages.helpers.refreshMessages
@@ -29,7 +27,7 @@ private object OmnioIncoming {
 
     fun arrived(context: Context, threadId: Long, find: (List<OmnioMessageStore.Message>) -> OmnioMessageStore.Message?) {
         try {
-            if (context.shouldUnarchive()) context.updateConversationArchivedStatus(threadId, false)
+            OmnioArchive.onNewMessage(context, threadId)
         } catch (ignored: Exception) {
         }
         keepOldScreensInStep(context, threadId)

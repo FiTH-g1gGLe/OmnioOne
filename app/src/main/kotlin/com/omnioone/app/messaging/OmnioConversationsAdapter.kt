@@ -25,12 +25,13 @@ class OmnioConversationsAdapter(
     private val onPhoto: (OmnioMessageStore.Conversation) -> Unit,
     private val onMenu: (OmnioMessageStore.Conversation) -> Unit,
     private val onArchived: () -> Unit,
+    private val onBin: () -> Unit = {},
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     sealed class Item {
         data class Header(val label: String) : Item()
         data class Row(val conversation: OmnioMessageStore.Conversation) : Item()
-        data class ArchivedRow(val count: Int, val label: String) : Item()
+        data class ArchivedRow(val count: Int, val label: String, val bin: Boolean = false) : Item()
     }
 
     var items: List<Item> = emptyList()
@@ -83,7 +84,8 @@ class OmnioConversationsAdapter(
                 val ripple = TypedValue()
                 context.theme.resolveAttribute(android.R.attr.selectableItemBackground, ripple, true)
                 setBackgroundResource(ripple.resourceId)
-                setOnClickListener { onArchived() }
+                setTextColor(if (item.bin) OmnioColors.TEXT_MUTED else OmnioColors.MESSAGES)
+                setOnClickListener { if (item.bin) onBin() else onArchived() }
             }
             is Item.Row -> (holder as RowHolder).bind(item.conversation)
         }

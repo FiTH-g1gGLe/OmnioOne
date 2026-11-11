@@ -36,10 +36,8 @@ import com.omnioone.commons.helpers.OmnioColors
 import com.omnioone.commons.helpers.OmnioContactData
 import com.omnioone.commons.helpers.PERMISSION_READ_SMS
 import com.omnioone.commons.helpers.ensureBackgroundThread
-import com.omnioone.messages.extensions.deleteConversation
 import com.omnioone.messages.extensions.markThreadMessagesRead
 import com.omnioone.messages.extensions.markThreadMessagesUnread
-import com.omnioone.messages.extensions.updateConversationArchivedStatus
 import com.omnioone.messages.helpers.THREAD_ID
 import com.omnioone.messages.helpers.THREAD_TITLE
 
@@ -56,6 +54,7 @@ class MessagesFragment(context: Context, attributeSet: AttributeSet) :
     private lateinit var binding: FragmentOmnioMessagesBinding
     private var adapter: OmnioConversationsAdapter? = null
     private var all = listOf<OmnioMessageStore.Conversation>()
+    private var binnedChats = 0
     private var filter = Filter.ALL
     private var searchQuery = ""
     private var textColor = OmnioColors.TEXT
@@ -113,9 +112,8 @@ class MessagesFragment(context: Context, attributeSet: AttributeSet) :
             onOpen = { open(it) },
             onPhoto = { openPerson(it) },
             onMenu = { showMenu(it) },
-            onArchived = {
-                host.startActivity(Intent(host, com.omnioone.messages.activities.ArchivedConversationsActivity::class.java))
-            },
+            onArchived = { com.omnioone.app.messaging.OmnioChatListActivity.open(host, com.omnioone.app.messaging.OmnioChatListActivity.MODE_ARCHIVE) },
+            onBin = { com.omnioone.app.messaging.OmnioChatListActivity.open(host, com.omnioone.app.messaging.OmnioChatListActivity.MODE_BIN) },
         ).also { it.textColor = textColor }
         val list = binding.messagesList.fragmentList
         list.layoutManager = LinearLayoutManager(context)
@@ -152,10 +150,13 @@ class MessagesFragment(context: Context, attributeSet: AttributeSet) :
         }
         loading = true
         ensureBackgroundThread {
+            com.omnioone.app.messaging.OmnioRecycleBin.tidy(context)
             val conversations = OmnioMessageStore.conversations(context)
+            val bin = com.omnioone.app.messaging.OmnioRecycleBin.entries(context).map { it.threadId }.distinct().size
             handler.post {
                 loading = false
                 all = conversations
+                binnedChats = bin
                 show()
                 callback?.invoke()
                 if (reloadAgain) {
@@ -210,6 +211,9 @@ class MessagesFragment(context: Context, attributeSet: AttributeSet) :
         val archivedCount = all.count { it.isArchived }
         if (archivedCount > 0 && searchQuery.isEmpty() && filter == Filter.ALL) {
             items += Item.ArchivedRow(archivedCount, context.getString(R.string.omnio_messages_archived, archivedCount))
+        }
+        if (binnedChats > 0 && searchQuery.isEmpty() && filter == Filter.ALL) {
+            items += Item.ArchivedRow(binnedChats, context.getString(R.string.omnio_messages_bin_row, binnedChats), bin = true)
         }
         current.submit(items, searchQuery)
 
@@ -300,7 +304,7 @@ class MessagesFragment(context: Context, attributeSet: AttributeSet) :
 
     private fun archive(conversation: OmnioMessageStore.Conversation) {
         ensureBackgroundThread {
-            context.updateConversationArchivedStatus(conversation.threadId, true)
+            com.omnioone.app.messaging.OmnioArchive.set(context, conversation.threadId, true)
             handler.post {
                 context.toast(R.string.omnio_messages_archived_done)
                 refreshItems()
@@ -366,12 +370,12 @@ class MessagesFragment(context: Context, attributeSet: AttributeSet) :
         OmnioSheet.confirm(
             host,
             title = host.getString(R.string.omnio_messages_delete_question, conversation.title),
-            message = host.getString(R.string.omnio_messages_delete_desc),
+            message = host.getString(if (com.omnioone.app.messaging.OmnioRecycleBin.isOn(host)) R.string.omnio_bin_moved_desc else R.string.omnio_messages_delete_desc),
             positive = host.getString(com.omnioone.commons.R.string.delete),
             mainColor = OmnioColors.MISSED
         ) {
             ensureBackgroundThread {
-                context.deleteConversation(conversation.threadId)
+                com.omnioone.app.messaging.OmnioRecycleBin.deleteChat(context, conversation.threadId)
                 handler.post { refreshItems() }
             }
         }

@@ -573,4 +573,28 @@ Unread, new: %3$d · current: %4$d</string>
     <string name="omnio_new_numbers">%1$s · +%2$d more</string>
     <string name="omnio_new_start_chat">Start chat</string>
     <string name="omnio_new_start_group">Start group chat (%d)</string>
+    <string name="omnio_archive_title">Archived chats</string>
+    <string name="omnio_archive_empty">No archived chats. Swipe a chat left on the Messages tab to archive it.</string>
+    <string name="omnio_archive_unarchive">Unarchive</string>
+    <string name="omnio_archive_unarchived">Moved back to your chats</string>
+    <string name="omnio_bin_title">Recycle bin</string>
+    <string name="omnio_bin_empty">The recycle bin is empty.</string>
+    <string name="omnio_bin_note">Deleted messages stay here for %d days, then go for good.</string>
+    <string name="omnio_bin_restore">Restore</string>
+    <string name="omnio_bin_restored">Restored</string>
+    <string name="omnio_bin_delete_forever">Delete forever</string>
+    <string name="omnio_bin_delete_forever_question">Delete these messages forever?</string>
+    <string name="omnio_bin_cant_undo">This can\'t be undone.</string>
+    <string name="omnio_bin_empty_action">Empty bin</string>
+    <string name="omnio_bin_empty_question">Empty the recycle bin?</string>
+    <string name="omnio_bin_moved_desc">It goes to the recycle bin for 30 days, in case you change your mind.</string>
+    <string name="omnio_messages_bin_row">🗑 Recycle bin (%d)</string>
+    <plurals name="omnio_bin_count">
+        <item quantity="one">%d message</item>
+        <item quantity="other">%d messages</item>
+    </plurals>
+    <plurals name="omnio_bin_days_left">
+        <item quantity="one">%d day left</item>
+        <item quantity="other">%d days left</item>
+    </plurals>
 </resources>

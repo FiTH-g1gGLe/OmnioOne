@@ -46,7 +46,6 @@ import com.omnioone.commons.extensions.toast
 import com.omnioone.commons.helpers.OmnioColors
 import com.omnioone.commons.helpers.OmnioContactData
 import com.omnioone.commons.helpers.ensureBackgroundThread
-import com.omnioone.messages.extensions.deleteMessage
 import com.omnioone.messages.extensions.deleteSmsDraft
 import com.omnioone.messages.extensions.getSmsDraft
 import com.omnioone.messages.extensions.saveSmsDraft
@@ -461,7 +460,7 @@ class OmnioThreadActivity : SimpleActivity() {
         items += getString(R.string.omnio_thread_delete) to {
             OmnioSheet.confirm(this, getString(R.string.omnio_thread_delete_question), null, positive = getString(com.omnioone.commons.R.string.delete), mainColor = OmnioColors.MISSED) {
                 ensureBackgroundThread {
-                    deleteMessage(message.id, message.isMms)
+                    OmnioRecycleBin.delete(applicationContext, listOf(message))
                     handler.post { load() }
                 }
             }
