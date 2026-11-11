@@ -130,6 +130,7 @@ class OmnioThreadActivity : SimpleActivity() {
             return
         }
         setContentView(buildScreen())
+        window.decorView.post { (input.parent?.parent as? View)?.requestFocus() }
         titleView.text = intent.getStringExtra(THREAD_TITLE).orEmpty()
         input.setText(getSmsDraft(threadId))
         setUpSim()
@@ -506,6 +507,9 @@ class OmnioThreadActivity : SimpleActivity() {
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setBackgroundColor(OmnioColors.BACKGROUND)
+            // the screen holds focus on open, so the message box shows its prompt until you tap it
+            isFocusableInTouchMode = true
+            descendantFocusability = ViewGroup.FOCUS_BEFORE_DESCENDANTS
         }
         ViewCompat.setOnApplyWindowInsetsListener(root) { view, insets ->
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
