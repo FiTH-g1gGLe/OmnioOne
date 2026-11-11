@@ -166,6 +166,9 @@ class OmnioSettingsActivity : SimpleActivity() {
             switch(R.string.omnio_settings_offer_helper, R.string.omnio_settings_offer_helper_desc, !prefs.getBoolean("link_helper_dont_ask", false)) {
                 prefs.edit().putBoolean("link_helper_dont_ask", !it).apply()
             },
+            switch(R.string.omnio_photo_full_size, R.string.omnio_photo_full_size_desc, prefs.getBoolean("photo_full_size", false)) {
+                prefs.edit().putBoolean("photo_full_size", it).apply()
+            },
             action(R.string.omnio_photo_report, com.omnioone.app.helpers.OmnioPhotoCapture.lastNote(this) ?: getString(R.string.omnio_photo_report_none)) {
                 val note = com.omnioone.app.helpers.OmnioPhotoCapture.lastNote(this) ?: return@action
                 (getSystemService(CLIPBOARD_SERVICE) as android.content.ClipboardManager).setPrimaryClip(android.content.ClipData.newPlainText("Omnio photo report", note))

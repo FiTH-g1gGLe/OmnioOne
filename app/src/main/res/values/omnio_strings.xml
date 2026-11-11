@@ -486,4 +486,6 @@
     <string name="omnio_photo_report">Last photo capture</string>
     <string name="omnio_photo_report_none">Nothing yet. Open a linked profile from a contact page.</string>
     <string name="omnio_photo_came_back">Another app linked to this contact (like WhatsApp) still provides a photo, so a photo may still show.</string>
+    <string name="omnio_photo_full_size">Full-size photos</string>
+    <string name="omnio_photo_full_size_desc">Taps the profile picture for you to save a sharper photo. You’ll see it open and close.</string>
 </resources>

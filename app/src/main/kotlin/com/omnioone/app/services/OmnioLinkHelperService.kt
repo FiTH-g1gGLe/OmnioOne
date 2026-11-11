@@ -25,6 +25,10 @@ class OmnioLinkHelperService : AccessibilityService() {
     private var capturing = false
     /** Something small drawn over the photo (Messenger's "active 2h" badge, an online dot), to crop out. */
     private var overlay: android.graphics.Rect? = null
+    private var photoNode: AccessibilityNodeInfo? = null
+    private var photoPkg: String? = null
+    private val badgeLabel = Regex("active|online|\\b\\d+\\s?(m|h|d|w|min|hr)s?\\b|ago", RegexOption.IGNORE_CASE)
+    private val viewPhotoLabel = Regex("^(view|see|open) (profile )?(picture|photo)", RegexOption.IGNORE_CASE)
     private val handler = android.os.Handler(android.os.Looper.getMainLooper())
     private val photoLabel = Regex("profile (picture|photo|pic|image)|avatar|foto de perfil|photo de profil|profilbild", RegexOption.IGNORE_CASE)
 
@@ -83,6 +87,8 @@ class OmnioLinkHelperService : AccessibilityService() {
         val screenH = resources.displayMetrics.heightPixels
         var labelled: android.graphics.Rect? = null
         var square: android.graphics.Rect? = null
+        var labelledNode: AccessibilityNodeInfo? = null
+        var squareNode: AccessibilityNodeInfo? = null
         val seen = ArrayList<String>()
         val facebook = pkg?.startsWith("com.facebook") == true
         fun walk(node: AccessibilityNodeInfo?, depth: Int) {
@@ -95,24 +101,33 @@ class OmnioLinkHelperService : AccessibilityService() {
                 seen += "${label.take(40)} [${(bounds.width() / density).toInt()}dp ${node.className?.toString()?.substringAfterLast('.')}]"
             }
             if (label.length <= 80 && photoLabel.containsMatchIn(label) && bounds.width() >= 64 * density && ratio in 0.8f..1.25f) {
-                if (labelled == null || bounds.width() > labelled!!.width()) labelled = bounds
+                if (labelled == null || bounds.width() > labelled!!.width()) {
+                    labelled = bounds
+                    labelledNode = node
+                }
             }
             if (facebook && ratio in 0.85f..1.15f && bounds.width() >= 120 * density && bounds.width() <= screenW * 0.6f &&
                 bounds.top < screenH * 0.55f && bounds.top > 0 && label.length <= 60
             ) {
-                if (square == null || bounds.width() > square!!.width()) square = bounds
+                if (square == null || bounds.width() > square!!.width()) {
+                    square = bounds
+                    squareNode = node
+                }
             }
             for (i in 0 until node.childCount) walk(node.getChild(i), depth + 1)
         }
         walk(root, 0)
         val found = labelled ?: square
-        overlay = found?.let { overlayOn(root, it) }
+        photoNode = if (labelled != null) labelledNode else squareNode
+        photoPkg = pkg
+        overlay = found?.let { overlayOn(root, it, pkg) }
         if (found == null) OmnioPhotoCapture.note(this, "No profile photo found on screen in ${pkg.orEmpty()}. Square pictures seen: " + seen.joinToString("; ").ifEmpty { "none" })
         return found
     }
 
     /** Small views sitting on the photo's edge, like an "active" badge: their combined area, or null. */
-    private fun overlayOn(root: AccessibilityNodeInfo, photo: android.graphics.Rect): android.graphics.Rect? {
+    private fun overlayOn(root: AccessibilityNodeInfo, photo: android.graphics.Rect, pkg: String?): android.graphics.Rect? {
+        val messenger = pkg == "com.facebook.orca"
         var union: android.graphics.Rect? = null
         val cx = photo.exactCenterX()
         val cy = photo.exactCenterY()
@@ -122,7 +137,9 @@ class OmnioLinkHelperService : AccessibilityService() {
             node.getBoundsInScreen(b)
             val small = b.width() in 1 until (photo.width() * 0.45f).toInt() && b.height() in 1 until (photo.height() * 0.45f).toInt()
             val offCentre = Math.hypot((b.exactCenterX() - cx).toDouble(), (b.exactCenterY() - cy).toDouble()) > photo.width() * 0.28
-            if (small && offCentre && android.graphics.Rect.intersects(b, photo)) {
+            val label = (node.contentDescription ?: node.text)?.toString().orEmpty()
+            val badgeLike = badgeLabel.containsMatchIn(label) || (messenger && b.width() < photo.width() * 0.35f)
+            if (small && offCentre && badgeLike && android.graphics.Rect.intersects(b, photo)) {
                 val clipped = android.graphics.Rect(b).apply { intersect(photo) }
                 union = union?.apply { union(clipped) } ?: clipped
             }
@@ -133,73 +150,180 @@ class OmnioLinkHelperService : AccessibilityService() {
     }
 
     /**
-     * The square to keep: the whole photo, or, when a badge sits on one corner, the biggest square
-     * from the opposite corner that leaves the badge out.
+     * The square to keep, centred on the round photo (a little inside its edge, so frames and rings
+     * are left out). When a badge sits on the edge, the circle is shrunk and slid away from it just
+     * enough to leave it out, never past the edge of the photo.
      */
     private fun cropFor(photo: android.graphics.Rect, badge: android.graphics.Rect?): android.graphics.Rect {
-        val inset = photo.width() / 30
-        val full = android.graphics.Rect(photo.left + inset, photo.top + inset, photo.right - inset, photo.bottom - inset)
-        if (badge == null) return full
-        val right = badge.exactCenterX() > photo.exactCenterX()
-        val bottom = badge.exactCenterY() > photo.exactCenterY()
-        // how far a square from the opposite corner can reach before touching the badge
-        val reachX = if (right) badge.left - full.left else full.right - badge.right
-        val reachY = if (bottom) badge.top - full.top else full.bottom - badge.bottom
-        val size = maxOf(reachX, reachY).coerceAtMost(full.width())
-        if (size < full.width() / 2) return full // badge in the middle of things: keep the whole photo
-        val left = if (right) full.left else full.right - size
-        val top = if (bottom) full.top else full.bottom - size
-        return android.graphics.Rect(left, top, left + size, top + size)
+        val cx = photo.exactCenterX()
+        val cy = photo.exactCenterY()
+        val radius = minOf(photo.width(), photo.height()) / 2f * 0.94f
+        fun square(x: Float, y: Float, r: Float) = android.graphics.Rect((x - r).toInt(), (y - r).toInt(), (x + r).toInt(), (y + r).toInt())
+        if (badge == null) return square(cx, cy, radius)
+        // direction from the centre to the badge
+        var dx = badge.exactCenterX() - cx
+        var dy = badge.exactCenterY() - cy
+        val length = Math.hypot(dx.toDouble(), dy.toDouble()).toFloat().coerceAtLeast(1f)
+        dx /= length
+        dy /= length
+        fun gap(x: Float, y: Float): Float {
+            val nx = x.coerceIn(badge.left.toFloat(), badge.right.toFloat())
+            val ny = y.coerceIn(badge.top.toFloat(), badge.bottom.toFloat())
+            return Math.hypot((x - nx).toDouble(), (y - ny).toDouble()).toFloat()
+        }
+        var t = 0f
+        while (t < radius * 0.4f) {
+            val x = cx - dx * t
+            val y = cy - dy * t
+            val r = radius - t
+            if (gap(x, y) >= r) return square(x, y, r)
+            t += radius * 0.02f
+        }
+        return square(cx, cy, radius) // badge too far in to dodge: keep the whole photo
     }
 
-    /** Screenshots the screen, crops out the profile photo and keeps it for the contact. */
-    private fun capture(bounds: android.graphics.Rect, contactId: Int, session: String, then: () -> Unit) {
+    /** Takes a screenshot and keeps [area] of it as the contact's photo. Calls [done] with true if it worked. */
+    private fun snapshot(area: android.graphics.Rect, contactId: Int, done: (Boolean) -> Unit) {
         if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.R) {
-            then()
+            done(false)
             return
         }
+        try {
+            takeScreenshot(android.view.Display.DEFAULT_DISPLAY, mainExecutor, object : TakeScreenshotCallback {
+                override fun onSuccess(result: ScreenshotResult) {
+                    var ok = false
+                    try {
+                        val screen = android.graphics.Bitmap.wrapHardwareBuffer(result.hardwareBuffer, result.colorSpace)
+                            ?.copy(android.graphics.Bitmap.Config.ARGB_8888, false)
+                        result.hardwareBuffer.close()
+                        if (screen != null) {
+                            val left = area.left.coerceIn(0, screen.width - 1)
+                            val top = area.top.coerceIn(0, screen.height - 1)
+                            val size = minOf(area.width(), area.height(), screen.width - left, screen.height - top)
+                            if (size > 0) {
+                                var crop = android.graphics.Bitmap.createBitmap(screen, left, top, size, size)
+                                if (size > 720) crop = android.graphics.Bitmap.createScaledBitmap(crop, 720, 720, true)
+                                OmnioPhotoCapture.store(this@OmnioLinkHelperService, contactId, crop)
+                                OmnioPhotoCapture.note(this@OmnioLinkHelperService, "Photo caught (${crop.width}×${crop.height})")
+                                ok = true
+                            }
+                        }
+                    } catch (ignored: Exception) {
+                    }
+                    done(ok)
+                }
+
+                override fun onFailure(errorCode: Int) {
+                    OmnioPhotoCapture.note(this@OmnioLinkHelperService, "Screenshot refused (code $errorCode): switch Link helper off and on again")
+                    done(false)
+                }
+            })
+        } catch (e: Exception) {
+            OmnioPhotoCapture.note(this, "Screenshot not allowed: switch Link helper off and on again (${e.javaClass.simpleName})")
+            done(false)
+        }
+    }
+
+    /** Catches the photo on the profile, then (if "Full-size photos" is on) a sharper one from the picture viewer. */
+    private fun capture(bounds: android.graphics.Rect, contactId: Int, session: String, then: () -> Unit) {
         capturing = true
         val badge = overlay
+        val node = photoNode
+        val finish = {
+            capturing = false
+            then()
+        }
         // give the picture a moment to finish loading
         handler.postDelayed({
-            try {
-                takeScreenshot(android.view.Display.DEFAULT_DISPLAY, mainExecutor, object : TakeScreenshotCallback {
-                    override fun onSuccess(result: ScreenshotResult) {
-                        try {
-                            val screen = android.graphics.Bitmap.wrapHardwareBuffer(result.hardwareBuffer, result.colorSpace)
-                                ?.copy(android.graphics.Bitmap.Config.ARGB_8888, false)
-                            result.hardwareBuffer.close()
-                            if (screen != null) {
-                                val area = cropFor(bounds, badge)
-                                val left = area.left.coerceIn(0, screen.width - 1)
-                                val top = area.top.coerceIn(0, screen.height - 1)
-                                val size = minOf(area.width(), area.height(), screen.width - left, screen.height - top)
-                                if (size > 0) {
-                                    var crop = android.graphics.Bitmap.createBitmap(screen, left, top, size, size)
-                                    if (size > 720) crop = android.graphics.Bitmap.createScaledBitmap(crop, 720, 720, true)
-                                    OmnioPhotoCapture.store(this@OmnioLinkHelperService, contactId, crop)
-                                    photoTakenFor = session
-                                    OmnioPhotoCapture.note(this@OmnioLinkHelperService, "Photo caught (${crop.width}×${crop.height})")
-                                }
-                            }
-                        } catch (ignored: Exception) {
-                        }
-                        capturing = false
-                        then()
-                    }
-
-                    override fun onFailure(errorCode: Int) {
-                        OmnioPhotoCapture.note(this@OmnioLinkHelperService, "Screenshot refused (code $errorCode): switch Link helper off and on again")
-                        capturing = false
-                        then()
-                    }
-                })
-            } catch (e: Exception) {
-                OmnioPhotoCapture.note(this, "Screenshot not allowed: switch Link helper off and on again (${e.javaClass.simpleName})")
-                capturing = false
-                then()
+            snapshot(cropFor(bounds, badge), contactId) { ok ->
+                if (ok) photoTakenFor = session
+                val fullSize = getSharedPreferences("omnio", Context.MODE_PRIVATE).getBoolean("photo_full_size", false)
+                if (ok && fullSize && node != null) fullSizePhoto(node, contactId, finish) else finish()
             }
         }, 700)
+    }
+
+    private fun clickable(node: AccessibilityNodeInfo?): AccessibilityNodeInfo? {
+        var target = node
+        var steps = 0
+        while (target != null && !target.isClickable && steps < 6) {
+            target = target.parent
+            steps++
+        }
+        return target?.takeIf { it.isClickable }
+    }
+
+    /**
+     * Taps the profile picture to open it full size (choosing "View profile picture" if a menu
+     * appears), keeps a sharper snapshot, then goes back. If anything unexpected opens, it just
+     * goes back and the first snapshot stays.
+     */
+    private fun fullSizePhoto(photo: AccessibilityNodeInfo, contactId: Int, done: () -> Unit) {
+        val startWindow = try {
+            rootInActiveWindow?.windowId
+        } catch (e: Exception) {
+            null
+        }
+        val target = clickable(photo)
+        if (target == null || !target.performAction(AccessibilityNodeInfo.ACTION_CLICK)) {
+            done()
+            return
+        }
+        fun goBack() {
+            val now = try {
+                rootInActiveWindow?.windowId
+            } catch (e: Exception) {
+                null
+            }
+            if (now != startWindow) performGlobalAction(GLOBAL_ACTION_BACK)
+            handler.postDelayed(done, 600)
+        }
+        fun shoot() {
+            val root = try {
+                rootInActiveWindow
+            } catch (e: Exception) {
+                null
+            }
+            val big = root?.let { biggestPicture(it) }
+            if (big == null) {
+                OmnioPhotoCapture.note(this, "Opened the picture but couldn't find it full size; kept the profile snapshot")
+                goBack()
+                return
+            }
+            val inset = big.width() / 100
+            snapshot(android.graphics.Rect(big.left + inset, big.top + inset, big.right - inset, big.bottom - inset), contactId) { goBack() }
+        }
+        handler.postDelayed({
+            val root = try {
+                rootInActiveWindow
+            } catch (e: Exception) {
+                null
+            }
+            // some profiles show a menu first: pick "View profile picture"
+            val menuItem = root?.let { findNode(it, 0) { node -> (node.text ?: node.contentDescription)?.toString()?.let { label -> label.length <= 40 && viewPhotoLabel.containsMatchIn(label) } == true } }
+            val menuTarget = clickable(menuItem)
+            if (menuTarget != null && menuTarget.performAction(AccessibilityNodeInfo.ACTION_CLICK)) {
+                handler.postDelayed({ shoot() }, 1300)
+            } else {
+                shoot()
+            }
+        }, 1300)
+    }
+
+    /** The picture in a full-screen photo viewer: a big, roughly square area across most of the screen. */
+    private fun biggestPicture(root: AccessibilityNodeInfo): android.graphics.Rect? {
+        val screenW = resources.displayMetrics.widthPixels
+        var best: android.graphics.Rect? = null
+        fun walk(node: AccessibilityNodeInfo?, depth: Int) {
+            if (node == null || depth > 45) return
+            val b = android.graphics.Rect()
+            node.getBoundsInScreen(b)
+            val ratio = if (b.height() > 0) b.width().toFloat() / b.height() else 0f
+            if (b.width() >= screenW * 0.7f && ratio in 0.85f..1.18f && (best == null || b.width() > best!!.width())) best = b
+            for (i in 0 until node.childCount) walk(node.getChild(i), depth + 1)
+        }
+        walk(root, 0)
+        return best
     }
 
     /**
