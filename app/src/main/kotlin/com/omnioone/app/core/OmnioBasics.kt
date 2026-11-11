@@ -334,3 +334,25 @@ fun Context.sendEmailIntent(recipient: String) {
 fun Context.launchViewContactIntent(uri: Uri) {
     launchActivityIntent(Intent(ContactsContract.QuickContact.ACTION_QUICK_CONTACT).setData(uri))
 }
+
+// ---- Small extras used by the main screen ----
+
+const val CONTACTS_GRID_MAX_COLUMNS_COUNT = 10
+
+fun isQPlus() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+
+fun Drawable.applyColorFilter(color: Int) {
+    mutate().setColorFilter(color, PorterDuff.Mode.SRC_IN)
+}
+
+/** Sets a bottom tab's icon and dims its label when it is not the open tab. */
+fun Context.updateBottomTabItemColors(view: View?, isActive: Boolean, drawableId: Int? = null) {
+    val color = if (isActive) OmnioColors.CONTACTS else OmnioColors.TEXT_MUTED
+    view?.findViewById<ImageView>(R.id.tab_item_icon)?.apply {
+        if (drawableId != null) setImageDrawable(ContextCompat.getDrawable(context, drawableId))
+        setColorFilter(color, PorterDuff.Mode.SRC_IN)
+    }
+    view?.findViewById<android.widget.TextView>(R.id.tab_item_label)?.setTextColor(color)
+}
+
+fun Context.getBottomNavigationBackgroundColor() = OmnioColors.SHEET

@@ -45,7 +45,7 @@ jobs:
         if: failure()
         shell: bash
         run: |
-          { echo "Build ${{ github.run_number }} failed. Last part of the log:"; echo '```'; grep -E "^e: |error:|FAILURE|What went wrong" -A3 build.log | head -80; echo; tail -60 build.log; echo '```'; } > failure.md
+          { echo "Build ${{ github.run_number }} failed. Last part of the log:"; echo '```'; grep -E "^e: " build.log | sed 's#file:///home/runner/work/OmnioOne/OmnioOne/app/src/main/kotlin/com/omnioone/app/##' | sort -u | head -500; grep -E "error:|AAPT|What went wrong" -A2 build.log | head -40; echo; tail -30 build.log; echo '```'; } > failure.md
 
       - name: Post the error log
         if: failure()

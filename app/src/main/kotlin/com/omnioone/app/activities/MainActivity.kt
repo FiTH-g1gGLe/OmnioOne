@@ -45,7 +45,6 @@ private const val OMNIO_MESSAGES_GREEN = OmnioColors.MESSAGES
 
 class MainActivity : SimpleActivity() {
     private var lastDisplaySignature: String? = null
-    override var isSearchBarEnabled = true
     
     private val binding by viewBinding(ActivityMainBinding::inflate)
 
@@ -116,7 +115,6 @@ class MainActivity : SimpleActivity() {
         val properPrimaryColor = getProperPrimaryColor()
         updateFab()
 
-        updateTextColors(binding.mainHolder)
         setupTabColors()
 
         getAllFragments().forEach {
