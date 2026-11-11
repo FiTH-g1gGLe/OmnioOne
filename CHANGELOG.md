@@ -4,6 +4,16 @@ Every change to `main` is built and published as a release automatically, so eac
 
 ## 0.1 Preview (November 2026)
 
+### Latest
+- Shared library replaced with Omnio's own core: the app is now one module
+- 10 new contact styles (18 in total), including Orbit, Honeycomb and Polaroid
+- Verification codes copied automatically, tappable in chats, Copy button on notifications
+- Orbit call screen and Contacts tab by default; Keypad added to "Open on"; speed dial search
+- Favourites row: hold and drag to rearrange, always the newest photo
+- Clear icons: phone on call buttons, tick and cross on the call screen, video on video buttons
+- Emoji icons on the message menu; tidier photo-fetch screen
+- Project tidy-up: unused files, images, text and libraries removed
+
 ### Contacts and people
 - Contacts tab rebuilt from scratch: eight display styles, A–Z strip, live updates, long-press menu
 - Favourites rebuilt: grid or list, drag to reorder, same order in the favourites row
