@@ -597,4 +597,22 @@ Unread, new: %3$d · current: %4$d</string>
         <item quantity="one">%d day left</item>
         <item quantity="other">%d days left</item>
     </plurals>
+    <string name="omnio_settings_message_sound">Message sound &amp; vibration</string>
+    <string name="omnio_settings_message_sound_desc">Opens Android\'s settings for Omnio message notifications</string>
+    <string name="omnio_settings_long_mms">Send long texts as one message</string>
+    <string name="omnio_settings_long_mms_desc">Long texts go as a picture message instead of several texts</string>
+    <string name="omnio_settings_group_mms">Group chats as one conversation</string>
+    <string name="omnio_settings_group_mms_desc">Everyone sees each other\'s replies. Off: each person gets their own text</string>
+    <string name="omnio_settings_mms_limit">Photo size limit</string>
+    <string name="omnio_settings_mms_limit_help">Photos bigger than this are shrunk before sending. Some networks reject large picture messages.</string>
+    <string name="omnio_settings_mms_limit_none">No limit</string>
+    <string name="omnio_settings_mms_limit_mb">%d MB</string>
+    <string name="omnio_settings_mms_limit_kb">%d KB</string>
+    <string name="omnio_settings_keep_archived">Keep chats archived</string>
+    <string name="omnio_settings_keep_archived_desc">New messages don\'t bring an archived chat back</string>
+    <string name="omnio_settings_blocked_words">Blocked words</string>
+    <string name="omnio_settings_blocked_words_none">None. Texts containing a blocked word are dropped</string>
+    <string name="omnio_settings_blocked_words_help">Texts containing any of these are dropped. Tap a word to remove it.</string>
+    <string name="omnio_settings_blocked_words_add">Add a word</string>
+    <string name="omnio_settings_blocked_words_hint">e.g. prize, crypto</string>
 </resources>

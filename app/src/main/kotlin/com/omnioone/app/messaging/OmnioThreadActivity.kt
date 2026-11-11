@@ -87,6 +87,7 @@ class OmnioThreadActivity : SimpleActivity() {
     private lateinit var attachmentScroll: HorizontalScrollView
     private lateinit var attachmentStrip: LinearLayout
     private lateinit var simChip: TextView
+    private lateinit var counter: TextView
     private lateinit var undoBar: LinearLayout
     private lateinit var undoText: TextView
     private var sims = listOf<OmnioSender.Sim>()
@@ -257,6 +258,23 @@ class OmnioThreadActivity : SimpleActivity() {
             }
             handler.postDelayed(reloadSoon, 300)
         }
+    }
+
+    /** "160/1" style counter: characters left in this text, and how many texts it will take. */
+    private fun updateCounter() {
+        if (!::counter.isInitialized) return
+        val text = input.text.toString()
+        val show = text.isNotEmpty() && messagesConfigShowsCounter()
+        counter.visibility = if (show) View.VISIBLE else View.GONE
+        if (!show) return
+        val info = android.telephony.SmsMessage.calculateLength(text, false)
+        counter.text = "${info[2]}/${info[0]}"
+    }
+
+    private fun messagesConfigShowsCounter() = try {
+        com.omnioone.messages.helpers.Config.newInstance(this).showCharacterCounter
+    } catch (e: Exception) {
+        false
     }
 
     private fun retry(message: OmnioMessageStore.Message) {
@@ -649,6 +667,23 @@ class OmnioThreadActivity : SimpleActivity() {
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
                 maxLines = 5
                 imeOptions = EditorInfo.IME_FLAG_NO_EXTRACT_UI
+                if (com.omnioone.messages.helpers.Config.newInstance(this@OmnioThreadActivity).sendOnEnter) {
+                    // "Send on Enter": the keyboard's Enter key sends
+                    inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
+                    setHorizontallyScrolling(false)
+                    imeOptions = EditorInfo.IME_ACTION_SEND or EditorInfo.IME_FLAG_NO_EXTRACT_UI
+                    setOnEditorActionListener { _, action, _ ->
+                        if (action == EditorInfo.IME_ACTION_SEND) {
+                            sendTyped()
+                            true
+                        } else false
+                    }
+                }
+                addTextChangedListener(object : android.text.TextWatcher {
+                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+                    override fun afterTextChanged(s: android.text.Editable?) = updateCounter()
+                })
                 background = GradientDrawable().apply {
                     cornerRadius = dp(22).toFloat()
                     setColor(OmnioColors.CARD)
@@ -657,6 +692,14 @@ class OmnioThreadActivity : SimpleActivity() {
                 layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply { marginStart = dp(4); marginEnd = dp(8) }
             }
             addView(input)
+            counter = TextView(this@OmnioThreadActivity).apply {
+                visibility = View.GONE
+                setTextColor(OmnioColors.TEXT_MUTED)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
+                gravity = Gravity.CENTER
+                setPadding(0, 0, dp(6), 0)
+            }
+            addView(counter)
             // send button with the Omnio ring that spins once on each press, like the keypad
             addView(FrameLayout(this@OmnioThreadActivity).apply {
                 layoutParams = LinearLayout.LayoutParams(dp(56), dp(56))

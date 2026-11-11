@@ -152,8 +152,31 @@ class OmnioSettingsActivity : SimpleActivity() {
                 messages.enableDeliveryReports = it
             },
             switch(R.string.omnio_settings_char_counter, null, messages.showCharacterCounter) { messages.showCharacterCounter = it },
-            switch(R.string.omnio_settings_recycle_bin, R.string.omnio_settings_recycle_bin_desc, messages.useRecycleBin) { messages.useRecycleBin = it },
+            action(R.string.omnio_undo_send, undoText(com.omnioone.app.messaging.OmnioSender.undoSeconds(this))) {
+                val choices = listOf(0, 3, 5, 10)
+                OmnioSheet.list(this, getString(R.string.omnio_undo_send), getString(R.string.omnio_undo_send_help), choices.map { OmnioSheet.Item(undoText(it)) }) { picked ->
+                    com.omnioone.app.messaging.OmnioSender.setUndoSeconds(this, choices[picked])
+                    buildRows()
+                }
+            },
             action(R.string.omnio_settings_lock_screen, lockScreenText(messages.lockScreenVisibilitySetting)) { pickLockScreen() },
+            action(R.string.omnio_settings_message_sound, getString(R.string.omnio_settings_message_sound_desc)) { openMessageSound() },
+        )
+        card(
+            switch(R.string.omnio_settings_long_mms, R.string.omnio_settings_long_mms_desc, messages.sendLongMessageMMS) { messages.sendLongMessageMMS = it },
+            switch(R.string.omnio_settings_group_mms, R.string.omnio_settings_group_mms_desc, messages.sendGroupMessageMMS) { messages.sendGroupMessageMMS = it },
+            action(R.string.omnio_settings_mms_limit, mmsLimitText(messages.mmsFileSizeLimit)) { pickMmsLimit() },
+        )
+        card(
+            action(R.string.omnio_archive_title, null) {
+                com.omnioone.app.messaging.OmnioChatListActivity.open(this, com.omnioone.app.messaging.OmnioChatListActivity.MODE_ARCHIVE)
+            },
+            switch(R.string.omnio_settings_keep_archived, R.string.omnio_settings_keep_archived_desc, messages.keepConversationsArchived) { messages.keepConversationsArchived = it },
+            switch(R.string.omnio_settings_recycle_bin, R.string.omnio_settings_recycle_bin_desc, messages.useRecycleBin) { messages.useRecycleBin = it },
+            action(R.string.omnio_bin_title, null) {
+                com.omnioone.app.messaging.OmnioChatListActivity.open(this, com.omnioone.app.messaging.OmnioChatListActivity.MODE_BIN)
+            },
+            action(R.string.omnio_settings_blocked_words, blockedWordsText()) { manageBlockedWords() },
         )
 
         section("🔗", R.string.omnio_link_helper_name)
@@ -183,13 +206,6 @@ class OmnioSettingsActivity : SimpleActivity() {
         card(
             switch(R.string.omnio_new_messages, R.string.omnio_new_messages_desc, OmnioMessagesSwitch.isOn(this)) { OmnioMessagesSwitch.set(this, it) },
             switch(R.string.omnio_new_thread, R.string.omnio_new_thread_desc, OmnioMessagesSwitch.threadOn(this)) { OmnioMessagesSwitch.setThread(this, it) },
-            action(R.string.omnio_undo_send, undoText(com.omnioone.app.messaging.OmnioSender.undoSeconds(this))) {
-                val choices = listOf(0, 3, 5, 10)
-                OmnioSheet.list(this, getString(R.string.omnio_undo_send), getString(R.string.omnio_undo_send_help), choices.map { OmnioSheet.Item(undoText(it)) }) { picked ->
-                    com.omnioone.app.messaging.OmnioSender.setUndoSeconds(this, choices[picked])
-                    buildRows()
-                }
-            },
             action(R.string.omnio_check_reader, getString(R.string.omnio_check_reader_desc)) { checkMessageReader() },
             action(R.string.omnio_settings_more_messages, getString(R.string.omnio_settings_more_messages_desc)) {
                 startActivity(Intent().setClassName(packageName, "com.omnioone.messages.activities.SettingsActivity"))
@@ -401,6 +417,66 @@ class OmnioSettingsActivity : SimpleActivity() {
             setTypeface(typeface, Typeface.BOLD)
             setPadding(dp(8), 0, 0, 0)
         })
+    }
+
+    // ---- Messages settings ----
+
+    private val mmsLimits = listOf(-1L, 2_097_152L, 1_048_576L, 614_400L, 307_200L, 204_800L, 102_400L)
+
+    private fun mmsLimitText(limit: Long) = when {
+        limit <= 0 -> getString(R.string.omnio_settings_mms_limit_none)
+        limit >= 1_048_576L -> getString(R.string.omnio_settings_mms_limit_mb, (limit / 1_048_576L).toInt())
+        else -> getString(R.string.omnio_settings_mms_limit_kb, (limit / 1024L).toInt())
+    }
+
+    private fun pickMmsLimit() {
+        val current = messagesConfig.mmsFileSizeLimit
+        OmnioSheet.list(this, getString(R.string.omnio_settings_mms_limit), getString(R.string.omnio_settings_mms_limit_help), mmsLimits.map {
+            OmnioSheet.Item(mmsLimitText(it), trailing = if (it == current) "✓" else null)
+        }) { picked ->
+            messagesConfig.mmsFileSizeLimit = mmsLimits[picked]
+            buildRows()
+        }
+    }
+
+    private fun openMessageSound() {
+        // make sure the Messages notification category exists, then open Android's settings for it
+        val manager = getSystemService(android.app.NotificationManager::class.java)
+        if (manager.getNotificationChannel("omnio_messages") == null) {
+            manager.createNotificationChannel(android.app.NotificationChannel("omnio_messages", getString(R.string.omnio_notify_channel), android.app.NotificationManager.IMPORTANCE_HIGH))
+        }
+        try {
+            startActivity(Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS)
+                .putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
+                .putExtra(Settings.EXTRA_CHANNEL_ID, "omnio_messages"))
+        } catch (e: Exception) {
+            toast(com.omnioone.commons.R.string.no_app_found)
+        }
+    }
+
+    private fun blockedWordsText(): String {
+        val words = messagesConfig.blockedKeywords
+        return if (words.isEmpty()) getString(R.string.omnio_settings_blocked_words_none) else words.sorted().joinToString(", ")
+    }
+
+    private fun manageBlockedWords() {
+        val words = messagesConfig.blockedKeywords.sorted()
+        val items = listOf(OmnioSheet.Item("＋  " + getString(R.string.omnio_settings_blocked_words_add), labelColor = OmnioColors.MESSAGES)) +
+            words.map { OmnioSheet.Item(it, trailing = "✕", trailingColor = OmnioColors.MISSED) }
+        OmnioSheet.list(this, getString(R.string.omnio_settings_blocked_words), getString(R.string.omnio_settings_blocked_words_help), items) { picked ->
+            if (picked == 0) {
+                OmnioSheet.input(this, getString(R.string.omnio_settings_blocked_words_add), hint = getString(R.string.omnio_settings_blocked_words_hint)) { typed ->
+                    val word = typed.trim()
+                    if (word.isNotEmpty()) messagesConfig.addBlockedKeyword(word)
+                    buildRows()
+                    manageBlockedWords()
+                }
+            } else {
+                messagesConfig.removeBlockedKeyword(words[picked - 1])
+                buildRows()
+                manageBlockedWords()
+            }
+        }
     }
 
     private fun undoText(seconds: Int) = if (seconds <= 0) getString(R.string.omnio_undo_send_off) else getString(R.string.omnio_undo_send_seconds, seconds)
