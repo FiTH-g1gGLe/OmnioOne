@@ -56,8 +56,8 @@ object OmnioMessageStore {
         val key get() = if (isMms) -id else id
     }
 
-    private val MMS_SMS_CONVERSATIONS: Uri = Uri.parse("content://mms-sms/conversations?simple=true")
-    private val CANONICAL_ADDRESSES: Uri = Uri.parse("content://mms-sms/canonical-addresses")
+    private val MMS_SMS_CONVERSATIONS: Uri get() = Uri.parse("content://mms-sms/conversations?simple=true")
+    private val CANONICAL_ADDRESSES: Uri get() = Uri.parse("content://mms-sms/canonical-addresses")
     private const val MMS_FROM = 137
 
     /** Picture-message dates are stored in seconds, texts in milliseconds. */
