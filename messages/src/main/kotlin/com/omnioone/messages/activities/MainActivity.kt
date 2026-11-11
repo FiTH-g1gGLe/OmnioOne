@@ -125,6 +125,8 @@ class MainActivity : SimpleActivity() {
 
     override fun onResume() {
         super.onResume()
+        // same tabs as the phone screens, even if they were changed in Settings meanwhile
+        com.omnioone.messages.helpers.OmnioTabBar.attach(this, binding.omnioTabs)
         binding.omnioTabs.setBackgroundColor(getBottomNavigationBackgroundColor())
         binding.conversationsFab.backgroundTintList = android.content.res.ColorStateList.valueOf(OmnioColors.MESSAGES)
         binding.conversationsFab.imageTintList = android.content.res.ColorStateList.valueOf(OmnioColors.ON_ACCENT)
