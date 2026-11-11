@@ -155,7 +155,6 @@ class OmnioAboutActivity : SimpleActivity() {
                 "EventBus" to "https://github.com/greenrobot/EventBus",
                 "android-smsmms (picture messages)" to "https://github.com/klinker41/android-smsmms",
                 "libphonenumber" to "https://github.com/google/libphonenumber",
-                "Indicator Fast Scroll" to "https://github.com/reddit/IndicatorFastScroll",
                 "AutoFitTextView" to "https://github.com/grantland/android-autofittextview",
                 "Gson" to "https://github.com/google/gson",
                 "AndroidX & Material Components" to "https://developer.android.com/jetpack/androidx",

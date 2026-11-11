@@ -32,7 +32,7 @@ import com.omnioone.app.messaging.messagesConfig
 
 /**
  * Omnio One: one settings page for calls, contacts and messages.
- * Everyday switches live here; the full Fossify call and message settings stay one tap away
+ * Everyday switches live here; the full call and message settings stay one tap away
  * under Advanced, so no option is lost.
  */
 class OmnioSettingsActivity : SimpleActivity() {
