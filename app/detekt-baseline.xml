@@ -143,22 +143,9 @@
     <ID>UnusedParameter:CallActivity.kt$CallActivity$view: View</ID>
     <ID>UnusedParameter:MainActivity.kt$MainActivity$event: Events.RefreshCallLog</ID>
     <ID>UtilityClassWithPublicConstructor:CallManager.kt$CallManager</ID>
-    <ID>WildcardImport:CallActivity.kt$import com.omnioone.commons.extensions.*</ID>
-    <ID>WildcardImport:CallActivity.kt$import com.omnioone.commons.helpers.*</ID>
     <ID>WildcardImport:CallActivity.kt$import com.omnioone.app.extensions.*</ID>
     <ID>WildcardImport:CallActivity.kt$import com.omnioone.app.helpers.*</ID>
     <ID>WildcardImport:CallContactAvatarHelper.kt$import android.graphics.*</ID>
-    <ID>WildcardImport:ChangeSortingDialog.kt$import com.omnioone.commons.helpers.*</ID>
     <ID>WildcardImport:ContactsAdapter.kt$import android.view.*</ID>
-    <ID>WildcardImport:ContactsAdapter.kt$import com.omnioone.commons.extensions.*</ID>
-    <ID>WildcardImport:ContactsAdapter.kt$import com.omnioone.commons.helpers.*</ID>
-    <ID>WildcardImport:DialerActivity.kt$import com.omnioone.commons.extensions.*</ID>
-    <ID>WildcardImport:ExportCallHistoryDialog.kt$import com.omnioone.commons.extensions.*</ID>
-    <ID>WildcardImport:FilterContactSourcesDialog.kt$import com.omnioone.commons.extensions.*</ID>
-    <ID>WildcardImport:MainActivity.kt$import com.omnioone.commons.extensions.*</ID>
-    <ID>WildcardImport:MainActivity.kt$import com.omnioone.commons.helpers.*</ID>
-    <ID>WildcardImport:RecentsHelper.kt$import com.omnioone.commons.extensions.*</ID>
-    <ID>WildcardImport:RecentsHelper.kt$import com.omnioone.commons.helpers.*</ID>
-    <ID>WildcardImport:SelectContactDialog.kt$import com.omnioone.commons.extensions.*</ID>
   </CurrentIssues>
 </SmellBaseline>
