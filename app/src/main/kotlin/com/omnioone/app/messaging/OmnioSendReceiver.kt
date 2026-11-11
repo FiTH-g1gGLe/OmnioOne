@@ -13,7 +13,6 @@ import android.provider.Telephony.Sms
 import android.telephony.SmsMessage
 import com.omnioone.messages.extensions.deleteMessage
 import com.omnioone.messages.extensions.messagesDB
-import com.omnioone.messages.extensions.notificationHelper
 import com.omnioone.messages.helpers.refreshConversations
 import com.omnioone.messages.helpers.refreshMessages
 import java.io.File
@@ -127,7 +126,7 @@ class OmnioSendReceiver : BroadcastReceiver() {
             if (address.isEmpty()) {
                 address = OmnioMessageStore.conversations(context, onlyThread = threadId).firstOrNull()?.people?.firstOrNull()?.address.orEmpty()
             }
-            context.notificationHelper.showSendingFailedNotification(nameFor(context, address), threadId)
+            OmnioNotifications.showFailed(context, threadId, nameFor(context, address))
         } catch (ignored: Exception) {
         }
     }

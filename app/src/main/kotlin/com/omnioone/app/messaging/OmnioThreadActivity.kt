@@ -1,6 +1,5 @@
 package com.omnioone.app.messaging
 
-import android.app.NotificationManager
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -50,7 +49,6 @@ import com.omnioone.commons.helpers.ensureBackgroundThread
 import com.omnioone.messages.extensions.deleteMessage
 import com.omnioone.messages.extensions.deleteSmsDraft
 import com.omnioone.messages.extensions.getSmsDraft
-import com.omnioone.messages.extensions.markThreadMessagesRead
 import com.omnioone.messages.extensions.saveSmsDraft
 import com.omnioone.messages.helpers.OmnioEmail
 import com.omnioone.messages.helpers.OmnioReactions
@@ -166,16 +164,8 @@ class OmnioThreadActivity : SimpleActivity() {
     }
 
     private fun markRead() {
-        ensureBackgroundThread {
-            try {
-                markThreadMessagesRead(threadId)
-            } catch (ignored: Exception) {
-            }
-        }
-        try {
-            getSystemService(NotificationManager::class.java).cancel(threadId.hashCode())
-        } catch (ignored: Exception) {
-        }
+        ensureBackgroundThread { OmnioNotificationActions.markRead(applicationContext, threadId) }
+        OmnioNotifications.cancel(this, threadId)
     }
 
     // ---- loading ----

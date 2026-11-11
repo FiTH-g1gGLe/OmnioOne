@@ -546,4 +546,19 @@ Unread, new: %3$d · current: %4$d</string>
     <string name="omnio_undo_send_help">A few seconds to change your mind after tapping send in the new conversation screen.</string>
     <string name="omnio_undo_send_off">Off</string>
     <string name="omnio_undo_send_seconds">%d seconds</string>
+    <string name="omnio_notify_channel">Messages</string>
+    <string name="omnio_notify_failed_channel">Messages not sent</string>
+    <string name="omnio_notify_failed_title">Message not sent</string>
+    <string name="omnio_notify_failed_text">Your message to %s wasn\'t sent. Tap to try again.</string>
+    <string name="omnio_notify_you">You</string>
+    <string name="omnio_notify_reply">Reply</string>
+    <string name="omnio_notify_mark_read">Mark as read</string>
+    <string name="omnio_notify_delete">Delete</string>
+    <string name="omnio_notify_new_message">New message</string>
+    <string name="omnio_notify_photo">Photo</string>
+    <string name="omnio_notify_video">Video</string>
+    <string name="omnio_notify_audio">Voice message</string>
+    <string name="omnio_notify_contact">Contact card</string>
+    <string name="omnio_notify_attachment">Attachment</string>
+    <string name="omnio_notify_mms_failed">Couldn\'t download a picture message</string>
 </resources>

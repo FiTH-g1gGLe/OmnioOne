@@ -113,6 +113,25 @@
             android:exported="false"
             android:screenOrientation="portrait" />
 
+        <!-- Omnio One receiving (Messages rewrite, stage 5) -->
+        <receiver
+            android:name=".messaging.OmnioSmsReceiver"
+            android:exported="true"
+            android:permission="android.permission.BROADCAST_SMS">
+            <intent-filter>
+                <action android:name="android.provider.Telephony.SMS_DELIVER" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".messaging.OmnioMmsReceiver"
+            android:exported="false"
+            android:taskAffinity="com.klinker.android.messaging.MMS_RECEIVED" />
+
+        <receiver
+            android:name=".messaging.OmnioNotificationActions"
+            android:exported="false" />
+
         <receiver
             android:name=".messaging.OmnioSendReceiver"
             android:exported="false">
