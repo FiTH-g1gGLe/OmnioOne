@@ -105,7 +105,10 @@ object OmnioCallStyle {
         )
         MINIMAL -> Design(id = "builtin:$MINIMAL", photoShape = PhotoShape.HIDDEN, answer = Answer.SLIDE, nameSize = 46)
         PULSE -> Design(id = "builtin:$PULSE", background = Background.GRADIENT, pulse = true)
-        ORBIT -> Design(id = "builtin:$ORBIT", background = Background.GRADIENT, gradientColor = 0xFF101828.toInt(), photoSize = 150, orbit = true)
+        ORBIT -> Design(
+            id = "builtin:$ORBIT", background = Background.PHOTO_BLUR, gradientColor = 0xFF1B2450.toInt(), photoSize = 150, orbit = true,
+            answer = Answer.SWIPE_UP, showBirthday = true, showNotes = true
+        )
         else -> Design(
             id = "builtin:$CONTEXT", photoSize = 104, nameSize = 30,
             showLastText = true, showBirthday = true, showNotes = true, showApps = true
@@ -176,7 +179,7 @@ object OmnioCallStyle {
 
     /** Style for everyone. */
     fun defaultKey(context: Context): String = prefs(context).getString("call_style_key", null)
-        ?: builtinKey(prefs(context).getInt("call_style", CONTEXT))
+        ?: builtinKey(prefs(context).getInt("call_style", ORBIT))
 
     fun setDefaultKey(context: Context, key: String) = prefs(context).edit().putString("call_style_key", key).apply()
 
@@ -198,7 +201,7 @@ object OmnioCallStyle {
     fun resolve(context: Context, contactId: Long?): Design {
         val personal = contactId?.let { design(context, personKey(context, it)) }
         val unknown = if (contactId == null) design(context, unknownKey(context)) else null
-        return personal ?: unknown ?: design(context, defaultKey(context)) ?: preset(CONTEXT)
+        return personal ?: unknown ?: design(context, defaultKey(context)) ?: preset(ORBIT)
     }
 
     /** Every design the user can pick: built-ins then saved ones, as (key, label) pairs. */

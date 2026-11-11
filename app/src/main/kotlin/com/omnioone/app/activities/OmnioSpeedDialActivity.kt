@@ -81,7 +81,7 @@ class OmnioSpeedDialActivity : SimpleActivity() {
 
     private fun pick(key: Int) {
         if (people.isEmpty()) return
-        OmnioSheet.list(this, getString(R.string.omnio_speed_dial_pick, key), null, people.map { OmnioSheet.Item(it.name, trailing = it.mainNumber, trailingColor = OmnioColors.TEXT_MUTED) }) { picked ->
+        OmnioSheet.list(this, getString(R.string.omnio_speed_dial_pick, key), null, people.map { OmnioSheet.Item(it.name, trailing = it.mainNumber, trailingColor = OmnioColors.TEXT_MUTED) }, searchHint = getString(R.string.omnio_search_people_hint)) { picked ->
             val person = people[picked]
             if (person.numbers.size == 1) {
                 set(key, person, person.numbers.first())

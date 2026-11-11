@@ -254,6 +254,63 @@ class ContactsFragment(context: Context, attributeSet: AttributeSet) :
         outerBinding.omnioFavouritesLabel.visibility = if (favourites.isEmpty()) View.GONE else View.VISIBLE
         holder.addView(tile(context.getString(R.string.omnio_new), null) { host.launchCreateNewContactIntent() })
         favourites.forEach { person -> holder.addView(tile(person.firstName, person) { OmnioContactActions.open(host, person) }) }
+        holder.setOnDragListener { _, event ->
+            if (event.action == android.view.DragEvent.ACTION_DRAG_ENDED) finishDrag()
+            true
+        }
+    }
+
+    // ---- hold and move favourites ----
+
+    private var dragging: View? = null
+    private var dragMoved = false
+
+    private fun startDrag(view: View) {
+        dragging = view
+        dragMoved = false
+        view.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS)
+        view.startDragAndDrop(android.content.ClipData.newPlainText("", ""), View.DragShadowBuilder(view), null, 0)
+        view.alpha = 0.3f
+    }
+
+    /** Dragging over another favourite slides the held one into its place. */
+    private fun onTileDrag(target: View, event: android.view.DragEvent): Boolean {
+        val held = dragging ?: return true
+        val holder = outerBinding.omnioFavouritesHolder
+        when (event.action) {
+            android.view.DragEvent.ACTION_DRAG_ENTERED -> if (target !== held) {
+                val to = holder.indexOfChild(target).coerceAtLeast(1) // the "New" button stays first
+                holder.removeView(held)
+                holder.addView(held, to)
+                dragMoved = true
+            }
+            android.view.DragEvent.ACTION_DRAG_LOCATION -> {
+                // near either edge: scroll the row along
+                val scroller = holder.parent as? android.widget.HorizontalScrollView ?: return true
+                val x = target.left + event.x - scroller.scrollX
+                val edge = dp(48)
+                if (x < edge) scroller.smoothScrollBy(-dp(24), 0) else if (x > scroller.width - edge) scroller.smoothScrollBy(dp(24), 0)
+            }
+            android.view.DragEvent.ACTION_DRAG_ENDED -> finishDrag()
+        }
+        return true
+    }
+
+    private fun finishDrag() {
+        val held = dragging ?: return
+        dragging = null
+        held.alpha = 1f
+        val person = held.tag as? OmnioPeople.Person ?: return
+        if (!dragMoved) {
+            // held without moving: the usual menu
+            (activity as? SimpleActivity)?.let { OmnioContactActions.showMenu(it, person) }
+            return
+        }
+        val holder = outerBinding.omnioFavouritesHolder
+        val order = (0 until holder.childCount).mapNotNull { (holder.getChildAt(it).tag as? OmnioPeople.Person)?.contactId?.toString() }
+        context.config.favoritesContactsOrder = com.google.gson.Gson().toJson(order)
+        context.config.isCustomOrderSelected = true
+        OmnioFavourites.notifyChanged()
     }
 
     private fun tile(label: String, person: OmnioPeople.Person?, onClick: () -> Unit): LinearLayout {
@@ -263,9 +320,13 @@ class ContactsFragment(context: Context, attributeSet: AttributeSet) :
             gravity = Gravity.CENTER_HORIZONTAL
             layoutParams = LinearLayout.LayoutParams(dp(72), ViewGroup.LayoutParams.WRAP_CONTENT)
             setOnClickListener { onClick() }
-            if (person != null) setOnLongClickListener {
-                (activity as? SimpleActivity)?.let { OmnioContactActions.showMenu(it, person) }
-                true
+            if (person != null) {
+                tag = person
+                setOnLongClickListener {
+                    startDrag(this)
+                    true
+                }
+                setOnDragListener { view, event -> onTileDrag(view, event) }
             }
             addView(ImageView(context).apply {
                 layoutParams = LinearLayout.LayoutParams(size, size)

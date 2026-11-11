@@ -145,11 +145,45 @@ object OmnioSheet {
         subtitle: String? = null,
         items: List<Item>,
         top: ((dismiss: () -> Unit) -> View)? = null,
+        searchHint: String? = null,
         onPick: (Int) -> Unit
     ) {
         val frame = Frame(activity, title, subtitle)
         top?.let { frame.body.addView(it { frame.sheet.dismiss() }) }
+        // each row with the divider above it, so search can hide both
+        val rows = ArrayList<Triple<View, View?, Item>>()
         with(activity) {
+            if (searchHint != null) {
+                frame.body.addView(EditText(this).apply {
+                    hint = searchHint
+                    setTextColor(TEXT)
+                    setHintTextColor(0x99FFFFFF.toInt())
+                    setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
+                    isSingleLine = true
+                    background = getDrawable(R.drawable.omnio_round_bg)
+                    backgroundTintList = ColorStateList.valueOf(CARD)
+                    setPadding(dp(18), dp(12), dp(18), dp(12))
+                    layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { bottomMargin = dp(12) }
+                    // the friendly prompt clears as soon as you tap in to type
+                    setOnFocusChangeListener { _, focused -> hint = if (focused) "" else searchHint }
+                    addTextChangedListener(object : android.text.TextWatcher {
+                        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+                        override fun afterTextChanged(s: android.text.Editable?) {
+                            val query = s.toString().trim()
+                            val digits = query.filter { it.isDigit() }
+                            var first = true
+                            rows.forEach { (row, divider, item) ->
+                                val match = query.isEmpty() || item.label.contains(query, true) ||
+                                    (digits.length >= 2 && item.trailing?.filter { it.isDigit() }?.contains(digits) == true)
+                                row.visibility = if (match) View.VISIBLE else View.GONE
+                                divider?.visibility = if (match && !first) View.VISIBLE else View.GONE
+                                if (match) first = false
+                            }
+                        }
+                    })
+                })
+            }
             val card = LinearLayout(this).apply {
                 orientation = LinearLayout.VERTICAL
                 background = getDrawable(R.drawable.omnio_round_bg)
@@ -157,15 +191,19 @@ object OmnioSheet {
                 setPadding(dp(16), dp(4), dp(8), dp(4))
             }
             items.forEachIndexed { index, item ->
+                var divider: View? = null
                 if (index > 0) {
-                    card.addView(View(this).apply {
+                    divider = View(this)
+                    card.addView(divider.apply {
                         setBackgroundColor(0x1FFFFFFF)
                         layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(1)).apply {
                             marginStart = if (item.icon != null) dp(50) else 0
                         }
                     })
                 }
-                card.addView(LinearLayout(this).apply {
+                val row = LinearLayout(this)
+                rows += Triple(row, divider, item)
+                card.addView(row.apply {
                     orientation = LinearLayout.HORIZONTAL
                     gravity = Gravity.CENTER_VERTICAL
                     minimumHeight = dp(56)

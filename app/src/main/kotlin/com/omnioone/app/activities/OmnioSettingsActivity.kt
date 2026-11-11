@@ -79,15 +79,15 @@ class OmnioSettingsActivity : SimpleActivity() {
         card(
             action(R.string.omnio_settings_contact_tap, getString(if (config.onContactClick == com.omnioone.commons.helpers.ON_CLICK_CALL_CONTACT) R.string.omnio_settings_contact_tap_call else R.string.omnio_settings_contact_tap_open)) {
                 OmnioSheet.list(this, getString(R.string.omnio_settings_contact_tap), getString(R.string.omnio_settings_contact_tap_help), listOf(
-                    OmnioSheet.Item(getString(R.string.omnio_settings_contact_tap_open)),
-                    OmnioSheet.Item(getString(R.string.omnio_settings_contact_tap_call)),
+                    OmnioSheet.Item(getString(R.string.omnio_settings_contact_tap_open), trailing = if (config.onContactClick != com.omnioone.commons.helpers.ON_CLICK_CALL_CONTACT) "✓" else null),
+                    OmnioSheet.Item(getString(R.string.omnio_settings_contact_tap_call), trailing = if (config.onContactClick == com.omnioone.commons.helpers.ON_CLICK_CALL_CONTACT) "✓" else null),
                 )) { picked ->
                     config.onContactClick = if (picked == 1) com.omnioone.commons.helpers.ON_CLICK_CALL_CONTACT else com.omnioone.commons.helpers.ON_CLICK_VIEW_CONTACT
                     buildRows()
                 }
             },
             switch(R.string.omnio_settings_surname_first, null, config.startNameWithSurname) { config.startNameWithSurname = it },
-            action(R.string.omnio_settings_default_tab, tabName(config.defaultTab)) { pickDefaultTab() },
+            action(R.string.omnio_settings_default_tab, if (config.openDialPadAtLaunch) getString(R.string.omnio_open_on_keypad) else tabName(config.defaultTab)) { pickDefaultTab() },
             action(R.string.omnio_settings_visible_tabs, visibleTabsText()) { pickVisibleTabs() },
         )
 
@@ -122,7 +122,6 @@ class OmnioSettingsActivity : SimpleActivity() {
             switch(R.string.omnio_settings_dialpad_vibration, null, config.dialpadVibration) { config.dialpadVibration = it },
             switch(R.string.omnio_settings_dialpad_beeps, null, config.dialpadBeeps) { config.dialpadBeeps = it },
             switch(R.string.omnio_settings_group_calls, R.string.omnio_settings_group_calls_desc, config.groupSubsequentCalls) { config.groupSubsequentCalls = it },
-            switch(R.string.omnio_settings_open_dialpad, null, config.openDialPadAtLaunch) { config.openDialPadAtLaunch = it },
             switch(R.string.omnio_settings_proximity, R.string.omnio_settings_proximity_desc, !config.disableProximitySensor) { config.disableProximitySensor = !it },
             switch(R.string.omnio_settings_swipe_answer, null, !config.disableSwipeToAnswer) { config.disableSwipeToAnswer = !it },
             switch(R.string.omnio_settings_always_fullscreen, R.string.omnio_settings_always_fullscreen_desc, config.alwaysShowFullscreen) { config.alwaysShowFullscreen = it },
@@ -308,11 +307,17 @@ class OmnioSettingsActivity : SimpleActivity() {
     private fun visibleTabsText() = tabs.filter { config.showTabs and it.first != 0 }.joinToString(", ") { getString(it.second) }
 
     private fun pickDefaultTab() {
-        val options = tabs + (com.omnioone.commons.helpers.TAB_LAST_USED to R.string.last_used_tab)
+        val keypad = -1
+        val options = tabs + (com.omnioone.commons.helpers.TAB_LAST_USED to R.string.last_used_tab) + (keypad to R.string.omnio_open_on_keypad)
+        val dialpad = config.openDialPadAtLaunch
         OmnioSheet.list(this, getString(R.string.omnio_settings_default_tab), null, options.map {
-            OmnioSheet.Item(getString(it.second), trailing = if (config.defaultTab == it.first) "✓" else null)
+            val active = if (it.first == keypad) dialpad else !dialpad && config.defaultTab == it.first
+            OmnioSheet.Item(getString(it.second), trailing = if (active) "✓" else null)
         }) { picked ->
-            config.defaultTab = options[picked].first
+            val choice = options[picked].first
+            // the keypad opens over the Contacts tab
+            config.openDialPadAtLaunch = choice == keypad
+            config.defaultTab = if (choice == keypad) com.omnioone.commons.helpers.TAB_CONTACTS else choice
             buildRows()
         }
     }

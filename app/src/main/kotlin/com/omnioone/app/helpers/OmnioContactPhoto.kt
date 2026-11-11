@@ -60,6 +60,7 @@ object OmnioContactPhoto {
         val contactId = contactIdOf(context, rawId)
         val raws = if (contactId != null) rawIdsOf(context, contactId).ifEmpty { listOf(rawId) } else listOf(rawId)
         deletePhotoRows(context, raws)
+        OmnioDisplay.photosChanged(context)
         contactId == null || !hasPhoto(context, contactId)
     } catch (e: Exception) {
         false
@@ -83,6 +84,7 @@ object OmnioContactPhoto {
             "${Data.RAW_CONTACT_ID} = ? AND ${Data.MIMETYPE} = ?",
             arrayOf(rawId.toString(), Photo.CONTENT_ITEM_TYPE)
         )
+        OmnioDisplay.photosChanged(context)
         true
     } catch (e: Exception) {
         false

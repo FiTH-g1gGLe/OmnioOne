@@ -86,6 +86,11 @@ object OmnioDisplay {
         return "$style/${getColumns(context, style)}/${getDensity(context)}/${isFirstNameOnly(context)}"
     }
 
+    /** Goes up whenever a contact photo is changed in Omnio, so every list shows the new one. */
+    fun photoVersion(context: Context) = prefs(context).getLong("photo_version", 0L)
+
+    fun photosChanged(context: Context) = prefs(context).edit().putLong("photo_version", System.currentTimeMillis()).apply()
+
     /** Loads a contact photo as a circle, or as a rounded square when [cornerRadiusPx] is set. */
     fun loadAvatar(imageView: ImageView, path: String, name: String, cornerRadiusPx: Int) {
         val context = imageView.context
@@ -96,6 +101,8 @@ object OmnioDisplay {
             .error(placeholder)
             .fallback(placeholder)
             .transform(CenterCrop(), RoundedCorners(cornerRadiusPx.coerceAtLeast(1)))
+            // contact photo addresses stay the same when the picture changes, so tell the cache which version this is
+            .signature(com.bumptech.glide.signature.ObjectKey(photoVersion(context)))
         Glide.with(context).load(path.ifEmpty { null }).apply(options).into(imageView)
     }
 

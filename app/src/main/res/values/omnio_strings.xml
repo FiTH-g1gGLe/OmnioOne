@@ -669,4 +669,6 @@ Unread, new: %3$d · current: %4$d</string>
     <string name="omnio_style_honeycomb_desc">Hexagon photos, staggered like a honeycomb</string>
     <string name="omnio_style_monogram">Monogram</string>
     <string name="omnio_style_monogram_desc">Bold coloured initials instead of photos</string>
+    <string name="omnio_open_on_keypad">Keypad</string>
+    <string name="omnio_search_people_hint">🔎 Search a name or number…</string>
 </resources>

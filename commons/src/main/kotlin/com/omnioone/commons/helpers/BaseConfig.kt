@@ -458,7 +458,7 @@ open class BaseConfig(val context: Context) {
         set(wasMessengerRecorderShown) = prefs.edit().putBoolean(WAS_MESSENGER_RECORDER_SHOWN, wasMessengerRecorderShown).apply()
 
     var defaultTab: Int
-        get() = prefs.getInt(DEFAULT_TAB, TAB_LAST_USED)
+        get() = prefs.getInt(DEFAULT_TAB, TAB_CONTACTS)
         set(defaultTab) = prefs.edit().putInt(DEFAULT_TAB, defaultTab).apply()
 
     var startNameWithSurname: Boolean
