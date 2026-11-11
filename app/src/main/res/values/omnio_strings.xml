@@ -129,8 +129,6 @@
     <string name="omnio_add_social_editor_help">Type their username or paste their profile link. Tip: on the contact page, Add social → Find on… finds it for you.</string>
     <string name="omnio_settings">Settings</string>
     <string name="omnio_settings_appearance">Appearance</string>
-    <string name="omnio_settings_theme">Theme &amp; colours</string>
-    <string name="omnio_settings_theme_desc">Background, text and accent colours</string>
     <string name="omnio_settings_display_desc">List, cards, grids, speed dial and more</string>
     <string name="omnio_settings_language">Language</string>
     <string name="omnio_settings_language_desc">Use a different language for Omnio One</string>

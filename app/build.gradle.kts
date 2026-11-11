@@ -6,7 +6,6 @@ import java.io.FileInputStream
 plugins {
     alias(libs.plugins.android)
     alias(libs.plugins.kotlinSerialization)
-    alias(libs.plugins.detekt)
 }
 
 val keystorePropertiesFile: File = rootProject.file("keystore.properties")
@@ -142,12 +141,6 @@ android {
     }
 }
 
-detekt {
-    baseline = file("detekt-baseline.xml")
-    config.setFrom("$rootDir/detekt.yml")
-    buildUponDefaultConfig = true
-    allRules = false
-}
 
 dependencies {
     implementation(libs.androidx.core.ktx)
@@ -162,9 +155,6 @@ dependencies {
     // Omnio One: reads profile addresses from screenshots, on the phone (no internet needed)
     implementation("com.google.mlkit:text-recognition:16.0.1")
     implementation(libs.autofit.text.view)
-    implementation(libs.kotlinx.serialization.json)
     implementation(libs.eventbus)
     implementation(libs.libphonenumber)
-    implementation(libs.geocoder)
-    detektPlugins(libs.compose.detekt)
 }
