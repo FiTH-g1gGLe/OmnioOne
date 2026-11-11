@@ -183,13 +183,22 @@ class OmnioLinkHelperService : AccessibilityService() {
     }
 
     /** Takes a screenshot and keeps [area] of it as the contact's photo. Calls [done] with true if it worked. */
-    private fun snapshot(area: android.graphics.Rect, contactId: Int, done: (Boolean) -> Unit) {
+    private fun snapshot(area: android.graphics.Rect, contactId: Int, window: AccessibilityNodeInfo? = null, done: (Boolean) -> Unit) {
         if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.R) {
             done(false)
             return
         }
+        // when the cover is up, photograph only the app's own window underneath it
+        val windowBounds = android.graphics.Rect()
+        val windowId = if (window != null && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            window.window?.getBoundsInScreen(windowBounds)
+            window.windowId
+        } else {
+            -1
+        }
+        val area = if (windowId >= 0) android.graphics.Rect(area).apply { offset(-windowBounds.left, -windowBounds.top) } else area
         try {
-            takeScreenshot(android.view.Display.DEFAULT_DISPLAY, mainExecutor, object : TakeScreenshotCallback {
+            val callback = object : TakeScreenshotCallback {
                 override fun onSuccess(result: ScreenshotResult) {
                     var ok = false
                     try {
@@ -217,7 +226,12 @@ class OmnioLinkHelperService : AccessibilityService() {
                     OmnioPhotoCapture.note(this@OmnioLinkHelperService, "Screenshot refused (code $errorCode): switch Link helper off and on again")
                     done(false)
                 }
-            })
+            }
+            if (windowId >= 0 && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                takeScreenshotOfWindow(windowId, mainExecutor, callback)
+            } else {
+                takeScreenshot(android.view.Display.DEFAULT_DISPLAY, mainExecutor, callback)
+            }
         } catch (e: Exception) {
             OmnioPhotoCapture.note(this, "Screenshot not allowed: switch Link helper off and on again (${e.javaClass.simpleName})")
             done(false)
@@ -253,6 +267,67 @@ class OmnioLinkHelperService : AccessibilityService() {
         return target?.takeIf { it.isClickable }
     }
 
+    private var cover: android.view.View? = null
+
+    /** A full-screen Omnio card over the app while the photo is fetched. Touches and taps pass through it. */
+    private fun showCover() {
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE || cover != null) return
+        try {
+            val density = resources.displayMetrics.density
+            val view = android.widget.FrameLayout(this).apply {
+                setBackgroundColor(com.omnioone.commons.helpers.OmnioColors.BACKGROUND)
+                val column = android.widget.LinearLayout(context).apply {
+                    orientation = android.widget.LinearLayout.VERTICAL
+                    gravity = android.view.Gravity.CENTER_HORIZONTAL
+                }
+                val ring = com.omnioone.app.helpers.OrbitRing(context, 6 * density).apply {
+                    layoutParams = android.widget.LinearLayout.LayoutParams((90 * density).toInt(), (90 * density).toInt())
+                }
+                column.addView(ring)
+                column.addView(android.widget.TextView(context).apply {
+                    text = getString(com.omnioone.app.R.string.omnio_photo_getting)
+                    setTextColor(com.omnioone.commons.helpers.OmnioColors.TEXT)
+                    textSize = 17f
+                    setPadding(0, (20 * density).toInt(), 0, 0)
+                })
+                addView(column, android.widget.FrameLayout.LayoutParams(android.widget.FrameLayout.LayoutParams.WRAP_CONTENT, android.widget.FrameLayout.LayoutParams.WRAP_CONTENT, android.view.Gravity.CENTER))
+                android.animation.ObjectAnimator.ofFloat(ring, android.view.View.ROTATION, 0f, 360f).apply {
+                    duration = 1100
+                    repeatCount = android.animation.ValueAnimator.INFINITE
+                    interpolator = android.view.animation.LinearInterpolator()
+                    start()
+                }
+            }
+            val params = android.view.WindowManager.LayoutParams(
+                android.view.WindowManager.LayoutParams.MATCH_PARENT,
+                android.view.WindowManager.LayoutParams.MATCH_PARENT,
+                android.view.WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+                android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                    android.view.WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or android.view.WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                android.graphics.PixelFormat.OPAQUE
+            )
+            getSystemService(android.view.WindowManager::class.java).addView(view, params)
+            cover = view
+            handler.postDelayed({ hideCover() }, 8000) // never leave it up by mistake
+        } catch (ignored: Exception) {
+            cover = null
+        }
+    }
+
+    private fun hideCover() {
+        val view = cover ?: return
+        cover = null
+        try {
+            getSystemService(android.view.WindowManager::class.java).removeView(view)
+        } catch (ignored: Exception) {
+        }
+    }
+
+    override fun onDestroy() {
+        hideCover()
+        super.onDestroy()
+    }
+
     /** Taps the middle of [bounds] like a finger would (works even when the app doesn't mark the picture as tappable). */
     private fun tap(bounds: android.graphics.Rect, done: (Boolean) -> Unit) {
         val path = android.graphics.Path().apply { moveTo(bounds.exactCenterX(), bounds.exactCenterY()) }
@@ -277,9 +352,13 @@ class OmnioLinkHelperService : AccessibilityService() {
      */
     private fun fullSizePhoto(photo: android.graphics.Rect, contactId: Int, done: () -> Unit) {
         var opened = false
+        showCover()
         fun goBack() {
             if (opened) performGlobalAction(GLOBAL_ACTION_BACK)
-            handler.postDelayed(done, 600)
+            handler.postDelayed({
+                hideCover()
+                done()
+            }, 600)
         }
         fun shoot() {
             val root = try {
@@ -294,7 +373,7 @@ class OmnioLinkHelperService : AccessibilityService() {
                 return
             }
             opened = true
-            snapshot(area, contactId) { ok ->
+            snapshot(area, contactId, root) { ok ->
                 if (ok) OmnioPhotoCapture.note(this, "Full-size photo caught (${area.width()}px)")
                 goBack()
             }
@@ -302,6 +381,7 @@ class OmnioLinkHelperService : AccessibilityService() {
         tap(photo) { tapped ->
             if (!tapped) {
                 OmnioPhotoCapture.note(this, "Full size: Android didn't allow the tap. Switch Link helper off and on again (kept the profile snapshot)")
+                hideCover()
                 done()
                 return@tap
             }
