@@ -451,7 +451,8 @@
     <string name="omnio_photo_came_back">Another app linked to this contact (like WhatsApp) still provides a photo, so a photo may still show.</string>
     <string name="omnio_photo_full_size">Full-size photos</string>
     <string name="omnio_photo_full_size_desc">Taps the profile picture for you to save a sharper photo. You’ll see it open and close.</string>
-    <string name="omnio_photo_getting">Getting their photo…</string>
+    <string name="omnio_photo_getting">📸 Fetching their profile picture…</string>
+    <string name="omnio_photo_getting_hint">Hang tight, this only takes a second</string>
     <string name="omnio_messages_pinned">Pinned</string>
     <string name="omnio_messages_all_chats">Chats</string>
     <string name="omnio_messages_archived">Archived chats (%d)</string>

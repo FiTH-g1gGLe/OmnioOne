@@ -307,13 +307,27 @@ class OmnioLinkHelperService : AccessibilityService() {
                     layoutParams = android.widget.LinearLayout.LayoutParams((90 * density).toInt(), (90 * density).toInt())
                 }
                 column.addView(ring)
+                val fullWidth = { android.widget.LinearLayout.LayoutParams(android.widget.LinearLayout.LayoutParams.MATCH_PARENT, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT) }
                 column.addView(android.widget.TextView(context).apply {
                     text = getString(com.omnioone.app.R.string.omnio_photo_getting)
                     setTextColor(com.omnioone.app.core.OmnioColors.TEXT)
-                    textSize = 17f
-                    setPadding(0, (20 * density).toInt(), 0, 0)
+                    textSize = 19f
+                    typeface = android.graphics.Typeface.DEFAULT_BOLD
+                    gravity = android.view.Gravity.CENTER
+                    setPadding(0, (28 * density).toInt(), 0, 0)
+                    layoutParams = fullWidth()
                 })
-                addView(column, android.widget.FrameLayout.LayoutParams(android.widget.FrameLayout.LayoutParams.WRAP_CONTENT, android.widget.FrameLayout.LayoutParams.WRAP_CONTENT, android.view.Gravity.CENTER))
+                column.addView(android.widget.TextView(context).apply {
+                    text = getString(com.omnioone.app.R.string.omnio_photo_getting_hint)
+                    setTextColor(com.omnioone.app.core.OmnioColors.TEXT_MUTED)
+                    textSize = 14f
+                    gravity = android.view.Gravity.CENTER
+                    setPadding(0, (8 * density).toInt(), 0, 0)
+                    layoutParams = fullWidth()
+                })
+                val side = (32 * density).toInt()
+                column.setPadding(side, 0, side, 0)
+                addView(column, android.widget.FrameLayout.LayoutParams(android.widget.FrameLayout.LayoutParams.MATCH_PARENT, android.widget.FrameLayout.LayoutParams.WRAP_CONTENT, android.view.Gravity.CENTER))
                 android.animation.ObjectAnimator.ofFloat(ring, android.view.View.ROTATION, 0f, 360f).apply {
                     duration = 1100
                     repeatCount = android.animation.ValueAnimator.INFINITE
