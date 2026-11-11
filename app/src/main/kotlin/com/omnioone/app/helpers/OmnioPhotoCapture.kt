@@ -72,4 +72,12 @@ object OmnioPhotoCapture {
     } catch (e: Exception) {
         false
     }
+
+    /** What the last photo attempt did, shown in Settings so problems can be reported. */
+    fun note(context: Context, text: String) {
+        val time = java.text.DateFormat.getTimeInstance(java.text.DateFormat.SHORT).format(java.util.Date())
+        prefs(context).edit().putString("photo_note", "$time · $text").apply()
+    }
+
+    fun lastNote(context: Context): String? = prefs(context).getString("photo_note", null)
 }

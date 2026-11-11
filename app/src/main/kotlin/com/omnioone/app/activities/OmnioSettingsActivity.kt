@@ -166,6 +166,11 @@ class OmnioSettingsActivity : SimpleActivity() {
             switch(R.string.omnio_settings_offer_helper, R.string.omnio_settings_offer_helper_desc, !prefs.getBoolean("link_helper_dont_ask", false)) {
                 prefs.edit().putBoolean("link_helper_dont_ask", !it).apply()
             },
+            action(R.string.omnio_photo_report, com.omnioone.app.helpers.OmnioPhotoCapture.lastNote(this) ?: getString(R.string.omnio_photo_report_none)) {
+                val note = com.omnioone.app.helpers.OmnioPhotoCapture.lastNote(this) ?: return@action
+                (getSystemService(CLIPBOARD_SERVICE) as android.content.ClipboardManager).setPrimaryClip(android.content.ClipData.newPlainText("Omnio photo report", note))
+                toast(R.string.omnio_copied)
+            },
             action(R.string.omnio_fb_title, getString(R.string.omnio_fb_settings_desc)) {
                 startActivity(Intent(this, OmnioFacebookMatchActivity::class.java))
             },

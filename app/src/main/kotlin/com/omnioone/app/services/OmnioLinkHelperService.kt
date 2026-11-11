@@ -43,7 +43,7 @@ class OmnioLinkHelperService : AccessibilityService() {
         val contactId = pending?.contactId ?: photoPending!!.contactId
         val prefs = getSharedPreferences("omnio", Context.MODE_PRIVATE)
         val session = "$contactId:" + (if (pending != null) prefs.getLong("link_time", 0) else prefs.getLong("photo_time", 0))
-        val photo = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R && photoTakenFor != session) profilePhoto(root) else null
+        val photo = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R && photoTakenFor != session) profilePhoto(root, pkg) else null
 
         val url = pending?.let { link ->
             val texts = ArrayList<CharSequence>()
@@ -70,23 +70,42 @@ class OmnioLinkHelperService : AccessibilityService() {
         startActivity(OmnioSocials.linkIntent(this, pending, url))
     }
 
-    /** The biggest "profile picture" on screen: small ones in search results and feeds are ignored. */
-    private fun profilePhoto(root: AccessibilityNodeInfo): android.graphics.Rect? {
-        val minSize = (100 * resources.displayMetrics.density).toInt()
-        var best: android.graphics.Rect? = null
+    /**
+     * The profile photo on screen: the biggest picture labelled as a profile picture, or on
+     * Facebook (which often leaves it unlabelled) the big square picture near the top of a profile.
+     * Small pictures in search results and feeds are ignored.
+     */
+    private fun profilePhoto(root: AccessibilityNodeInfo, pkg: String?): android.graphics.Rect? {
+        val density = resources.displayMetrics.density
+        val screenW = resources.displayMetrics.widthPixels
+        val screenH = resources.displayMetrics.heightPixels
+        var labelled: android.graphics.Rect? = null
+        var square: android.graphics.Rect? = null
+        val seen = ArrayList<String>()
+        val facebook = pkg?.startsWith("com.facebook") == true
         fun walk(node: AccessibilityNodeInfo?, depth: Int) {
-            if (node == null || depth > 40) return
+            if (node == null || depth > 45) return
+            val bounds = android.graphics.Rect()
+            node.getBoundsInScreen(bounds)
+            val ratio = if (bounds.height() > 0) bounds.width().toFloat() / bounds.height() else 0f
             val label = (node.contentDescription ?: node.text)?.toString().orEmpty()
-            if (label.length <= 80 && photoLabel.containsMatchIn(label)) {
-                val bounds = android.graphics.Rect()
-                node.getBoundsInScreen(bounds)
-                val ratio = if (bounds.height() > 0) bounds.width().toFloat() / bounds.height() else 0f
-                if (bounds.width() >= minSize && ratio in 0.8f..1.25f && (best == null || bounds.width() > best!!.width())) best = bounds
+            if (bounds.width() >= 48 * density && ratio in 0.8f..1.25f && seen.size < 15) {
+                seen += "${label.take(40)} [${(bounds.width() / density).toInt()}dp ${node.className?.toString()?.substringAfterLast('.')}]"
+            }
+            if (label.length <= 80 && photoLabel.containsMatchIn(label) && bounds.width() >= 64 * density && ratio in 0.8f..1.25f) {
+                if (labelled == null || bounds.width() > labelled!!.width()) labelled = bounds
+            }
+            if (facebook && ratio in 0.85f..1.15f && bounds.width() >= 120 * density && bounds.width() <= screenW * 0.6f &&
+                bounds.top < screenH * 0.55f && bounds.top > 0 && label.length <= 60
+            ) {
+                if (square == null || bounds.width() > square!!.width()) square = bounds
             }
             for (i in 0 until node.childCount) walk(node.getChild(i), depth + 1)
         }
         walk(root, 0)
-        return best
+        val found = labelled ?: square
+        if (found == null) OmnioPhotoCapture.note(this, "No profile photo found on screen in ${pkg.orEmpty()}. Square pictures seen: " + seen.joinToString("; ").ifEmpty { "none" })
+        return found
     }
 
     /** Screenshots the screen, crops out the profile photo and keeps it for the contact. */
@@ -115,6 +134,7 @@ class OmnioLinkHelperService : AccessibilityService() {
                                     if (size > 720) crop = android.graphics.Bitmap.createScaledBitmap(crop, 720, 720, true)
                                     OmnioPhotoCapture.store(this@OmnioLinkHelperService, contactId, crop)
                                     photoTakenFor = session
+                                    OmnioPhotoCapture.note(this@OmnioLinkHelperService, "Photo caught (${crop.width}×${crop.height})")
                                 }
                             }
                         } catch (ignored: Exception) {
@@ -124,11 +144,13 @@ class OmnioLinkHelperService : AccessibilityService() {
                     }
 
                     override fun onFailure(errorCode: Int) {
+                        OmnioPhotoCapture.note(this@OmnioLinkHelperService, "Screenshot refused (code $errorCode): switch Link helper off and on again")
                         capturing = false
                         then()
                     }
                 })
             } catch (e: Exception) {
+                OmnioPhotoCapture.note(this, "Screenshot not allowed: switch Link helper off and on again (${e.javaClass.simpleName})")
                 capturing = false
                 then()
             }
