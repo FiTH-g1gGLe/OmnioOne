@@ -23,6 +23,8 @@ class OmnioLinkHelperService : AccessibilityService() {
     private var lastHandedOver: String? = null
     private var photoTakenFor: String? = null
     private var capturing = false
+    /** Something small drawn over the photo (Messenger's "active 2h" badge, an online dot), to crop out. */
+    private var overlay: android.graphics.Rect? = null
     private val handler = android.os.Handler(android.os.Looper.getMainLooper())
     private val photoLabel = Regex("profile (picture|photo|pic|image)|avatar|foto de perfil|photo de profil|profilbild", RegexOption.IGNORE_CASE)
 
@@ -104,8 +106,50 @@ class OmnioLinkHelperService : AccessibilityService() {
         }
         walk(root, 0)
         val found = labelled ?: square
+        overlay = found?.let { overlayOn(root, it) }
         if (found == null) OmnioPhotoCapture.note(this, "No profile photo found on screen in ${pkg.orEmpty()}. Square pictures seen: " + seen.joinToString("; ").ifEmpty { "none" })
         return found
+    }
+
+    /** Small views sitting on the photo's edge, like an "active" badge: their combined area, or null. */
+    private fun overlayOn(root: AccessibilityNodeInfo, photo: android.graphics.Rect): android.graphics.Rect? {
+        var union: android.graphics.Rect? = null
+        val cx = photo.exactCenterX()
+        val cy = photo.exactCenterY()
+        fun walk(node: AccessibilityNodeInfo?, depth: Int) {
+            if (node == null || depth > 45) return
+            val b = android.graphics.Rect()
+            node.getBoundsInScreen(b)
+            val small = b.width() in 1 until (photo.width() * 0.45f).toInt() && b.height() in 1 until (photo.height() * 0.45f).toInt()
+            val offCentre = Math.hypot((b.exactCenterX() - cx).toDouble(), (b.exactCenterY() - cy).toDouble()) > photo.width() * 0.28
+            if (small && offCentre && android.graphics.Rect.intersects(b, photo)) {
+                val clipped = android.graphics.Rect(b).apply { intersect(photo) }
+                union = union?.apply { union(clipped) } ?: clipped
+            }
+            for (i in 0 until node.childCount) walk(node.getChild(i), depth + 1)
+        }
+        walk(root, 0)
+        return union
+    }
+
+    /**
+     * The square to keep: the whole photo, or, when a badge sits on one corner, the biggest square
+     * from the opposite corner that leaves the badge out.
+     */
+    private fun cropFor(photo: android.graphics.Rect, badge: android.graphics.Rect?): android.graphics.Rect {
+        val inset = photo.width() / 30
+        val full = android.graphics.Rect(photo.left + inset, photo.top + inset, photo.right - inset, photo.bottom - inset)
+        if (badge == null) return full
+        val right = badge.exactCenterX() > photo.exactCenterX()
+        val bottom = badge.exactCenterY() > photo.exactCenterY()
+        // how far a square from the opposite corner can reach before touching the badge
+        val reachX = if (right) badge.left - full.left else full.right - badge.right
+        val reachY = if (bottom) badge.top - full.top else full.bottom - badge.bottom
+        val size = maxOf(reachX, reachY).coerceAtMost(full.width())
+        if (size < full.width() / 2) return full // badge in the middle of things: keep the whole photo
+        val left = if (right) full.left else full.right - size
+        val top = if (bottom) full.top else full.bottom - size
+        return android.graphics.Rect(left, top, left + size, top + size)
     }
 
     /** Screenshots the screen, crops out the profile photo and keeps it for the contact. */
@@ -115,6 +159,7 @@ class OmnioLinkHelperService : AccessibilityService() {
             return
         }
         capturing = true
+        val badge = overlay
         // give the picture a moment to finish loading
         handler.postDelayed({
             try {
@@ -125,10 +170,10 @@ class OmnioLinkHelperService : AccessibilityService() {
                                 ?.copy(android.graphics.Bitmap.Config.ARGB_8888, false)
                             result.hardwareBuffer.close()
                             if (screen != null) {
-                                val inset = bounds.width() / 30
-                                val left = (bounds.left + inset).coerceIn(0, screen.width - 1)
-                                val top = (bounds.top + inset).coerceIn(0, screen.height - 1)
-                                val size = minOf(bounds.width() - inset * 2, bounds.height() - inset * 2, screen.width - left, screen.height - top)
+                                val area = cropFor(bounds, badge)
+                                val left = area.left.coerceIn(0, screen.width - 1)
+                                val top = area.top.coerceIn(0, screen.height - 1)
+                                val size = minOf(area.width(), area.height(), screen.width - left, screen.height - top)
                                 if (size > 0) {
                                     var crop = android.graphics.Bitmap.createBitmap(screen, left, top, size, size)
                                     if (size > 720) crop = android.graphics.Bitmap.createScaledBitmap(crop, 720, 720, true)
