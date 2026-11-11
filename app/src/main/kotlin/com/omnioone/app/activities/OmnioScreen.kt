@@ -13,7 +13,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.NestedScrollView
 import com.omnioone.app.R
-import com.omnioone.commons.helpers.OmnioColors
+import com.omnioone.app.core.OmnioColors
 
 /** Omnio One: the shared look of simple screens (top bar with back arrow, scrolling cards). */
 class OmnioScreen(private val activity: Activity, title: String) {

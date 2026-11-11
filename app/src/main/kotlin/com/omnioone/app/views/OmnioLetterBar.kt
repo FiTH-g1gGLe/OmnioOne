@@ -10,7 +10,7 @@ import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import android.view.View
 import android.widget.TextView
-import com.omnioone.commons.helpers.OmnioColors
+import com.omnioone.app.core.OmnioColors
 
 /** Omnio One: the A–Z strip down the side of the contacts list. Slide along it to jump. */
 class OmnioLetterBar @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) : View(context, attrs) {

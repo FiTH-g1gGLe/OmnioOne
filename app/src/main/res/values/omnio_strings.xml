@@ -637,4 +637,15 @@
     <string name="omnio_view">View</string>
     <string name="omnio_filter_unread">Unread</string>
     <string name="omnio_filter_groups">Groups</string>
+    <string name="omnio_error">Something went wrong: %s</string>
+    <string name="omnio_copied_text">Copied: %s</string>
+    <string name="omnio_no_app_found">No app found to open this</string>
+    <string name="omnio_number_mobile">Mobile</string>
+    <string name="omnio_number_home">Home</string>
+    <string name="omnio_number_work">Work</string>
+    <string name="omnio_number_main">Main</string>
+    <string name="omnio_number_work_fax">Work fax</string>
+    <string name="omnio_number_home_fax">Home fax</string>
+    <string name="omnio_number_pager">Pager</string>
+    <string name="omnio_number_other">Other</string>
 </resources>

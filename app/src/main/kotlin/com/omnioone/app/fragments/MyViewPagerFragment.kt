@@ -7,8 +7,8 @@ import com.omnioone.commons.adapters.MyRecyclerViewAdapter
 import com.omnioone.commons.extensions.getProperPrimaryColor
 import com.omnioone.commons.extensions.getProperTextColor
 import com.omnioone.commons.extensions.getTextSize
-import com.omnioone.commons.helpers.SORT_BY_FIRST_NAME
-import com.omnioone.commons.helpers.SORT_BY_SURNAME
+import com.omnioone.app.core.SORT_BY_FIRST_NAME
+import com.omnioone.app.core.SORT_BY_SURNAME
 import com.omnioone.commons.views.MyRecyclerView
 import com.omnioone.app.activities.MainActivity
 import com.omnioone.app.activities.SimpleActivity

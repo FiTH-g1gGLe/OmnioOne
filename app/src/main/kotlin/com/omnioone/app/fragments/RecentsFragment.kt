@@ -34,14 +34,14 @@ import com.omnioone.app.extensions.startCallWithConfirmationCheck
 import com.omnioone.app.helpers.OmnioCallLog
 import com.omnioone.app.helpers.OmnioSheet
 import com.omnioone.app.interfaces.RefreshItemsListener
-import com.omnioone.commons.extensions.hasPermission
-import com.omnioone.commons.extensions.launchSendSMSIntent
-import com.omnioone.commons.extensions.toast
-import com.omnioone.commons.helpers.OmnioColors
-import com.omnioone.commons.helpers.OmnioContactData
-import com.omnioone.commons.helpers.PERMISSION_READ_CALL_LOG
-import com.omnioone.commons.helpers.PERMISSION_WRITE_CALL_LOG
-import com.omnioone.commons.helpers.ensureBackgroundThread
+import com.omnioone.app.core.hasPermission
+import com.omnioone.app.core.launchSendSMSIntent
+import com.omnioone.app.core.toast
+import com.omnioone.app.core.OmnioColors
+import com.omnioone.app.core.OmnioContactData
+import com.omnioone.app.core.PERMISSION_READ_CALL_LOG
+import com.omnioone.app.core.PERMISSION_WRITE_CALL_LOG
+import com.omnioone.app.core.ensureBackgroundThread
 import java.util.Calendar
 import java.util.Locale
 

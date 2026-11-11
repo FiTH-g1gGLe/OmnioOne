@@ -18,11 +18,11 @@ import com.omnioone.app.activities.SimpleActivity
 import com.omnioone.app.extensions.areMultipleSIMsAvailable
 import com.omnioone.app.extensions.callContactWithSimWithConfirmationCheck
 import com.omnioone.app.extensions.startCallWithConfirmationCheck
-import com.omnioone.commons.extensions.launchSendSMSIntent
-import com.omnioone.commons.extensions.toast
-import com.omnioone.commons.helpers.OmnioColors
-import com.omnioone.commons.helpers.PERMISSION_WRITE_CONTACTS
-import com.omnioone.commons.helpers.ensureBackgroundThread
+import com.omnioone.app.core.launchSendSMSIntent
+import com.omnioone.app.core.toast
+import com.omnioone.app.core.OmnioColors
+import com.omnioone.app.core.PERMISSION_WRITE_CONTACTS
+import com.omnioone.app.core.ensureBackgroundThread
 
 /** Omnio One: what you can do with a contact from a list (long-press menu, calling, opening). */
 object OmnioContactActions {

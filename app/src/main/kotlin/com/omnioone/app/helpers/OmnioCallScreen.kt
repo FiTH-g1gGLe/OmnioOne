@@ -23,7 +23,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import com.bumptech.glide.Glide
-import com.omnioone.commons.helpers.OmnioColors
+import com.omnioone.app.core.OmnioColors
 import com.omnioone.commons.helpers.SimpleContactsHelper
 import com.omnioone.app.R
 import com.omnioone.app.helpers.OmnioCallStyle.Answer

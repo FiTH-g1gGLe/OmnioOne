@@ -10,10 +10,10 @@ import android.media.AudioManager
 import android.net.Uri
 import android.os.PowerManager
 import android.telecom.TelecomManager
-import com.omnioone.commons.extensions.launchActivityIntent
-import com.omnioone.commons.extensions.telecomManager
-import com.omnioone.commons.helpers.KEY_PHONE
-import com.omnioone.commons.helpers.ensureBackgroundThread
+import com.omnioone.app.core.launchActivityIntent
+import com.omnioone.app.core.telecomManager
+import com.omnioone.app.core.KEY_PHONE
+import com.omnioone.app.core.ensureBackgroundThread
 import com.omnioone.app.helpers.Config
 import com.omnioone.app.models.SIMAccount
 

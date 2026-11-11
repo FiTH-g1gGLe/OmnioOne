@@ -1,6 +1,6 @@
 package com.omnioone.app.activities
 
-import com.omnioone.commons.helpers.OmnioColors
+import com.omnioone.app.core.OmnioColors
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.net.Uri
@@ -16,20 +16,20 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import com.omnioone.commons.extensions.applyColorFilter
-import com.omnioone.commons.extensions.beGone
+import com.omnioone.app.core.applyColorFilter
+import com.omnioone.app.core.beGone
 import com.omnioone.commons.extensions.getProperBackgroundColor
 import com.omnioone.commons.extensions.getProperTextColor
-import com.omnioone.commons.extensions.launchSendSMSIntent
-import com.omnioone.commons.extensions.sendEmailIntent
-import com.omnioone.commons.extensions.showErrorToast
-import com.omnioone.commons.extensions.hasPermission
-import com.omnioone.commons.extensions.copyToClipboard
-import com.omnioone.commons.extensions.toast
-import com.omnioone.commons.extensions.viewBinding
+import com.omnioone.app.core.launchSendSMSIntent
+import com.omnioone.app.core.sendEmailIntent
+import com.omnioone.app.core.showErrorToast
+import com.omnioone.app.core.hasPermission
+import com.omnioone.app.core.copyToClipboard
+import com.omnioone.app.core.toast
+import com.omnioone.app.core.viewBinding
 import com.omnioone.commons.helpers.ContactsHelper
 import com.omnioone.commons.helpers.SimpleContactsHelper
-import com.omnioone.commons.helpers.ensureBackgroundThread
+import com.omnioone.app.core.ensureBackgroundThread
 import com.omnioone.commons.models.contacts.Contact
 import com.omnioone.app.R
 import com.omnioone.app.databinding.ActivityOmnioContactBinding
@@ -37,13 +37,13 @@ import com.omnioone.app.extensions.config
 import com.omnioone.app.extensions.getAvailableSIMCardLabels
 import com.omnioone.app.extensions.openContactInSystemApp
 import com.omnioone.app.extensions.startCallWithConfirmationCheck
-import com.omnioone.commons.extensions.beVisibleIf
+import com.omnioone.app.core.beVisibleIf
 import com.omnioone.commons.extensions.setupDialogStuff
 import com.omnioone.commons.extensions.getAlertDialogBuilder
 import com.omnioone.app.helpers.OmnioSocials
 import com.omnioone.app.helpers.OmnioSheet
-import com.omnioone.commons.extensions.beVisible
-import com.omnioone.commons.extensions.getFormattedDuration
+import com.omnioone.app.core.beVisible
+import com.omnioone.app.core.getFormattedDuration
 
 // Omnio One contact page: Recent calls and texts with the contact.
 
@@ -61,7 +61,7 @@ internal data class ActivityItem(
 internal fun OmnioContactActivity.loadRecentCalls(contact: Contact) {
     val numbers = contact.phoneNumbers.map { it.normalizedNumber.ifEmpty { it.value } }
     if (numbers.isEmpty()) return
-    com.omnioone.commons.helpers.ensureBackgroundThread {
+    com.omnioone.app.core.ensureBackgroundThread {
         val calls = com.omnioone.app.helpers.OmnioCallLog.load(this, limit = 400, group = false).map { it.latest }
         val now = System.currentTimeMillis()
         val items = ArrayList<ActivityItem>()
@@ -86,7 +86,7 @@ internal fun OmnioContactActivity.loadRecentCalls(contact: Contact) {
 
 /** Last few SMS with any of these numbers (needs Omnio One to be allowed to read texts). */
 internal fun OmnioContactActivity.loadRecentTexts(numbers: List<String>, now: Long): List<ActivityItem> {
-    if (!hasPermission(com.omnioone.commons.helpers.PERMISSION_READ_SMS)) return emptyList()
+    if (!hasPermission(com.omnioone.app.core.PERMISSION_READ_SMS)) return emptyList()
     val found = ArrayList<ActivityItem>()
     try {
         contentResolver.query(

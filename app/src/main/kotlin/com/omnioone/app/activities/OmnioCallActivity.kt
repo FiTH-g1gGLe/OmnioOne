@@ -24,10 +24,10 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import com.bumptech.glide.Glide
-import com.omnioone.commons.extensions.toast
-import com.omnioone.commons.helpers.OmnioColors
+import com.omnioone.app.core.toast
+import com.omnioone.app.core.OmnioColors
 import com.omnioone.commons.helpers.SimpleContactsHelper
-import com.omnioone.commons.helpers.ensureBackgroundThread
+import com.omnioone.app.core.ensureBackgroundThread
 import com.omnioone.app.R
 import com.omnioone.app.extensions.config
 import com.omnioone.app.helpers.OmnioAppTags
@@ -479,7 +479,7 @@ class OmnioCallActivity : SimpleActivity() {
             return
         }
         ensureBackgroundThread {
-            val rawId = com.omnioone.commons.helpers.OmnioContactData.firstRawId(this, id) ?: return@ensureBackgroundThread
+            val rawId = com.omnioone.app.core.OmnioContactData.firstRawId(this, id) ?: return@ensureBackgroundThread
             runOnUiThread {
                 startActivity(Intent(this, OmnioContactActivity::class.java).putExtra(OmnioContactActivity.EXTRA_CONTACT_ID, rawId.toInt()))
             }

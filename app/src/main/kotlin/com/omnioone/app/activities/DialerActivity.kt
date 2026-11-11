@@ -8,7 +8,7 @@ import android.provider.Settings
 import android.telecom.TelecomManager
 import android.widget.Toast
 import com.omnioone.commons.extensions.*
-import com.omnioone.commons.helpers.REQUEST_CODE_SET_DEFAULT_DIALER
+import com.omnioone.app.core.REQUEST_CODE_SET_DEFAULT_DIALER
 import com.omnioone.app.R
 import com.omnioone.app.extensions.getHandleToUse
 

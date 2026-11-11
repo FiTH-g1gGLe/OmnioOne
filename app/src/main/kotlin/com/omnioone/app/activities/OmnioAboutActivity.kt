@@ -15,15 +15,15 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.widget.NestedScrollView
 import com.omnioone.commons.activities.LicenseActivity
-import com.omnioone.commons.extensions.toast
+import com.omnioone.app.core.toast
 import com.omnioone.commons.helpers.APP_LICENSES
 import com.omnioone.commons.helpers.LICENSE_AUTOFITTEXTVIEW
 import com.omnioone.commons.helpers.LICENSE_EVENT_BUS
 import com.omnioone.commons.helpers.LICENSE_GLIDE
 import com.omnioone.commons.helpers.LICENSE_INDICATOR_FAST_SCROLL
 import com.omnioone.commons.helpers.LICENSE_SMS_MMS
-import com.omnioone.commons.helpers.OMNIO_GITHUB_URL
-import com.omnioone.commons.helpers.OmnioColors
+import com.omnioone.app.core.OMNIO_GITHUB_URL
+import com.omnioone.app.core.OmnioColors
 import com.omnioone.app.BuildConfig
 import com.omnioone.app.R
 

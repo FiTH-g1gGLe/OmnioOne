@@ -20,7 +20,7 @@ import com.omnioone.app.R
 import com.omnioone.app.helpers.OmnioAppTags
 import com.omnioone.app.helpers.OmnioDisplay
 import com.omnioone.app.helpers.OmnioPeople
-import com.omnioone.commons.helpers.OmnioColors
+import com.omnioone.app.core.OmnioColors
 
 /**
  * Omnio One contacts list: draws every contact display style (list, compact, detailed, cards,

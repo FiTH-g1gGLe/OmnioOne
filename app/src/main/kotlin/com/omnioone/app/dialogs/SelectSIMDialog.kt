@@ -9,7 +9,7 @@ import androidx.appcompat.app.AlertDialog
 import com.omnioone.commons.activities.BaseSimpleActivity
 import com.omnioone.commons.extensions.getAlertDialogBuilder
 import com.omnioone.commons.extensions.setupDialogStuff
-import com.omnioone.commons.extensions.viewBinding
+import com.omnioone.app.core.viewBinding
 import com.omnioone.app.R
 import com.omnioone.app.databinding.DialogSelectSimBinding
 import com.omnioone.app.extensions.config

@@ -1,10 +1,10 @@
 package com.omnioone.app.dialogs
 
 import com.omnioone.commons.activities.BaseSimpleActivity
-import com.omnioone.commons.extensions.beGoneIf
+import com.omnioone.app.core.beGoneIf
 import com.omnioone.commons.extensions.getAlertDialogBuilder
 import com.omnioone.commons.extensions.setupDialogStuff
-import com.omnioone.commons.extensions.viewBinding
+import com.omnioone.app.core.viewBinding
 import com.omnioone.commons.helpers.*
 import com.omnioone.app.R
 import com.omnioone.app.databinding.DialogChangeSortingBinding

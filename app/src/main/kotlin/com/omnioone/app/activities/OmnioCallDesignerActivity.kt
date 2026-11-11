@@ -15,8 +15,8 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.widget.NestedScrollView
-import com.omnioone.commons.extensions.toast
-import com.omnioone.commons.helpers.OmnioColors
+import com.omnioone.app.core.toast
+import com.omnioone.app.core.OmnioColors
 import com.omnioone.app.R
 import com.omnioone.app.helpers.OmnioAnswerControls
 import com.omnioone.app.helpers.OmnioCallInfo

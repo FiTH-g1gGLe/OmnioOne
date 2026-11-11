@@ -1,6 +1,6 @@
 package com.omnioone.app.activities
 
-import com.omnioone.commons.helpers.OmnioColors
+import com.omnioone.app.core.OmnioColors
 import android.app.DatePickerDialog
 import android.content.res.ColorStateList
 import android.graphics.Typeface
@@ -22,16 +22,16 @@ import android.widget.TextView
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.widget.NestedScrollView
-import com.omnioone.commons.extensions.getPhoneNumberTypeText
-import com.omnioone.commons.extensions.showErrorToast
-import com.omnioone.commons.extensions.toast
+import com.omnioone.app.core.getPhoneNumberTypeText
+import com.omnioone.app.core.showErrorToast
+import com.omnioone.app.core.toast
 import com.omnioone.commons.helpers.ContactsHelper
-import com.omnioone.commons.helpers.PHOTO_ADDED
-import com.omnioone.commons.helpers.PHOTO_CHANGED
-import com.omnioone.commons.helpers.PHOTO_REMOVED
-import com.omnioone.commons.helpers.PHOTO_UNCHANGED
+import com.omnioone.app.core.PHOTO_ADDED
+import com.omnioone.app.core.PHOTO_CHANGED
+import com.omnioone.app.core.PHOTO_REMOVED
+import com.omnioone.app.core.PHOTO_UNCHANGED
 import com.omnioone.commons.helpers.SimpleContactsHelper
-import com.omnioone.commons.helpers.ensureBackgroundThread
+import com.omnioone.app.core.ensureBackgroundThread
 import com.omnioone.commons.models.PhoneNumber
 import com.omnioone.commons.models.contacts.Address
 import com.omnioone.commons.models.contacts.Contact

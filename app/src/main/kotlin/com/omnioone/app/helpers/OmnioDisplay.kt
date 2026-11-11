@@ -1,6 +1,6 @@
 package com.omnioone.app.helpers
 
-import com.omnioone.commons.helpers.OmnioColors
+import com.omnioone.app.core.OmnioColors
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas

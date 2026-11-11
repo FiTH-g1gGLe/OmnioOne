@@ -33,7 +33,7 @@ import com.omnioone.app.helpers.OmnioAppTags
 import com.omnioone.app.helpers.OmnioDisplay
 import com.omnioone.app.helpers.OmnioPeople
 import com.omnioone.app.helpers.OrbitRing
-import com.omnioone.commons.helpers.OmnioColors
+import com.omnioone.app.core.OmnioColors
 import java.security.MessageDigest
 
 /** What the extra contact styles need from the list. */

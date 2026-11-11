@@ -1,6 +1,6 @@
 package com.omnioone.app.dialogs
 
-import com.omnioone.commons.helpers.OmnioColors
+import com.omnioone.app.core.OmnioColors
 import android.content.res.ColorStateList
 import android.util.TypedValue
 import android.view.Gravity

@@ -387,11 +387,11 @@ object OmnioSocials {
 
     /** Adds one data row (email, website, …) to the contact's first raw contact. */
     fun addData(context: Context, contactId: Int, mimeType: String, vararg values: Pair<String, Any>): Boolean =
-        com.omnioone.commons.helpers.OmnioContactData.add(context, contactId.toLong(), mimeType, *values)
+        com.omnioone.app.core.OmnioContactData.add(context, contactId.toLong(), mimeType, *values)
 
     /** Saves a profile link on the contact. Returns true when it worked. */
     fun addSocial(context: Context, contactId: Int, url: String): Boolean {
-        val ok = com.omnioone.commons.helpers.OmnioContactData.add(
+        val ok = com.omnioone.app.core.OmnioContactData.add(
             context, contactId.toLong(), Website.CONTENT_ITEM_TYPE,
             Website.URL to url,
             Website.TYPE to Website.TYPE_PROFILE
@@ -400,5 +400,5 @@ object OmnioSocials {
         return ok
     }
 
-    fun removeSocial(context: Context, dataId: Long): Boolean = com.omnioone.commons.helpers.OmnioContactData.remove(context, dataId)
+    fun removeSocial(context: Context, dataId: Long): Boolean = com.omnioone.app.core.OmnioContactData.remove(context, dataId)
 }

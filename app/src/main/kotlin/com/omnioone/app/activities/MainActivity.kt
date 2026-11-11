@@ -1,6 +1,6 @@
 package com.omnioone.app.activities
 
-import com.omnioone.commons.helpers.OmnioColors
+import com.omnioone.app.core.OmnioColors
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
@@ -295,8 +295,8 @@ class MainActivity : SimpleActivity() {
     private fun clearCallHistory() {
         val confirmationText = "${getString(R.string.clear_history_confirmation)}\n\n${getString(R.string.cannot_be_undone)}"
         ConfirmationDialog(this, confirmationText) {
-            handlePermission(com.omnioone.commons.helpers.PERMISSION_WRITE_CALL_LOG) { granted ->
-                if (granted) com.omnioone.commons.helpers.ensureBackgroundThread {
+            handlePermission(com.omnioone.app.core.PERMISSION_WRITE_CALL_LOG) { granted ->
+                if (granted) com.omnioone.app.core.ensureBackgroundThread {
                     com.omnioone.app.helpers.OmnioCallLog.clearAll(this)
                     runOnUiThread {
                         getRecentsFragment()?.refreshItems(invalidate = true)

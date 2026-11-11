@@ -16,7 +16,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.omnioone.app.helpers.OmnioDisplay
-import com.omnioone.commons.helpers.OmnioColors
+import com.omnioone.app.core.OmnioColors
 import java.util.Calendar
 
 /** Omnio One Messages: one row per conversation, pinned first, unread in bold with a count. */

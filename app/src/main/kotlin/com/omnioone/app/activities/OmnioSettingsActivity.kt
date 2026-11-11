@@ -17,9 +17,9 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.widget.NestedScrollView
-import com.omnioone.commons.extensions.isDefaultDialer
-import com.omnioone.commons.extensions.toast
-import com.omnioone.commons.helpers.OmnioColors
+import com.omnioone.app.core.isDefaultDialer
+import com.omnioone.app.core.toast
+import com.omnioone.app.core.OmnioColors
 import com.omnioone.app.messaging.LOCK_SCREEN_NOTHING
 import com.omnioone.app.messaging.LOCK_SCREEN_SENDER
 import com.omnioone.app.messaging.LOCK_SCREEN_SENDER_MESSAGE
@@ -77,12 +77,12 @@ class OmnioSettingsActivity : SimpleActivity() {
 
         section("👥", R.string.omnio_settings_contacts)
         card(
-            action(R.string.omnio_settings_contact_tap, getString(if (config.onContactClick == com.omnioone.commons.helpers.ON_CLICK_CALL_CONTACT) R.string.omnio_settings_contact_tap_call else R.string.omnio_settings_contact_tap_open)) {
+            action(R.string.omnio_settings_contact_tap, getString(if (config.onContactClick == com.omnioone.app.core.ON_CLICK_CALL_CONTACT) R.string.omnio_settings_contact_tap_call else R.string.omnio_settings_contact_tap_open)) {
                 OmnioSheet.list(this, getString(R.string.omnio_settings_contact_tap), getString(R.string.omnio_settings_contact_tap_help), listOf(
-                    OmnioSheet.Item(getString(R.string.omnio_settings_contact_tap_open), trailing = if (config.onContactClick != com.omnioone.commons.helpers.ON_CLICK_CALL_CONTACT) "✓" else null),
-                    OmnioSheet.Item(getString(R.string.omnio_settings_contact_tap_call), trailing = if (config.onContactClick == com.omnioone.commons.helpers.ON_CLICK_CALL_CONTACT) "✓" else null),
+                    OmnioSheet.Item(getString(R.string.omnio_settings_contact_tap_open), trailing = if (config.onContactClick != com.omnioone.app.core.ON_CLICK_CALL_CONTACT) "✓" else null),
+                    OmnioSheet.Item(getString(R.string.omnio_settings_contact_tap_call), trailing = if (config.onContactClick == com.omnioone.app.core.ON_CLICK_CALL_CONTACT) "✓" else null),
                 )) { picked ->
-                    config.onContactClick = if (picked == 1) com.omnioone.commons.helpers.ON_CLICK_CALL_CONTACT else com.omnioone.commons.helpers.ON_CLICK_VIEW_CONTACT
+                    config.onContactClick = if (picked == 1) com.omnioone.app.core.ON_CLICK_CALL_CONTACT else com.omnioone.app.core.ON_CLICK_VIEW_CONTACT
                     buildRows()
                 }
             },
@@ -222,7 +222,7 @@ class OmnioSettingsActivity : SimpleActivity() {
 
     private val exportCalls = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.CreateDocument("application/json")) { uri ->
         if (uri == null) return@registerForActivityResult
-        com.omnioone.commons.helpers.ensureBackgroundThread {
+        com.omnioone.app.core.ensureBackgroundThread {
             val count = try {
                 val (json, total) = com.omnioone.app.helpers.OmnioCallLog.exportJson(this)
                 contentResolver.openOutputStream(uri)?.use { it.write(json.toByteArray()) }
@@ -239,7 +239,7 @@ class OmnioSettingsActivity : SimpleActivity() {
     private val exportMessages = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.CreateDocument("application/json")) { uri ->
         if (uri == null) return@registerForActivityResult
         toast(R.string.omnio_backup_working)
-        com.omnioone.commons.helpers.ensureBackgroundThread {
+        com.omnioone.app.core.ensureBackgroundThread {
             val count = try {
                 contentResolver.openOutputStream(uri)?.use { com.omnioone.app.messaging.OmnioMessageBackup.export(this, it) } ?: -1
             } catch (e: Exception) {
@@ -259,7 +259,7 @@ class OmnioSettingsActivity : SimpleActivity() {
             return@registerForActivityResult
         }
         toast(R.string.omnio_restore_working)
-        com.omnioone.commons.helpers.ensureBackgroundThread {
+        com.omnioone.app.core.ensureBackgroundThread {
             val result = try {
                 contentResolver.openInputStream(uri)?.use { com.omnioone.app.messaging.OmnioMessageBackup.import(this, it) }
             } catch (e: Exception) {
@@ -280,9 +280,9 @@ class OmnioSettingsActivity : SimpleActivity() {
 
     private val importCalls = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.OpenDocument()) { uri ->
         if (uri == null) return@registerForActivityResult
-        handlePermission(com.omnioone.commons.helpers.PERMISSION_WRITE_CALL_LOG) { granted ->
+        handlePermission(com.omnioone.app.core.PERMISSION_WRITE_CALL_LOG) { granted ->
             if (!granted) return@handlePermission
-            com.omnioone.commons.helpers.ensureBackgroundThread {
+            com.omnioone.app.core.ensureBackgroundThread {
                 val count = try {
                     val text = contentResolver.openInputStream(uri)?.use { it.bufferedReader().readText() }.orEmpty()
                     com.omnioone.app.helpers.OmnioCallLog.importJson(this, text)
@@ -297,9 +297,9 @@ class OmnioSettingsActivity : SimpleActivity() {
     }
 
     private val tabs = listOf(
-        com.omnioone.commons.helpers.TAB_CONTACTS to R.string.contacts_tab,
-        com.omnioone.commons.helpers.TAB_FAVORITES to R.string.favorites_tab,
-        com.omnioone.commons.helpers.TAB_CALL_HISTORY to R.string.call_history_tab,
+        com.omnioone.app.core.TAB_CONTACTS to R.string.contacts_tab,
+        com.omnioone.app.core.TAB_FAVORITES to R.string.favorites_tab,
+        com.omnioone.app.core.TAB_CALL_HISTORY to R.string.call_history_tab,
     )
 
     private fun tabName(tab: Int) = getString(tabs.firstOrNull { it.first == tab }?.second ?: R.string.last_used_tab)
@@ -308,7 +308,7 @@ class OmnioSettingsActivity : SimpleActivity() {
 
     private fun pickDefaultTab() {
         val keypad = -1
-        val options = tabs + (com.omnioone.commons.helpers.TAB_LAST_USED to R.string.last_used_tab) + (keypad to R.string.omnio_open_on_keypad)
+        val options = tabs + (com.omnioone.app.core.TAB_LAST_USED to R.string.last_used_tab) + (keypad to R.string.omnio_open_on_keypad)
         val dialpad = config.openDialPadAtLaunch
         OmnioSheet.list(this, getString(R.string.omnio_settings_default_tab), null, options.map {
             val active = if (it.first == keypad) dialpad else !dialpad && config.defaultTab == it.first
@@ -317,7 +317,7 @@ class OmnioSettingsActivity : SimpleActivity() {
             val choice = options[picked].first
             // the keypad opens over the Contacts tab
             config.openDialPadAtLaunch = choice == keypad
-            config.defaultTab = if (choice == keypad) com.omnioone.commons.helpers.TAB_CONTACTS else choice
+            config.defaultTab = if (choice == keypad) com.omnioone.app.core.TAB_CONTACTS else choice
             buildRows()
         }
     }
@@ -343,7 +343,7 @@ class OmnioSettingsActivity : SimpleActivity() {
         val items = choices.map { (key, label) ->
             val desc = if (key.startsWith("builtin:")) key.removePrefix("builtin:").toIntOrNull()?.let { "  ·  " + getString(styles.description(it)) } ?: "" else ""
             OmnioSheet.Item(label + desc, trailing = if (key == current) "✓" else null)
-        } + OmnioSheet.Item(getString(R.string.omnio_settings_design_own), labelColor = com.omnioone.commons.helpers.OmnioColors.CONTACTS)
+        } + OmnioSheet.Item(getString(R.string.omnio_settings_design_own), labelColor = com.omnioone.app.core.OmnioColors.CONTACTS)
         OmnioSheet.list(
             this,
             getString(if (unknownCallers) R.string.omnio_settings_unknown_style else R.string.omnio_settings_call_style),

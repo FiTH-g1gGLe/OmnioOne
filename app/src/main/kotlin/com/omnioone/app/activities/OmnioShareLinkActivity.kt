@@ -7,7 +7,7 @@ import android.os.Bundle
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
-import com.omnioone.commons.extensions.toast
+import com.omnioone.app.core.toast
 import com.omnioone.app.R
 import com.omnioone.app.helpers.OmnioSocials
 

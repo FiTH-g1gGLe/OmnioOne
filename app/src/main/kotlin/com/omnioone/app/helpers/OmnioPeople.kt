@@ -8,9 +8,9 @@ import android.provider.ContactsContract.CommonDataKinds.Organization
 import android.provider.ContactsContract.CommonDataKinds.Phone
 import android.provider.ContactsContract.Data
 import com.omnioone.app.extensions.config
-import com.omnioone.commons.helpers.SORT_BY_DATE_CREATED
-import com.omnioone.commons.helpers.SORT_BY_SURNAME
-import com.omnioone.commons.helpers.SORT_DESCENDING
+import com.omnioone.app.core.SORT_BY_DATE_CREATED
+import com.omnioone.app.core.SORT_BY_SURNAME
+import com.omnioone.app.core.SORT_DESCENDING
 import java.text.Collator
 import java.text.Normalizer
 import java.util.Locale

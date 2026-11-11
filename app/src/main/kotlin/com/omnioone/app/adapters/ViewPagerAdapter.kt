@@ -3,9 +3,9 @@ package com.omnioone.app.adapters
 import android.view.View
 import android.view.ViewGroup
 import androidx.viewpager.widget.PagerAdapter
-import com.omnioone.commons.helpers.TAB_CALL_HISTORY
-import com.omnioone.commons.helpers.TAB_CONTACTS
-import com.omnioone.commons.helpers.TAB_FAVORITES
+import com.omnioone.app.core.TAB_CALL_HISTORY
+import com.omnioone.app.core.TAB_CONTACTS
+import com.omnioone.app.core.TAB_FAVORITES
 import com.omnioone.app.R
 import com.omnioone.app.activities.SimpleActivity
 import com.omnioone.app.extensions.config

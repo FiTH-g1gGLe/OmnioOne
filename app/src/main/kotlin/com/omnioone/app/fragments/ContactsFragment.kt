@@ -31,10 +31,10 @@ import com.omnioone.app.helpers.OmnioFavourites
 import com.omnioone.app.helpers.OmnioPeople
 import com.omnioone.app.interfaces.RefreshItemsListener
 import com.omnioone.commons.extensions.baseConfig
-import com.omnioone.commons.extensions.hasPermission
-import com.omnioone.commons.helpers.OmnioColors
-import com.omnioone.commons.helpers.PERMISSION_READ_CONTACTS
-import com.omnioone.commons.helpers.ensureBackgroundThread
+import com.omnioone.app.core.hasPermission
+import com.omnioone.app.core.OmnioColors
+import com.omnioone.app.core.PERMISSION_READ_CONTACTS
+import com.omnioone.app.core.ensureBackgroundThread
 
 /**
  * Omnio One Contacts tab: favourites row on top, then everyone in your chosen display style,

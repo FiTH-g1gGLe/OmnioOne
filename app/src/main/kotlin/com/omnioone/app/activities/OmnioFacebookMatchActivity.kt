@@ -27,9 +27,9 @@ import com.omnioone.app.helpers.OmnioSheet
 import com.omnioone.app.helpers.OmnioSocials
 import com.omnioone.app.services.OmnioLinkHelperService
 import com.omnioone.commons.extensions.baseConfig
-import com.omnioone.commons.extensions.toast
-import com.omnioone.commons.helpers.OmnioColors
-import com.omnioone.commons.helpers.ensureBackgroundThread
+import com.omnioone.app.core.toast
+import com.omnioone.app.core.OmnioColors
+import com.omnioone.app.core.ensureBackgroundThread
 import java.text.DateFormat
 
 /**

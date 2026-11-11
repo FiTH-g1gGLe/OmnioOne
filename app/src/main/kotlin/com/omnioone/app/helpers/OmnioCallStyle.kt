@@ -1,7 +1,7 @@
 package com.omnioone.app.helpers
 
 import android.content.Context
-import com.omnioone.commons.helpers.OmnioColors
+import com.omnioone.app.core.OmnioColors
 import com.omnioone.app.R
 import org.json.JSONArray
 import org.json.JSONObject

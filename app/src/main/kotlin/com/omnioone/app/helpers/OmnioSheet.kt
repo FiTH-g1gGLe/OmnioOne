@@ -1,6 +1,6 @@
 package com.omnioone.app.helpers
 
-import com.omnioone.commons.helpers.OmnioColors
+import com.omnioone.app.core.OmnioColors
 import android.app.Activity
 import android.content.res.ColorStateList
 import android.graphics.Color

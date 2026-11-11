@@ -18,7 +18,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.omnioone.app.R
 import com.omnioone.app.helpers.OmnioCallLog
 import com.omnioone.app.helpers.OmnioDisplay
-import com.omnioone.commons.helpers.OmnioColors
+import com.omnioone.app.core.OmnioColors
 import java.util.Calendar
 
 /** Omnio One Recents list: day headers and one row per person, newest first. */

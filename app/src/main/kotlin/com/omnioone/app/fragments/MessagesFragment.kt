@@ -30,12 +30,12 @@ import com.omnioone.app.interfaces.RefreshItemsListener
 import com.omnioone.app.messaging.OmnioConversationsAdapter
 import com.omnioone.app.messaging.OmnioConversationsAdapter.Item
 import com.omnioone.app.messaging.OmnioMessageStore
-import com.omnioone.commons.extensions.hasPermission
-import com.omnioone.commons.extensions.toast
-import com.omnioone.commons.helpers.OmnioColors
-import com.omnioone.commons.helpers.OmnioContactData
-import com.omnioone.commons.helpers.PERMISSION_READ_SMS
-import com.omnioone.commons.helpers.ensureBackgroundThread
+import com.omnioone.app.core.hasPermission
+import com.omnioone.app.core.toast
+import com.omnioone.app.core.OmnioColors
+import com.omnioone.app.core.OmnioContactData
+import com.omnioone.app.core.PERMISSION_READ_SMS
+import com.omnioone.app.core.ensureBackgroundThread
 import com.omnioone.app.messaging.THREAD_ID
 import com.omnioone.app.messaging.THREAD_TITLE
 

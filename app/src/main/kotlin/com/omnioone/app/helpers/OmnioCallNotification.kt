@@ -12,7 +12,7 @@ import com.bumptech.glide.Glide
 import com.omnioone.app.R
 import com.omnioone.app.activities.OmnioCallActivity
 import com.omnioone.app.receivers.CallActionReceiver
-import com.omnioone.commons.helpers.OmnioColors
+import com.omnioone.app.core.OmnioColors
 import java.util.concurrent.Executors
 
 /**

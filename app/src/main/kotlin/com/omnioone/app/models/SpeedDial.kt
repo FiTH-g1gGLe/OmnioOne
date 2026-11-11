@@ -1,7 +1,7 @@
 package com.omnioone.app.models
 
 import android.content.Context
-import com.omnioone.commons.extensions.getPhoneNumberTypeText
+import com.omnioone.app.core.getPhoneNumberTypeText
 
 data class SpeedDial(
     val id: Int,

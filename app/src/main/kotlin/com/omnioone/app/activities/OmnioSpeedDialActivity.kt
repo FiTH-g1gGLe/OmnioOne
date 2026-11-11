@@ -13,8 +13,8 @@ import com.omnioone.app.helpers.OmnioPeople
 import com.omnioone.app.helpers.OmnioSheet
 import com.omnioone.app.models.SpeedDial
 import com.omnioone.commons.extensions.baseConfig
-import com.omnioone.commons.helpers.OmnioColors
-import com.omnioone.commons.helpers.ensureBackgroundThread
+import com.omnioone.app.core.OmnioColors
+import com.omnioone.app.core.ensureBackgroundThread
 
 /** Omnio One speed dial: put someone on keys 1–9, then hold that key on the keypad to call them. */
 class OmnioSpeedDialActivity : SimpleActivity() {

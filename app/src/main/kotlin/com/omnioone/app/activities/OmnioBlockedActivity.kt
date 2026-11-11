@@ -11,9 +11,9 @@ import androidx.appcompat.widget.SwitchCompat
 import com.omnioone.app.R
 import com.omnioone.app.helpers.OmnioSheet
 import com.omnioone.commons.extensions.baseConfig
-import com.omnioone.commons.extensions.toast
-import com.omnioone.commons.helpers.OmnioColors
-import com.omnioone.commons.helpers.ensureBackgroundThread
+import com.omnioone.app.core.toast
+import com.omnioone.app.core.OmnioColors
+import com.omnioone.app.core.ensureBackgroundThread
 
 /** Omnio One blocked numbers: block unknown or hidden callers, and manage your block list. */
 class OmnioBlockedActivity : SimpleActivity() {

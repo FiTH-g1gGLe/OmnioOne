@@ -22,12 +22,12 @@ import com.omnioone.app.helpers.OmnioFavourites
 import com.omnioone.app.helpers.OmnioPeople
 import com.omnioone.app.interfaces.RefreshItemsListener
 import com.omnioone.commons.extensions.baseConfig
-import com.omnioone.commons.extensions.hasPermission
-import com.omnioone.commons.helpers.ON_CLICK_CALL_CONTACT
-import com.omnioone.commons.helpers.OmnioColors
-import com.omnioone.commons.helpers.PERMISSION_READ_CONTACTS
-import com.omnioone.commons.helpers.VIEW_TYPE_GRID
-import com.omnioone.commons.helpers.ensureBackgroundThread
+import com.omnioone.app.core.hasPermission
+import com.omnioone.app.core.ON_CLICK_CALL_CONTACT
+import com.omnioone.app.core.OmnioColors
+import com.omnioone.app.core.PERMISSION_READ_CONTACTS
+import com.omnioone.app.core.VIEW_TYPE_GRID
+import com.omnioone.app.core.ensureBackgroundThread
 
 /**
  * Omnio One Favourites tab: your favourites as a grid or a list. Hold and drag to put them in

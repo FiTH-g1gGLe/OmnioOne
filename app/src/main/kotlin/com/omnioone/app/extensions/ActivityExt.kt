@@ -4,12 +4,12 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.provider.ContactsContract
-import com.omnioone.commons.extensions.launchActivityIntent
-import com.omnioone.commons.extensions.launchViewContactIntent
-import com.omnioone.commons.helpers.ON_CLICK_CALL_CONTACT
-import com.omnioone.commons.helpers.ON_CLICK_VIEW_CONTACT
+import com.omnioone.app.core.launchActivityIntent
+import com.omnioone.app.core.launchViewContactIntent
+import com.omnioone.app.core.ON_CLICK_CALL_CONTACT
+import com.omnioone.app.core.ON_CLICK_VIEW_CONTACT
 import com.omnioone.commons.helpers.SimpleContactsHelper
-import com.omnioone.commons.helpers.ensureBackgroundThread
+import com.omnioone.app.core.ensureBackgroundThread
 import com.omnioone.commons.models.contacts.Contact
 import com.omnioone.app.activities.SimpleActivity
 

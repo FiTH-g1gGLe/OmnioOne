@@ -1,8 +1,8 @@
 package com.omnioone.app.helpers
 
-import com.omnioone.commons.helpers.TAB_CALL_HISTORY
-import com.omnioone.commons.helpers.TAB_CONTACTS
-import com.omnioone.commons.helpers.TAB_FAVORITES
+import com.omnioone.app.core.TAB_CALL_HISTORY
+import com.omnioone.app.core.TAB_CONTACTS
+import com.omnioone.app.core.TAB_FAVORITES
 
 // shared prefs
 const val SPEED_DIAL = "speed_dial"

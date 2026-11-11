@@ -6,10 +6,10 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.ContactsContract
 import android.util.Patterns
-import com.omnioone.commons.extensions.copyToClipboard
+import com.omnioone.app.core.copyToClipboard
 import com.omnioone.commons.extensions.getAlertDialogBuilder
-import com.omnioone.commons.extensions.toast
-import com.omnioone.commons.helpers.ensureBackgroundThread
+import com.omnioone.app.core.toast
+import com.omnioone.app.core.ensureBackgroundThread
 import com.omnioone.app.R
 
 /**
@@ -28,7 +28,7 @@ object OmnioEmail {
     /** Opens the sender's Omnio contact page (found by their number). */
     fun openContactPage(activity: Activity, number: String): Boolean {
         val contactId = findContact(activity, number)?.contactId ?: return false
-        val rawId = com.omnioone.commons.helpers.OmnioContactData.firstRawId(activity, contactId)?.toInt() ?: return false
+        val rawId = com.omnioone.app.core.OmnioContactData.firstRawId(activity, contactId)?.toInt() ?: return false
         return try {
             activity.startActivity(Intent().apply {
                 setClassName(activity.packageName, "com.omnioone.app.activities.OmnioContactActivity")
@@ -100,7 +100,7 @@ object OmnioEmail {
     }
 
     fun addEmail(context: Context, contactId: Long, email: String): Boolean =
-        com.omnioone.commons.helpers.OmnioContactData.add(
+        com.omnioone.app.core.OmnioContactData.add(
             context, contactId, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE,
             ContactsContract.CommonDataKinds.Email.ADDRESS to email.lowercase(),
             ContactsContract.CommonDataKinds.Email.TYPE to ContactsContract.CommonDataKinds.Email.TYPE_HOME

@@ -298,7 +298,7 @@ class OmnioLinkHelperService : AccessibilityService() {
         try {
             val density = resources.displayMetrics.density
             val view = android.widget.FrameLayout(this).apply {
-                setBackgroundColor(com.omnioone.commons.helpers.OmnioColors.BACKGROUND)
+                setBackgroundColor(com.omnioone.app.core.OmnioColors.BACKGROUND)
                 val column = android.widget.LinearLayout(context).apply {
                     orientation = android.widget.LinearLayout.VERTICAL
                     gravity = android.view.Gravity.CENTER_HORIZONTAL
@@ -309,7 +309,7 @@ class OmnioLinkHelperService : AccessibilityService() {
                 column.addView(ring)
                 column.addView(android.widget.TextView(context).apply {
                     text = getString(com.omnioone.app.R.string.omnio_photo_getting)
-                    setTextColor(com.omnioone.commons.helpers.OmnioColors.TEXT)
+                    setTextColor(com.omnioone.app.core.OmnioColors.TEXT)
                     textSize = 17f
                     setPadding(0, (20 * density).toInt(), 0, 0)
                 })

@@ -26,9 +26,9 @@ import com.omnioone.app.R
 import com.omnioone.app.activities.SimpleActivity
 import com.omnioone.app.helpers.OmnioDisplay
 import com.omnioone.app.helpers.OmnioSheet
-import com.omnioone.commons.extensions.toast
-import com.omnioone.commons.helpers.OmnioColors
-import com.omnioone.commons.helpers.ensureBackgroundThread
+import com.omnioone.app.core.toast
+import com.omnioone.app.core.OmnioColors
+import com.omnioone.app.core.ensureBackgroundThread
 
 /** Omnio One: the Archived chats and Recycle bin screens. */
 class OmnioChatListActivity : SimpleActivity() {

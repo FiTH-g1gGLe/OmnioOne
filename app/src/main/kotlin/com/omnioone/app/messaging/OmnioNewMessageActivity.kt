@@ -32,9 +32,9 @@ import com.omnioone.app.helpers.OmnioPeople
 import com.omnioone.app.helpers.OmnioSheet
 import com.omnioone.commons.extensions.baseConfig
 import com.omnioone.app.extensions.config
-import com.omnioone.commons.extensions.toast
-import com.omnioone.commons.helpers.OmnioColors
-import com.omnioone.commons.helpers.ensureBackgroundThread
+import com.omnioone.app.core.toast
+import com.omnioone.app.core.OmnioColors
+import com.omnioone.app.core.ensureBackgroundThread
 
 /**
  * Omnio One new message screen (Messages rewrite, stage 6): pick someone (or type a number),
