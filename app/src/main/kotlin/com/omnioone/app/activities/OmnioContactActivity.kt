@@ -27,10 +27,9 @@ import com.omnioone.app.core.hasPermission
 import com.omnioone.app.core.copyToClipboard
 import com.omnioone.app.core.toast
 import com.omnioone.app.core.viewBinding
-import com.omnioone.commons.helpers.ContactsHelper
-import com.omnioone.commons.helpers.SimpleContactsHelper
+import com.omnioone.app.core.OmnioContactStore
 import com.omnioone.app.core.ensureBackgroundThread
-import com.omnioone.commons.models.contacts.Contact
+import com.omnioone.app.core.Contact
 import com.omnioone.app.R
 import com.omnioone.app.databinding.ActivityOmnioContactBinding
 import com.omnioone.app.extensions.config
@@ -71,7 +70,7 @@ class OmnioContactActivity : SimpleActivity() {
         binding.contactBack.setOnClickListener { finish() }
         val id = intent.getIntExtra(EXTRA_CONTACT_ID, 0)
         ensureBackgroundThread {
-            val loaded = ContactsHelper(this).getContactWithId(id, false)
+            val loaded = OmnioContactStore(this).getContactWithId(id, false)
             runOnUiThread {
                 if (loaded == null) {
                     toast(com.omnioone.commons.R.string.unknown_error_occurred)
@@ -111,7 +110,7 @@ class OmnioContactActivity : SimpleActivity() {
     internal fun showContact(contact: Contact) {
         val name = contact.getNameToDisplay()
         binding.contactName.text = name
-        SimpleContactsHelper(this).loadContactImage(contact.photoUri, binding.contactPhoto, name)
+        com.omnioone.app.helpers.OmnioDisplay.loadAvatar(binding.contactPhoto, contact.photoUri, name, 10000)
 
         binding.contactSubtitle.text = contact.organization.company
         binding.contactSubtitle.beVisibleIf(contact.organization.company.isNotEmpty())
@@ -180,7 +179,7 @@ class OmnioContactActivity : SimpleActivity() {
         // coming back to the page (e.g. after editing): reload everything; close if it was deleted
         contact?.let { current ->
             ensureBackgroundThread {
-                val fresh = ContactsHelper(this).getContactWithId(current.rawId, current.isPrivate())
+                val fresh = OmnioContactStore(this).getContactWithId(current.rawId, current.isPrivate())
                 runOnUiThread {
                     if (fresh == null) {
                         finish()
@@ -199,8 +198,7 @@ class OmnioContactActivity : SimpleActivity() {
         if (current.isPrivate()) {
             makeFavourite = current.starred != 1
             ensureBackgroundThread {
-                com.omnioone.commons.helpers.LocalContactsHelper(this).toggleFavorites(arrayOf(current.id), makeFavourite)
-                com.omnioone.app.helpers.OmnioFavourites.notifyChanged()
+                                com.omnioone.app.helpers.OmnioFavourites.notifyChanged()
             }
         } else {
             // do exactly what the star shows, whatever has or hasn't loaded yet

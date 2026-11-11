@@ -26,7 +26,6 @@ import android.widget.TextView
 import com.bumptech.glide.Glide
 import com.omnioone.app.core.toast
 import com.omnioone.app.core.OmnioColors
-import com.omnioone.commons.helpers.SimpleContactsHelper
 import com.omnioone.app.core.ensureBackgroundThread
 import com.omnioone.app.R
 import com.omnioone.app.extensions.config
@@ -287,7 +286,7 @@ class OmnioCallActivity : SimpleActivity() {
     private fun photo(sizeDp: Int): ImageView = ImageView(this).apply {
         layoutParams = LinearLayout.LayoutParams(dp(sizeDp), dp(sizeDp)).apply { gravity = Gravity.CENTER_HORIZONTAL }
         val who = info
-        SimpleContactsHelper(this@OmnioCallActivity).loadContactImage(who?.photoUri.orEmpty(), this, who?.displayName ?: "?")
+        com.omnioone.app.helpers.OmnioDisplay.loadAvatar(this, who?.photoUri.orEmpty(), who?.displayName ?: "?", 10000)
     }
 
     private fun column(gravity: Int = Gravity.CENTER_HORIZONTAL) = LinearLayout(this).apply {

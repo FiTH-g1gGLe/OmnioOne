@@ -1,5 +1,6 @@
 package com.omnioone.app.extensions
 
+import com.omnioone.app.core.OmnioContactStore
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
@@ -8,9 +9,8 @@ import com.omnioone.app.core.launchActivityIntent
 import com.omnioone.app.core.launchViewContactIntent
 import com.omnioone.app.core.ON_CLICK_CALL_CONTACT
 import com.omnioone.app.core.ON_CLICK_VIEW_CONTACT
-import com.omnioone.commons.helpers.SimpleContactsHelper
 import com.omnioone.app.core.ensureBackgroundThread
-import com.omnioone.commons.models.contacts.Contact
+import com.omnioone.app.core.Contact
 import com.omnioone.app.activities.SimpleActivity
 
 fun SimpleActivity.handleGenericContactClick(contact: Contact) {
@@ -39,7 +39,7 @@ fun Activity.startContactDetailsIntent(contact: Contact) {
 /** Opens the contact in the phone's contacts app, used by the Edit button for contacts Omnio can't edit itself. */
 fun Activity.openContactInSystemApp(contact: Contact) {
     ensureBackgroundThread {
-        val lookupKey = SimpleContactsHelper(this).getContactLookupKey(contact.rawId.toString())
+        val lookupKey = OmnioContactStore(this).getContactLookupKey(contact.rawId.toString())
         val publicUri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_LOOKUP_URI, lookupKey)
         runOnUiThread { launchViewContactIntent(publicUri) }
     }

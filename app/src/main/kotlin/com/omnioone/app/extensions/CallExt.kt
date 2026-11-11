@@ -17,7 +17,7 @@ import com.omnioone.app.core.openFullScreenIntentSettings
 import com.omnioone.app.core.openNotificationSettings
 import com.omnioone.app.core.telecomManager
 import com.omnioone.app.core.PERMISSION_READ_PHONE_STATE
-import com.omnioone.commons.models.contacts.Contact
+import com.omnioone.app.core.Contact
 import com.omnioone.app.BuildConfig
 import com.omnioone.app.activities.DialerActivity
 import com.omnioone.app.activities.SimpleActivity

@@ -27,10 +27,9 @@ import com.omnioone.app.core.hasPermission
 import com.omnioone.app.core.copyToClipboard
 import com.omnioone.app.core.toast
 import com.omnioone.app.core.viewBinding
-import com.omnioone.commons.helpers.ContactsHelper
-import com.omnioone.commons.helpers.SimpleContactsHelper
+import com.omnioone.app.core.OmnioContactStore
 import com.omnioone.app.core.ensureBackgroundThread
-import com.omnioone.commons.models.contacts.Contact
+import com.omnioone.app.core.Contact
 import com.omnioone.app.R
 import com.omnioone.app.databinding.ActivityOmnioContactBinding
 import com.omnioone.app.extensions.config

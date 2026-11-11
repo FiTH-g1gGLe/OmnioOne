@@ -25,20 +25,19 @@ import androidx.core.widget.NestedScrollView
 import com.omnioone.app.core.getPhoneNumberTypeText
 import com.omnioone.app.core.showErrorToast
 import com.omnioone.app.core.toast
-import com.omnioone.commons.helpers.ContactsHelper
+import com.omnioone.app.core.OmnioContactStore
 import com.omnioone.app.core.PHOTO_ADDED
 import com.omnioone.app.core.PHOTO_CHANGED
 import com.omnioone.app.core.PHOTO_REMOVED
 import com.omnioone.app.core.PHOTO_UNCHANGED
-import com.omnioone.commons.helpers.SimpleContactsHelper
 import com.omnioone.app.core.ensureBackgroundThread
-import com.omnioone.commons.models.PhoneNumber
-import com.omnioone.commons.models.contacts.Address
-import com.omnioone.commons.models.contacts.Contact
-import com.omnioone.commons.models.contacts.ContactSource
-import com.omnioone.commons.models.contacts.Email
-import com.omnioone.commons.models.contacts.Event
-import com.omnioone.commons.models.contacts.Organization
+import com.omnioone.app.core.PhoneNumber
+import com.omnioone.app.core.Address
+import com.omnioone.app.core.Contact
+import com.omnioone.app.core.ContactSource
+import com.omnioone.app.core.Email
+import com.omnioone.app.core.Event
+import com.omnioone.app.core.Organization
 import com.omnioone.app.R
 import com.omnioone.app.helpers.OmnioSheet
 import java.util.Calendar
@@ -130,7 +129,7 @@ class OmnioEditContactActivity : SimpleActivity() {
             firstName.requestFocus()
         } else {
             ensureBackgroundThread {
-                val loaded = ContactsHelper(this).getContactWithId(id, false)
+                val loaded = OmnioContactStore(this).getContactWithId(id, false)
                 runOnUiThread {
                     if (loaded == null) {
                         toast(com.omnioone.commons.R.string.unknown_error_occurred)
@@ -459,10 +458,10 @@ class OmnioEditContactActivity : SimpleActivity() {
         val name = listOf(if (::firstName.isInitialized) firstName.text.toString() else "", "").first().ifEmpty { "?" }
         if (photoUri.isEmpty()) {
             photoView.setImageDrawable(null)
-            photoView.setImageBitmap(SimpleContactsHelper(this).getContactLetterIcon(name))
+            photoView.setImageBitmap(com.omnioone.app.helpers.OmnioDisplay.letterTile(this, name, 10000f))
             photoLabel.text = "📷  " + getString(R.string.omnio_add_photo)
         } else {
-            SimpleContactsHelper(this).loadContactImage(photoUri, photoView, name)
+            com.omnioone.app.helpers.OmnioDisplay.loadAvatar(photoView, photoUri, name, 10000)
             photoLabel.text = "📷  " + getString(R.string.omnio_change_photo)
         }
     }
@@ -542,7 +541,7 @@ class OmnioEditContactActivity : SimpleActivity() {
     // ---- account to save new contacts to ----
 
     private fun loadSources() {
-        ContactsHelper(this).getSaveableContactSources { found ->
+        OmnioContactStore(this).getSaveableContactSources { found ->
             runOnUiThread {
                 sources = found
                 chosenSource = found.firstOrNull { it.type.contains("google", true) } ?: found.firstOrNull()
@@ -779,16 +778,19 @@ class OmnioEditContactActivity : SimpleActivity() {
             else -> PHOTO_CHANGED
         }
         target.photoUri = photoUri
-        if (existing == null) target.source = chosenSource?.name ?: ""
+        if (existing == null) {
+            target.source = chosenSource?.name ?: ""
+            target.sourceType = chosenSource?.type ?: ""
+        }
 
         ensureBackgroundThread {
             var photoKept = false
             val ok = try {
                 if (existing == null) {
-                    ContactsHelper(this).insertContact(target)
+                    OmnioContactStore(this).insertContact(target)
                 } else {
                     // details first, then the photo with Omnio's own code (works across linked entries)
-                    val saved = ContactsHelper(this).updateContact(target, PHOTO_UNCHANGED)
+                    val saved = OmnioContactStore(this).updateContact(target, PHOTO_UNCHANGED)
                     if (saved) when (photoStatus) {
                         PHOTO_REMOVED -> photoKept = !com.omnioone.app.helpers.OmnioContactPhoto.remove(this, target.id.toLong())
                         PHOTO_ADDED, PHOTO_CHANGED -> com.omnioone.app.helpers.OmnioContactPhoto.set(this, target.id.toLong(), Uri.parse(photoUri))
@@ -820,7 +822,7 @@ class OmnioEditContactActivity : SimpleActivity() {
             positive = getString(com.omnioone.commons.R.string.delete),
             mainColor = OmnioSheet.RED
         ) {
-            ContactsHelper(this).deleteContact(current, false) { ok ->
+            OmnioContactStore(this).deleteContact(current, false) { ok ->
                 runOnUiThread {
                     if (ok) {
                         toast(R.string.omnio_contact_deleted)

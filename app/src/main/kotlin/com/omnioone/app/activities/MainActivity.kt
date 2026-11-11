@@ -26,13 +26,12 @@ import com.omnioone.commons.extensions.*
 import com.omnioone.commons.helpers.*
 import com.omnioone.commons.models.FAQItem
 import com.omnioone.commons.models.RadioItem
-import com.omnioone.commons.models.contacts.Contact
+import com.omnioone.app.core.Contact
 import com.omnioone.app.BuildConfig
 import com.omnioone.app.R
 import com.omnioone.app.adapters.ViewPagerAdapter
 import com.omnioone.app.databinding.ActivityMainBinding
 import com.omnioone.app.dialogs.ChangeSortingDialog
-import com.omnioone.app.dialogs.FilterContactSourcesDialog
 import com.omnioone.app.extensions.clearMissedCalls
 import com.omnioone.app.extensions.config
 import com.omnioone.app.extensions.handleFullScreenNotificationsPermission
@@ -685,8 +684,38 @@ class MainActivity : SimpleActivity() {
         }
     }
 
+    /** Choose which accounts' contacts to show: tap one to show or hide it. */
     private fun showFilterDialog() {
-        FilterContactSourcesDialog(this) {
+        com.omnioone.app.core.ensureBackgroundThread {
+            val sources = com.omnioone.app.core.OmnioContactStore(this).getContactSources().sortedByDescending { it.count }
+            runOnUiThread { pickContactSources(sources) }
+        }
+    }
+
+    private fun pickContactSources(sources: List<com.omnioone.app.core.ContactSource>) {
+        if (sources.isEmpty()) return
+        val hidden = config.ignoredContactSources
+        com.omnioone.app.helpers.OmnioSheet.list(
+            this, getString(R.string.omnio_filter_sources), getString(R.string.omnio_filter_sources_help),
+            sources.map {
+                com.omnioone.app.helpers.OmnioSheet.Item(
+                    "${it.publicName.ifEmpty { it.name }}  ·  ${it.count}",
+                    trailing = if (it.getFullIdentifier() in hidden) getString(R.string.omnio_hidden) else "✓",
+                    trailingColor = if (it.getFullIdentifier() in hidden) OmnioColors.TEXT_MUTED else OmnioColors.MESSAGES
+                )
+            }
+        ) { picked ->
+            val id = sources[picked].getFullIdentifier()
+            val now = HashSet(config.ignoredContactSources)
+            if (id in now) now.remove(id) else if (sources.count { it.getFullIdentifier() !in now } > 1) now.add(id)
+            config.ignoredContactSources = now
+            refreshAfterFilter()
+            pickContactSources(sources)
+        }
+    }
+
+    private fun refreshAfterFilter() {
+        run {
             getFavoritesFragment()?.refreshItems {
                 if (binding.mainMenu.isSearchOpen) {
                     getCurrentFragment()?.onSearchQueryChanged(binding.mainMenu.getCurrentQuery())

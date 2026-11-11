@@ -36,7 +36,7 @@ class DialerActivity : SimpleActivity() {
     @SuppressLint("MissingPermission")
     private fun initOutgoingCall() {
         try {
-            if (isNumberBlocked(callNumber.toString().replace("tel:", ""), getBlockedNumbers())) {
+            if (com.omnioone.app.messaging.OmnioBlocking.isBlocked(this, callNumber.toString().replace("tel:", ""))) {
                 toast(R.string.calling_blocked_number)
                 finish()
                 return

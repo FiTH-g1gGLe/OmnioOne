@@ -24,7 +24,6 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import com.bumptech.glide.Glide
 import com.omnioone.app.core.OmnioColors
-import com.omnioone.commons.helpers.SimpleContactsHelper
 import com.omnioone.app.R
 import com.omnioone.app.helpers.OmnioCallStyle.Answer
 import com.omnioone.app.helpers.OmnioCallStyle.Background
@@ -152,7 +151,7 @@ class OmnioCallScreen(
             if (design.photoShape == PhotoShape.ROUNDED) {
                 OmnioDisplay.loadAvatar(this, info?.photoUri.orEmpty(), name, dp(design.photoSize / 5))
             } else {
-                SimpleContactsHelper(activity).loadContactImage(info?.photoUri.orEmpty(), this, name)
+                com.omnioone.app.helpers.OmnioDisplay.loadAvatar(this, info?.photoUri.orEmpty(), name, 10000)
             }
         }
         val box = FrameLayout(activity).apply {

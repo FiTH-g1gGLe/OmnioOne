@@ -648,4 +648,7 @@
     <string name="omnio_number_home_fax">Home fax</string>
     <string name="omnio_number_pager">Pager</string>
     <string name="omnio_number_other">Other</string>
+    <string name="omnio_filter_sources">Show contacts from</string>
+    <string name="omnio_filter_sources_help">Tap an account to show or hide its contacts.</string>
+    <string name="omnio_hidden">Hidden</string>
 </resources>
