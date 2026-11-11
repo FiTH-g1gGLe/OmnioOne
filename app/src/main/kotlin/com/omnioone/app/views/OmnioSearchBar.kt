@@ -113,7 +113,7 @@ class OmnioSearchBar @JvmOverloads constructor(context: Context, attrs: Attribut
         setBackgroundColor(OmnioColors.BACKGROUND)
         pill.background = GradientDrawable().apply {
             cornerRadius = dp(28).toFloat()
-            setColor((OmnioColors.CONTACTS and 0x00FFFFFF) or 0x4D000000)
+            setColor(OmnioColors.CARD)
         }
         icon.imageTintList = ColorStateList.valueOf(OmnioColors.TEXT)
         field.setTextColor(OmnioColors.TEXT)

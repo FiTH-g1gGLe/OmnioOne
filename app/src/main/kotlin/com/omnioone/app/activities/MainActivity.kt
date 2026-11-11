@@ -58,7 +58,7 @@ class MainActivity : SimpleActivity() {
         setContentView(binding.root)
         setupOptionsMenu()
         refreshMenuItems()
-        setupEdgeToEdge(padBottomImeAndSystem = listOf(binding.mainTabsHolder))
+        setupEdgeToEdge(padTopSystem = listOf(binding.mainMenu), padBottomImeAndSystem = listOf(binding.mainTabsHolder))
 
         EventBus.getDefault().register(this)
         launchedDialer = savedInstanceState?.getBoolean(OPEN_DIAL_PAD_AT_LAUNCH) ?: false
