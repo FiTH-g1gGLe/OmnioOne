@@ -240,6 +240,12 @@
             android:screenOrientation="portrait" />
 
         <activity
+            android:name=".activities.OmnioSetupActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:label="@string/app_launcher_name" />
+
+        <activity
             android:name=".activities.OmnioAboutActivity"
             android:exported="false"
             android:label="@string/omnio_about" />

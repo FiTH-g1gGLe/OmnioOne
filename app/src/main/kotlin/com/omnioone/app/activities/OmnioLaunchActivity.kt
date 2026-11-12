@@ -4,11 +4,12 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 
-/** Opens Omnio One's main screen straight away. */
+/** Opens Omnio One: the setup wizard the first time, the main screen after that. */
 class OmnioLaunchActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        startActivity(Intent(this, OmnioMainActivity::class.java))
+        val next = if (OmnioSetupActivity.isDone(this)) OmnioMainActivity::class.java else OmnioSetupActivity::class.java
+        startActivity(Intent(this, next))
         finish()
     }
 }

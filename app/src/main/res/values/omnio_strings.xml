@@ -675,4 +675,44 @@
     <string name="omnio_overlay_allow">Allow</string>
     <string name="omnio_clear">Clear</string>
     <string name="omnio_fb_same_name">⚠️ Same name as someone else, check it\'s the right one</string>
+
+    <!-- Setup wizard -->
+    <string name="omnio_setup_get_started">Get started</string>
+    <string name="omnio_setup_next">Next</string>
+    <string name="omnio_setup_back">Back</string>
+    <string name="omnio_setup_skip_for_now">Skip for now</string>
+    <string name="omnio_setup_open_app">Open Omnio One</string>
+    <string name="omnio_setup_allow">Allow</string>
+    <string name="omnio_setup_optional">optional</string>
+    <string name="omnio_setup_later">set up later</string>
+    <string name="omnio_setup_welcome_text">Your contacts, calls and messages, together in one beautiful app. Let\'s get you set up: it only takes a minute.</string>
+    <string name="omnio_setup_people_title">Everyone in one place</string>
+    <string name="omnio_setup_people_text">📇  One page per person: call, text, video, chat apps and socials\n🔗  Link Instagram, Facebook, Snapchat and more in seconds\n🎨  18 ways to show your contacts, from simple lists to Orbit</string>
+    <string name="omnio_setup_calls_title">Calls your way</string>
+    <string name="omnio_setup_calls_text">📲  Six call screens, or design your own\n💡  See their last text, birthday and notes while it rings\n🔢  A smart keypad that finds people as you type</string>
+    <string name="omnio_setup_messages_title">Texting, done properly</string>
+    <string name="omnio_setup_messages_text">💬  Texts and picture messages, with reactions\n🔑  Verification codes copied for you automatically\n⚡  Sends instantly, and resends by itself when signal comes back</string>
+    <string name="omnio_setup_perm_title">Let\'s get connected</string>
+    <string name="omnio_setup_perm_text">Omnio One needs a few things to work. Everything stays on your phone: no account, no tracking.</string>
+    <string name="omnio_setup_perm_contacts">Contacts</string>
+    <string name="omnio_setup_perm_contacts_why">To show, search and edit your people</string>
+    <string name="omnio_setup_perm_phone">Phone app</string>
+    <string name="omnio_setup_perm_phone_why">To make and answer calls, with your call screen</string>
+    <string name="omnio_setup_perm_sms">Messages app</string>
+    <string name="omnio_setup_perm_sms_why">To send and receive your texts</string>
+    <string name="omnio_setup_perm_notifications">Notifications</string>
+    <string name="omnio_setup_perm_notifications_why">So calls and texts reach you, even when the phone is locked</string>
+    <string name="omnio_setup_perm_overlay">Show over other apps</string>
+    <string name="omnio_setup_perm_overlay_why">Makes sure incoming calls always pop up</string>
+    <string name="omnio_setup_perm_restricted">Something greyed out? Go to Settings → Apps → Omnio One → ⋮ → Allow restricted settings, then come back.</string>
+    <string name="omnio_setup_yours_title">Make it yours</string>
+    <string name="omnio_setup_yours_text">Pick what feels right. You can change these any time in Settings.</string>
+    <string name="omnio_setup_open_on">Open on</string>
+    <string name="omnio_setup_style">Contact style</string>
+    <string name="omnio_setup_style_more">12 more styles in ⋮ → View, plus a call screen designer in Settings.</string>
+    <string name="omnio_setup_done_title">You\'re all set!</string>
+    <string name="omnio_setup_done_text">Welcome to Omnio One.</string>
+    <string name="omnio_setup_done_tip">💡 Tip: open anyone and tap a social icon to link their profile. Anything you skipped is in Settings.</string>
+    <string name="omnio_setup_again">Setup wizard</string>
+    <string name="omnio_setup_again_desc">Run the welcome and setup again</string>
 </resources>

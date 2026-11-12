@@ -8,6 +8,8 @@ class OmnioApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        // before anything else writes settings: people updating skip the first-run setup
+        com.omnioone.app.activities.OmnioSetupActivity.skipForExistingUsers(this)
         tidyOldMessages()
     }
 

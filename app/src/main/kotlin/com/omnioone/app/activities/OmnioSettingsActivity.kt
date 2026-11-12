@@ -217,6 +217,9 @@ class OmnioSettingsActivity : OmnioActivity() {
         card(action(R.string.omnio_about_title, getString(R.string.omnio_about_row_desc)) {
             startActivity(Intent(this, OmnioAboutActivity::class.java))
         })
+        card(action(R.string.omnio_setup_again, getString(R.string.omnio_setup_again_desc)) {
+            startActivity(Intent(this, OmnioSetupActivity::class.java))
+        })
     }
 
     // ---- actions ----

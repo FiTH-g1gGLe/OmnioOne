@@ -94,7 +94,10 @@ class OmnioMainActivity : OmnioActivity() {
         buildTabs()
         startPages()
 
-        if (isDefaultDialer()) {
+        // straight from setup: everything has just been offered, so don't ask again now
+        if (intent.getBooleanExtra(EXTRA_FROM_SETUP, false)) {
+            if (isDefaultDialer()) askForContacts {}
+        } else if (isDefaultDialer()) {
             // one permission at a time: contacts first, then call notifications
             askForContacts {
                 handleFullScreenNotificationsPermission { granted ->
@@ -508,6 +511,7 @@ class OmnioMainActivity : OmnioActivity() {
     companion object {
         /** Open on a particular tab (used by the Messages screens' tab bar). */
         const val EXTRA_OPEN_TAB = "omnio_open_tab"
+        const val EXTRA_FROM_SETUP = "omnio_from_setup"
         private const val TAB_MESSAGES = -1
         private const val KEYPAD_SHORTCUT = "omnio_keypad"
     }
