@@ -62,6 +62,7 @@ fun Context.hasSeveralSims(): Boolean = try {
 
 /** Clears the missed-call notification (and Android's missed-call count with it). */
 fun Context.clearMissedCalls() = ensureBackgroundThread {
+    com.omnioone.app.helpers.OmnioMissedCalls.cancel(this)
     try {
         telecomManager.cancelMissedCallsNotification()
     } catch (ignored: Exception) {

@@ -190,6 +190,15 @@
             </intent-filter>
         </receiver>
 
+        <!-- Missed calls: Android hands them to the phone app to show -->
+        <receiver
+            android:name=".helpers.OmnioMissedCallReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.telecom.action.SHOW_MISSED_CALLS_NOTIFICATION" />
+            </intent-filter>
+        </receiver>
+
         <service
             android:name=".messaging.OmnioSignalRetryJob"
             android:exported="false"

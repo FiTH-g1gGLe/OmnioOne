@@ -739,4 +739,11 @@
     <string name="omnio_setup_link_step1">Open a contact and tap a social icon</string>
     <string name="omnio_setup_link_step2">Find them in the app, open their profile</string>
     <string name="omnio_setup_link_step3">Omnio saves their link and photo for you</string>
+    <string name="omnio_channel_missed">Missed calls</string>
+    <string name="omnio_missed_one">Missed call from %s</string>
+    <string name="omnio_missed_many">%d missed calls</string>
+    <string name="omnio_missed_latest">Latest from %s</string>
+    <string name="omnio_missed_unknown">Unknown number</string>
+    <string name="omnio_missed_call_back">Call back</string>
+    <string name="omnio_missed_message">Message</string>
 </resources>

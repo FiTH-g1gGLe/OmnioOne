@@ -161,7 +161,7 @@ object OmnioNotifications {
 
     private fun baseBuilder(context: Context, threadId: Long, channel: String, existing: NotificationCompat.Builder? = null) =
         (existing ?: NotificationCompat.Builder(context, channel))
-            .setSmallIcon(R.drawable.ic_omnio_message_small)
+            .setSmallIcon(R.drawable.ic_omnio_notify_message)
             .setColor(OmnioColors.MESSAGES)
             .setCategory(Notification.CATEGORY_MESSAGE)
             .setPriority(NotificationCompat.PRIORITY_HIGH)

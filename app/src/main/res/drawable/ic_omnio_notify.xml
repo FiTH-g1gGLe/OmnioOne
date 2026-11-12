@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Omnio One status bar icon: the Omnio ring with a dot in the middle. White only: Android colours status bar icons itself. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M13.596,1.926 A10.2,10.2 0 0,1 22.074,10.404 M22.074,13.596 A10.2,10.2 0 0,1 13.596,22.074 M10.404,22.074 A10.2,10.2 0 0,1 1.926,13.596 M1.926,10.404 A10.2,10.2 0 0,1 10.404,1.926"
+        android:strokeWidth="2.2"
+        android:strokeLineCap="round"
+        android:strokeColor="#FFFFFFFF" />
+    <path android:fillColor="#FFFFFFFF" android:pathData="M12,8.6 a3.4,3.4 0 1,0 0.001,0 z" />
+</vector>

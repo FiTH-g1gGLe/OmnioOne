@@ -111,7 +111,7 @@ object OmnioCallNotification {
             }
         )
         val builder = Notification.Builder(context, if (loud) CHANNEL_RINGING else CHANNEL_ONGOING)
-            .setSmallIcon(com.omnioone.app.R.drawable.ic_phone_vector)
+            .setSmallIcon(com.omnioone.app.R.drawable.ic_omnio_notify_call)
             .setContentTitle(name)
             .setContentText(status)
             .setContentIntent(open)
