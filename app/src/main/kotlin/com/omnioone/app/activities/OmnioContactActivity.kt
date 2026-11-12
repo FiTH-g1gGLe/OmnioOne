@@ -1,5 +1,7 @@
 package com.omnioone.app.activities
 
+import com.omnioone.app.core.OmnioActivity
+
 import com.omnioone.app.core.OmnioColors
 import android.content.Intent
 import android.content.res.ColorStateList

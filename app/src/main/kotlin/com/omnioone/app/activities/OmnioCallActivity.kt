@@ -1,5 +1,7 @@
 package com.omnioone.app.activities
 
+import com.omnioone.app.core.OmnioActivity
+
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.Context

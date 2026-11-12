@@ -1,5 +1,7 @@
 package com.omnioone.app.activities
 
+import com.omnioone.app.core.OmnioActivity
+
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
