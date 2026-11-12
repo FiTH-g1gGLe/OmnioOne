@@ -47,7 +47,7 @@ import kotlin.math.abs
  */
 class OmnioSetupActivity : OmnioActivity() {
 
-    private enum class Step { WELCOME, PEOPLE, CALLS, MESSAGES, PERMISSIONS, PERSONALISE, DONE }
+    private enum class Step { WELCOME, PEOPLE, CALLS, MESSAGES, PERMISSIONS, LOOK, TABS, KEYPAD, TEXTING, LINK, DONE }
 
     private val steps = Step.values()
     private var index = 0
@@ -159,7 +159,11 @@ class OmnioSetupActivity : OmnioActivity() {
             Step.CALLS -> tourPage("📞", R.string.omnio_setup_calls_title, R.string.omnio_setup_calls_text, OmnioColors.CALLS)
             Step.MESSAGES -> tourPage("💬", R.string.omnio_setup_messages_title, R.string.omnio_setup_messages_text, OmnioColors.MESSAGES)
             Step.PERMISSIONS -> permissionsPage()
-            Step.PERSONALISE -> personalisePage()
+            Step.LOOK -> lookPage()
+            Step.TABS -> tabsPage()
+            Step.KEYPAD -> keypadPage()
+            Step.TEXTING -> textingPage()
+            Step.LINK -> linkPage()
             Step.DONE -> donePage()
         }
         val old = stage.getChildAt(0)
@@ -416,39 +420,473 @@ class OmnioSetupActivity : OmnioActivity() {
 
     // ---- make it yours ----
 
-    private fun personalisePage() = page {
-        addView(text(getString(R.string.omnio_setup_yours_title), 26f, OmnioColors.TEXT, bold = true))
-        addView(text(getString(R.string.omnio_setup_yours_text), 15f, OmnioColors.TEXT_MUTED, top = 8))
+    private fun LinearLayout.yoursHeader(title: Int, body: Int) {
+        addView(text(getString(R.string.omnio_setup_yours_kicker), 13f, OmnioColors.CONTACTS, bold = true).apply { letterSpacing = 0.1f })
+        addView(text(getString(title), 26f, OmnioColors.TEXT, bold = true, top = 4))
+        addView(text(getString(body), 15f, OmnioColors.TEXT_MUTED, top = 8))
+    }
 
-        addView(label(R.string.omnio_setup_open_on))
-        val keypad = -1
-        val openOn = listOf(
-            TAB_CONTACTS to "👤  " + getString(R.string.contacts_tab),
-            TAB_FAVORITES to "⭐  " + getString(R.string.favorites_tab),
-            TAB_CALL_HISTORY to "🕘  " + getString(R.string.call_history_tab),
-            keypad to "🔢  " + getString(R.string.omnio_open_on_keypad),
-            TAB_LAST_USED to "↩️  " + getString(R.string.last_used_tab),
-        )
-        val current = if (config.openDialPadAtLaunch) keypad else config.defaultTab
-        addView(chips(openOn.map { it.second }, openOn.indexOfFirst { it.first == current }) { picked ->
-            val choice = openOn[picked].first
-            config.openDialPadAtLaunch = choice == keypad
-            config.defaultTab = if (choice == keypad) TAB_CONTACTS else choice
+    /** A "live preview" frame: what you pick shows up here straight away. */
+    private fun previewFrame(content: View) = LinearLayout(this).apply {
+        orientation = LinearLayout.VERTICAL
+        setPadding(dp(10), dp(10), dp(10), dp(10))
+        background = rounded(OmnioColors.SHEET, 22).apply { setStroke(dp(1), OmnioColors.CARD) }
+        layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(18) }
+        addView(TextView(context).apply {
+            text = "👀  " + getString(R.string.omnio_setup_live_preview)
+            setTextColor(OmnioColors.TEXT_MUTED)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
+            setTypeface(typeface, Typeface.BOLD)
+            setPadding(dp(6), 0, 0, dp(8))
         })
+        addView(content)
+    }
 
-        addView(label(R.string.omnio_setup_style))
+    // contacts display
+
+    private val samplePeople by lazy {
+        listOf("Amelia Clarke", "Ben Okafor", "Chloe Patel", "Daniel Hughes", "Ella Morgan", "Finn O'Brien", "Grace Lee", "Harry Wilson", "Isla Ahmed")
+            .mapIndexed { i, name ->
+                com.omnioone.app.helpers.OmnioPeople.Person(
+                    contactId = -100 - i, rawId = -100 - i, lookupKey = "", name = name, surnameFirst = name.substringAfter(" ") + ", " + name.substringBefore(" "),
+                    photo = "", starred = i < 3,
+                    numbers = listOf(com.omnioone.app.helpers.OmnioPeople.Number("07700 9001${10 + i}", "Mobile", true)),
+                    emails = if (i % 3 == 0) listOf("hello@example.com") else emptyList(), nickname = "", company = "", jobTitle = "",
+                )
+            }
+    }
+
+    private val sampleBadges by lazy {
+        val whatsapp = com.omnioone.app.helpers.OmnioAppTags.Badge("WhatsApp", "com.whatsapp", 0xFF25D366.toInt())
+        val instagram = com.omnioone.app.helpers.OmnioAppTags.Badge("Instagram", "com.instagram.android", 0xFFE1306C.toInt())
+        val facebook = com.omnioone.app.helpers.OmnioAppTags.Badge("Facebook", "com.facebook.katana", 0xFF1877F2.toInt())
+        samplePeople.mapIndexed { i, person ->
+            person.contactId to listOfNotNull(whatsapp, instagram.takeIf { i % 2 == 0 }, facebook.takeIf { i % 3 == 1 }, com.omnioone.app.helpers.OmnioAppTags.EMAIL.takeIf { person.emails.isNotEmpty() })
+        }.toMap()
+    }
+
+    private fun lookPage() = page {
+        yoursHeader(R.string.omnio_setup_look_title, R.string.omnio_setup_look_text)
         val styles = listOf(
-            OmnioDisplay.STYLE_LIST to "📃  " + getString(R.string.omnio_style_list),
-            OmnioDisplay.STYLE_CARDS to "🗂️  " + getString(R.string.omnio_style_cards),
-            OmnioDisplay.STYLE_CIRCLES to "⚪  " + getString(R.string.omnio_style_circles),
-            OmnioDisplay.STYLE_ORBIT to "🪐  " + getString(R.string.omnio_style_orbit),
-            OmnioDisplay.STYLE_HONEYCOMB to "🐝  " + getString(R.string.omnio_style_honeycomb),
-            OmnioDisplay.STYLE_POLAROID to "📸  " + getString(R.string.omnio_style_polaroid),
+            OmnioDisplay.STYLE_LIST to R.string.omnio_style_list, OmnioDisplay.STYLE_COMPACT to R.string.omnio_style_compact,
+            OmnioDisplay.STYLE_DETAILED to R.string.omnio_style_detailed, OmnioDisplay.STYLE_CARDS to R.string.omnio_style_cards,
+            OmnioDisplay.STYLE_CIRCLES to R.string.omnio_style_circles, OmnioDisplay.STYLE_SQUARES to R.string.omnio_style_squares,
+            OmnioDisplay.STYLE_TILES to R.string.omnio_style_tiles, OmnioDisplay.STYLE_SPEED_DIAL to R.string.omnio_style_speed_dial,
+            OmnioDisplay.STYLE_BUBBLES to R.string.omnio_style_bubbles, OmnioDisplay.STYLE_TIMELINE to R.string.omnio_style_timeline,
+            OmnioDisplay.STYLE_MINIMAL to R.string.omnio_style_minimal, OmnioDisplay.STYLE_BUSINESS to R.string.omnio_style_business,
+            OmnioDisplay.STYLE_SPOTLIGHT to R.string.omnio_style_spotlight, OmnioDisplay.STYLE_PILLS to R.string.omnio_style_pills,
+            OmnioDisplay.STYLE_POLAROID to R.string.omnio_style_polaroid, OmnioDisplay.STYLE_ORBIT to R.string.omnio_style_orbit,
+            OmnioDisplay.STYLE_HONEYCOMB to R.string.omnio_style_honeycomb, OmnioDisplay.STYLE_MONOGRAM to R.string.omnio_style_monogram,
         )
-        addView(chips(styles.map { it.second }, styles.indexOfFirst { it.first == OmnioDisplay.getStyle(this@OmnioSetupActivity) }) { picked ->
+        val list = androidx.recyclerview.widget.RecyclerView(this@OmnioSetupActivity).apply {
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(330))
+            isNestedScrollingEnabled = true
+            itemAnimator = null
+        }
+        fun show(style: Int) {
+            val adapter = com.omnioone.app.adapters.OmnioContactsAdapter(style, onClick = {}, onPhoto = {}, onLongClick = { _, _ -> }).apply {
+                appTags = sampleBadges
+                columns = OmnioDisplay.getColumns(this@OmnioSetupActivity, style)
+            }
+            list.layoutManager = if (OmnioDisplay.isGrid(style)) {
+                androidx.recyclerview.widget.GridLayoutManager(this@OmnioSetupActivity, OmnioDisplay.getColumns(this@OmnioSetupActivity, style))
+            } else {
+                androidx.recyclerview.widget.LinearLayoutManager(this@OmnioSetupActivity)
+            }
+            list.adapter = adapter
+            adapter.submit(samplePeople, { it.letter(it.name) }, OmnioDisplay.hasHeaders(style))
+        }
+        val current = OmnioDisplay.getStyle(this@OmnioSetupActivity)
+        addView(scrollingChips(styles.map { getString(it.second) }, styles.indexOfFirst { it.first == current }.coerceAtLeast(0)) { picked ->
             OmnioDisplay.setStyle(this@OmnioSetupActivity, styles[picked].first)
+            show(styles[picked].first)
         })
-        addView(text(getString(R.string.omnio_setup_style_more), 13f, OmnioColors.TEXT_MUTED, top = 12))
+        addView(previewFrame(list))
+        show(current)
+    }
+
+    // tabs
+
+    private fun tabsPage() = page {
+        yoursHeader(R.string.omnio_setup_tabs_title, R.string.omnio_setup_tabs_text)
+        val bar = LinearLayout(this@OmnioSetupActivity).apply {
+            gravity = Gravity.CENTER
+            setPadding(dp(4), dp(10), dp(4), dp(10))
+            background = rounded(OmnioColors.BACKGROUND, 16)
+        }
+        val openOnHolder = LinearLayout(this@OmnioSetupActivity).apply { orientation = LinearLayout.VERTICAL }
+        val keypad = -1
+        val phoneTabs = listOf(
+            Triple(TAB_CONTACTS, R.string.contacts_tab, R.drawable.ic_person_vector to OmnioColors.CONTACTS),
+            Triple(TAB_FAVORITES, R.string.favorites_tab, R.drawable.ic_star_vector to OmnioColors.FAVOURITES),
+            Triple(TAB_CALL_HISTORY, R.string.call_history_tab, R.drawable.ic_clock_filled_vector to OmnioColors.CALLS),
+        )
+        lateinit var refresh: () -> Unit
+        fun openOnChoices(): List<Pair<Int, String>> =
+            phoneTabs.filter { config.showTabs and it.first != 0 }.map { it.first to getString(it.second) } +
+                listOf(keypad to getString(R.string.omnio_open_on_keypad), TAB_LAST_USED to getString(R.string.last_used_tab))
+        fun openOn() = if (config.openDialPadAtLaunch) keypad else config.defaultTab
+        refresh = {
+            // the pretend tab bar, as it'll look at the bottom of the app
+            bar.removeAllViews()
+            val shown = phoneTabs.filter { config.showTabs and it.first != 0 }.map { Triple(it.first, getString(it.second), it.third) } +
+                Triple(-2, getString(R.string.omnio_messages_tab), R.drawable.ic_omnio_chat to OmnioColors.MESSAGES)
+            val open = openOn().let { tab -> if (tab == keypad || tab == TAB_LAST_USED) TAB_CONTACTS else tab }
+            shown.forEach { (kind, label, look) ->
+                val lit = kind == open || (shown.none { it.first == open } && kind == shown.first().first)
+                bar.addView(LinearLayout(this@OmnioSetupActivity).apply {
+                    orientation = LinearLayout.VERTICAL
+                    gravity = Gravity.CENTER
+                    layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+                    addView(ImageView(context).apply {
+                        setImageResource(look.first)
+                        setColorFilter(if (lit) look.second else OmnioColors.TEXT_MUTED)
+                        layoutParams = LinearLayout.LayoutParams(dp(24), dp(24))
+                    })
+                    addView(TextView(context).apply {
+                        text = label
+                        setTextColor(if (lit) look.second else OmnioColors.TEXT_MUTED)
+                        setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
+                        setPadding(0, dp(4), 0, 0)
+                    })
+                    alpha = 0f
+                    animate().alpha(1f).setDuration(200).start()
+                })
+            }
+            if (openOn() == keypad) bar.addView(TextView(this@OmnioSetupActivity).apply {
+                text = "🔢"
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
+                setPadding(dp(8), 0, dp(4), 0)
+            })
+            // open-on choices follow which tabs are showing
+            openOnHolder.removeAllViews()
+            val choices = openOnChoices()
+            openOnHolder.addView(chips(choices.map { it.second }, choices.indexOfFirst { it.first == openOn() }) { picked ->
+                val choice = choices[picked].first
+                config.openDialPadAtLaunch = choice == keypad
+                config.defaultTab = if (choice == keypad) TAB_CONTACTS else choice
+                refresh()
+            })
+        }
+        addView(label(R.string.omnio_setup_tabs_shown))
+        phoneTabs.forEach { (kind, labelRes, _) ->
+            addView(toggleRow(getString(labelRes), null, config.showTabs and kind != 0) { on ->
+                config.showTabs = if (on) config.showTabs or kind else config.showTabs and kind.inv()
+                // the opening tab can't be one that's hidden
+                if (!on && !config.openDialPadAtLaunch && config.defaultTab == kind) config.defaultTab = TAB_LAST_USED
+                refresh()
+            })
+        }
+        addView(text(getString(R.string.omnio_setup_tabs_messages_note), 13f, OmnioColors.TEXT_MUTED, top = 8))
+        addView(label(R.string.omnio_setup_open_on))
+        addView(openOnHolder)
+        addView(previewFrame(bar))
+        refresh()
+    }
+
+    // keypad
+
+    private var tones: android.media.ToneGenerator? = null
+
+    override fun onDestroy() {
+        super.onDestroy()
+        tones?.release()
+        tones = null
+    }
+
+    private fun keypadPage() = page {
+        yoursHeader(R.string.omnio_setup_keypad_title, R.string.omnio_setup_keypad_text)
+        addView(toggleRow(getString(R.string.omnio_settings_dialpad_beeps), getString(R.string.omnio_setup_keypad_tones_desc), config.dialpadBeeps) { config.dialpadBeeps = it })
+        addView(toggleRow(getString(R.string.omnio_settings_dialpad_vibration), getString(R.string.omnio_setup_keypad_vibration_desc), config.dialpadVibration) { config.dialpadVibration = it })
+        val typed = TextView(this@OmnioSetupActivity).apply {
+            setTextColor(OmnioColors.TEXT)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 26f)
+            gravity = Gravity.CENTER
+            hint = getString(R.string.omnio_setup_keypad_try)
+            setHintTextColor(OmnioColors.TEXT_MUTED)
+            setPadding(0, dp(4), 0, dp(10))
+        }
+        val keys = LinearLayout(this@OmnioSetupActivity).apply { orientation = LinearLayout.VERTICAL }
+        listOf("123", "456", "789", "*0#").forEach { row ->
+            keys.addView(LinearLayout(this@OmnioSetupActivity).apply {
+                gravity = Gravity.CENTER
+                row.forEach { key ->
+                    addView(TextView(context).apply {
+                        text = key.toString()
+                        setTextColor(OmnioColors.TEXT)
+                        setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
+                        gravity = Gravity.CENTER
+                        background = GradientDrawable().apply {
+                            shape = GradientDrawable.OVAL
+                            setColor(OmnioColors.CARD)
+                        }
+                        layoutParams = LinearLayout.LayoutParams(dp(58), dp(58)).apply { setMargins(dp(8), dp(5), dp(8), dp(5)) }
+                        setOnClickListener { view -> pressDemoKey(view, key, typed) }
+                    })
+                }
+            })
+        }
+        addView(previewFrame(LinearLayout(this@OmnioSetupActivity).apply {
+            orientation = LinearLayout.VERTICAL
+            addView(typed)
+            addView(keys)
+        }))
+    }
+
+    /** The preview keypad behaves just like the real one: tone and buzz follow your switches. */
+    private fun pressDemoKey(view: View, key: Char, typed: TextView) {
+        typed.text = (typed.text.toString() + key).takeLast(14)
+        view.animate().scaleX(0.88f).scaleY(0.88f).setDuration(70).withEndAction { view.animate().scaleX(1f).scaleY(1f).setDuration(120).start() }.start()
+        if (config.dialpadVibration) view.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP)
+        if (config.dialpadBeeps) {
+            try {
+                if (tones == null) tones = android.media.ToneGenerator(android.media.AudioManager.STREAM_DTMF, 80)
+                val tone = when (key) {
+                    '0' -> android.media.ToneGenerator.TONE_DTMF_0; '1' -> android.media.ToneGenerator.TONE_DTMF_1; '2' -> android.media.ToneGenerator.TONE_DTMF_2
+                    '3' -> android.media.ToneGenerator.TONE_DTMF_3; '4' -> android.media.ToneGenerator.TONE_DTMF_4; '5' -> android.media.ToneGenerator.TONE_DTMF_5
+                    '6' -> android.media.ToneGenerator.TONE_DTMF_6; '7' -> android.media.ToneGenerator.TONE_DTMF_7; '8' -> android.media.ToneGenerator.TONE_DTMF_8
+                    '9' -> android.media.ToneGenerator.TONE_DTMF_9; '*' -> android.media.ToneGenerator.TONE_DTMF_S; else -> android.media.ToneGenerator.TONE_DTMF_P
+                }
+                tones?.startTone(tone, 120)
+            } catch (ignored: Exception) {
+            }
+        }
+    }
+
+    // texting
+
+    private fun textingPage() = page {
+        yoursHeader(R.string.omnio_setup_texting_title, R.string.omnio_setup_texting_text)
+        addView(label(R.string.omnio_undo_send))
+        val choices = listOf(0, 3, 5, 10)
+        val names = choices.map { if (it == 0) getString(R.string.omnio_undo_send_off) else getString(R.string.omnio_undo_send_seconds, it) }
+        addView(chips(names, choices.indexOf(com.omnioone.app.messaging.OmnioSender.undoSeconds(this@OmnioSetupActivity)).coerceAtLeast(0)) { picked ->
+            com.omnioone.app.messaging.OmnioSender.setUndoSeconds(this@OmnioSetupActivity, choices[picked])
+        })
+        addView(text(getString(R.string.omnio_setup_undo_desc), 13f, OmnioColors.TEXT_MUTED, top = 8))
+        addView(toggleRow(getString(R.string.omnio_settings_copy_codes), getString(R.string.omnio_settings_copy_codes_desc), com.omnioone.app.messaging.OmnioCodes.isOn(this@OmnioSetupActivity)) {
+            com.omnioone.app.messaging.OmnioCodes.setOn(this@OmnioSetupActivity, it)
+        })
+        addView(previewFrame(sendDemo()))
+    }
+
+    /** A pretend chat: tap send to see what happens with your undo setting. */
+    private fun sendDemo(): View {
+        val chat = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(6), dp(4), dp(6), dp(4))
+        }
+        fun bubble(textValue: String, mine: Boolean, status: String? = null) = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = if (mine) Gravity.END else Gravity.START
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(6) }
+            addView(TextView(context).apply {
+                text = textValue
+                setTextColor(if (mine) OmnioColors.ON_ACCENT else OmnioColors.TEXT)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
+                setPadding(dp(14), dp(9), dp(14), dp(9))
+                background = rounded(if (mine) OmnioColors.MESSAGES else OmnioColors.CARD, 18)
+            })
+            status?.let {
+                addView(TextView(context).apply {
+                    text = it
+                    tag = "status"
+                    setTextColor(OmnioColors.TEXT_MUTED)
+                    setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
+                    setPadding(dp(6), dp(3), dp(6), 0)
+                })
+            }
+        }
+        chat.addView(bubble(getString(R.string.omnio_setup_demo_incoming), mine = false))
+        val undoBar = TextView(this).apply {
+            setTextColor(OmnioColors.TEXT)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+            setPadding(dp(14), dp(8), dp(14), dp(8))
+            background = rounded(OmnioColors.CARD_SELECTED, 14)
+            visibility = View.GONE
+        }
+        val send = TextView(this).apply {
+            text = "➤  " + getString(R.string.omnio_setup_demo_send)
+            setTextColor(OmnioColors.ON_ACCENT)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+            setTypeface(typeface, Typeface.BOLD)
+            gravity = Gravity.CENTER
+            setPadding(dp(16), dp(10), dp(16), dp(10))
+            background = rounded(OmnioColors.MESSAGES, 20)
+        }
+        val handler = android.os.Handler(mainLooper)
+        send.setOnClickListener {
+            // only one pretend message at a time
+            while (chat.childCount > 1) chat.removeViewAt(1)
+            val seconds = com.omnioone.app.messaging.OmnioSender.undoSeconds(this)
+            val mine = bubble(getString(R.string.omnio_setup_demo_reply), mine = true, status = getString(R.string.omnio_thread_sending))
+            chat.addView(mine)
+            val status = mine.findViewWithTag<TextView>("status")
+            if (seconds <= 0) {
+                handler.postDelayed({ status?.text = getString(R.string.omnio_setup_demo_sent) }, 500)
+                return@setOnClickListener
+            }
+            var left = seconds
+            undoBar.visibility = View.VISIBLE
+            val tick = object : Runnable {
+                override fun run() {
+                    if (left <= 0) {
+                        undoBar.visibility = View.GONE
+                        status?.text = getString(R.string.omnio_setup_demo_sent)
+                        return
+                    }
+                    undoBar.text = getString(R.string.omnio_setup_demo_undo, left)
+                    left--
+                    handler.postDelayed(this, 1000)
+                }
+            }
+            undoBar.setOnClickListener {
+                handler.removeCallbacks(tick)
+                undoBar.visibility = View.GONE
+                chat.removeView(mine)
+            }
+            tick.run()
+        }
+        return LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            addView(chat)
+            addView(LinearLayout(context).apply {
+                gravity = Gravity.CENTER_VERTICAL or Gravity.END
+                setPadding(0, dp(12), 0, 0)
+                addView(undoBar, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply { marginEnd = dp(10) })
+                addView(send)
+            })
+        }
+    }
+
+    // link helper
+
+    private fun linkPage() = page {
+        yoursHeader(R.string.omnio_setup_link_title, R.string.omnio_setup_link_text)
+        val prefs = getSharedPreferences("omnio", MODE_PRIVATE)
+        val on = com.omnioone.app.services.OmnioLinkHelperService.isEnabled(this@OmnioSetupActivity)
+        addView(LinearLayout(this@OmnioSetupActivity).apply {
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(dp(16), dp(14), dp(16), dp(14))
+            background = rounded(OmnioColors.CARD, 16)
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(16) }
+            addView(TextView(context).apply {
+                text = getString(R.string.omnio_settings_link_helper)
+                setTextColor(OmnioColors.TEXT)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
+                setTypeface(typeface, Typeface.BOLD)
+                layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+            })
+            addView(TextView(context).apply {
+                text = getString(if (on) R.string.omnio_setup_link_on else R.string.omnio_setup_link_turn_on)
+                setTextColor(if (on) OmnioColors.MESSAGES else OmnioColors.ON_ACCENT)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+                setTypeface(typeface, Typeface.BOLD)
+                setPadding(dp(14), dp(7), dp(14), dp(7))
+                if (!on) background = rounded(OmnioColors.SOCIALS, 16)
+            })
+            setOnClickListener { openSettings(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) }
+        })
+        addView(toggleRow(getString(R.string.omnio_settings_offer_helper), getString(R.string.omnio_settings_offer_helper_desc), !prefs.getBoolean("link_helper_dont_ask", false)) {
+            prefs.edit().putBoolean("link_helper_dont_ask", !it).apply()
+        })
+        addView(toggleRow(getString(R.string.omnio_photo_full_size), getString(R.string.omnio_photo_full_size_desc), prefs.getBoolean("photo_full_size", false)) {
+            prefs.edit().putBoolean("photo_full_size", it).apply()
+        })
+        // how it works, in three steps
+        addView(previewFrame(LinearLayout(this@OmnioSetupActivity).apply {
+            orientation = LinearLayout.VERTICAL
+            listOf(
+                "1" to R.string.omnio_setup_link_step1, "2" to R.string.omnio_setup_link_step2, "3" to R.string.omnio_setup_link_step3,
+            ).forEach { (number, res) ->
+                addView(LinearLayout(context).apply {
+                    gravity = Gravity.CENTER_VERTICAL
+                    setPadding(dp(4), dp(6), dp(4), dp(6))
+                    addView(TextView(context).apply {
+                        text = number
+                        setTextColor(OmnioColors.ON_ACCENT)
+                        setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+                        setTypeface(typeface, Typeface.BOLD)
+                        gravity = Gravity.CENTER
+                        background = GradientDrawable().apply {
+                            shape = GradientDrawable.OVAL
+                            setColor(OmnioColors.SOCIALS)
+                        }
+                        layoutParams = LinearLayout.LayoutParams(dp(28), dp(28))
+                    })
+                    addView(TextView(context).apply {
+                        text = getString(res)
+                        setTextColor(OmnioColors.TEXT)
+                        setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+                        setPadding(dp(12), 0, 0, 0)
+                    })
+                })
+            }
+        }))
+    }
+
+    /** A setting with a switch, like the ones in Settings. */
+    private fun toggleRow(title: String, subtitle: String?, checked: Boolean, onChange: (Boolean) -> Unit): View = LinearLayout(this).apply {
+        gravity = Gravity.CENTER_VERTICAL
+        setPadding(dp(16), dp(12), dp(12), dp(12))
+        background = rounded(OmnioColors.CARD, 16)
+        layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(10) }
+        addView(LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+            addView(TextView(context).apply {
+                text = title
+                setTextColor(OmnioColors.TEXT)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
+            })
+            subtitle?.let {
+                addView(TextView(context).apply {
+                    text = it
+                    setTextColor(OmnioColors.TEXT_MUTED)
+                    setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+                    setPadding(0, dp(2), dp(8), 0)
+                })
+            }
+        })
+        val toggle = androidx.appcompat.widget.SwitchCompat(context).apply {
+            isChecked = checked
+            thumbTintList = android.content.res.ColorStateList(arrayOf(intArrayOf(android.R.attr.state_checked), intArrayOf()), intArrayOf(OmnioColors.TEXT, OmnioColors.TEXT_MUTED))
+            trackTintList = android.content.res.ColorStateList(arrayOf(intArrayOf(android.R.attr.state_checked), intArrayOf()), intArrayOf(OmnioColors.MESSAGES, 0xFF3A404C.toInt()))
+            setOnCheckedChangeListener { _, value -> onChange(value) }
+        }
+        addView(toggle)
+        setOnClickListener { toggle.isChecked = !toggle.isChecked }
+    }
+
+    /** Chips in one line that scrolls sideways (for long lists, like the 18 styles). */
+    private fun scrollingChips(options: List<String>, selected: Int, onPick: (Int) -> Unit): View {
+        val row = LinearLayout(this)
+        fun paint(chosen: Int) {
+            for (i in 0 until row.childCount) {
+                val chip = row.getChildAt(i) as TextView
+                chip.setTextColor(if (i == chosen) OmnioColors.ON_ACCENT else OmnioColors.TEXT)
+                chip.background = rounded(if (i == chosen) OmnioColors.CONTACTS else OmnioColors.CARD, 20)
+            }
+        }
+        options.forEachIndexed { i, option ->
+            row.addView(TextView(this).apply {
+                text = option
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
+                setPadding(dp(16), dp(10), dp(16), dp(10))
+                layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { marginEnd = dp(8) }
+                setOnClickListener {
+                    paint(i)
+                    onPick(i)
+                }
+            })
+        }
+        paint(selected)
+        return android.widget.HorizontalScrollView(this).apply {
+            isHorizontalScrollBarEnabled = false
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(16) }
+            addView(row)
+            post { row.getChildAt(selected)?.let { smoothScrollTo((it.left - dp(24)).coerceAtLeast(0), 0) } }
+        }
     }
 
     /** A wrap of tappable choices; the chosen one lights up. */
