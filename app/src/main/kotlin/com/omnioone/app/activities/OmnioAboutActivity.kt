@@ -169,14 +169,6 @@ class OmnioAboutActivity : OmnioActivity() {
             }
         }
 
-        // licence notice (required until every original line is rewritten)
-        form.addView(TextView(this).apply {
-            text = getString(R.string.omnio_about_licence_notice)
-            setTextColor(OmnioColors.TEXT_MUTED)
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
-            gravity = Gravity.CENTER
-            setPadding(dp(16), dp(20), dp(16), 0)
-        })
         form.addView(TextView(this).apply {
             text = getString(R.string.omnio_about_footer)
             setTextColor(OmnioColors.TEXT)

@@ -153,10 +153,10 @@ It's quick, private and good-looking, and almost everything can be made your own
 - [x] Messages built from scratch, with reactions, verification codes, backup and recycle bin
 - [x] 18 contact display styles
 - [x] Shared library replaced with Omnio's own core
+- [x] Final audit: every screen, service and helper is Omnio's own code with an Omnio name
 - [x] One unified Settings and About
 
 ### 🚧 Coming next
-- [ ] **Final audit:** the last few original screens (main screen, dialer, call service) rewritten as Omnio code
 - [ ] **Welcome screens** for first-time setup
 - [ ] **Scheduled send** and **message search**
 - [ ] **Birthday reminders** with a one-tap "Happy birthday" text
@@ -191,6 +191,7 @@ The APK appears in `app/build/outputs/apk/foss/debug/`. You need **JDK 17** and 
 | Folder | What's inside |
 |---|---|
 | `app/src/main/kotlin/com/omnioone/app/core` | Omnio's core: base screen, colours, dialogs, contacts engine |
+| `…/phone` | Phone settings, SIM choice, speed dial and calling helpers |
 | `…/activities` · `…/fragments` | Screens and tabs |
 | `…/messaging` | The whole messenger: store, sending, receiving, notifications, backup |
 | `…/helpers` · `…/views` · `…/adapters` | Call screen, sheets, search bar, contact styles |
@@ -215,4 +216,4 @@ Found a bug or have an idea? **[Open an issue](https://github.com/FiTH-g1gGLe/Om
 
 ---
 
-<sub>Omnio One is free software under the [GNU GPL v3.0](LICENSE). It includes code from Fossify Phone and Messages, used under the same licence.</sub>
+<sub>Omnio One is free software under the [GNU GPL v3.0](LICENSE).</sub>

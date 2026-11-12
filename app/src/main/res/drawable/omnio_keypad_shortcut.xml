@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The keypad shortcut you get by long-pressing the Omnio One icon: the keypad on an Omnio blue circle. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="#4F7CFF" />
+        </shape>
+    </item>
+    <item android:drawable="@drawable/ic_dialpad_vector" android:inset="10dp" />
+</layer-list>

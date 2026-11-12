@@ -374,7 +374,7 @@ class OmnioMainActivity : OmnioActivity() {
                 ShortcutInfo.Builder(this, KEYPAD_SHORTCUT)
                     .setShortLabel(label)
                     .setLongLabel(label)
-                    .setIcon(Icon.createWithResource(this, R.drawable.shortcut_dialpad))
+                    .setIcon(Icon.createWithResource(this, R.drawable.omnio_keypad_shortcut))
                     .setIntent(Intent(this, OmnioKeypadActivity::class.java).setAction(Intent.ACTION_VIEW))
                     .build()
             ))

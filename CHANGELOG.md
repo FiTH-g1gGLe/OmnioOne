@@ -5,6 +5,7 @@ Every change to `main` is built and published as a release automatically, so eac
 ## 0.1 Preview (November 2026)
 
 ### Latest
+- Final audit: the main screen, tab pages, outgoing-call screen, phone settings and call helpers rewritten; every file has an Omnio name; SIM and sort choices now use Omnio sheets
 - Shared library replaced with Omnio's own core: the app is now one module
 - 10 new contact styles (18 in total), including Orbit, Honeycomb and Polaroid
 - Verification codes copied automatically, tappable in chats, Copy button on notifications

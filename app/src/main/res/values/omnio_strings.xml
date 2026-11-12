@@ -1,5 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- App basics -->
+    <string name="app_launcher_name">Omnio One</string>
+    <string name="default_phone_app_prompt">Set Omnio One as your phone app to make calls with it</string>
+    <string name="allow_displaying_over_other_apps">Let Omnio One show over other apps, so incoming calls always pop up</string>
+    <string name="could_not_access_contacts">Omnio One can\'t see your contacts yet</string>
+    <string name="no_previous_calls">No calls yet</string>
+    <string name="could_not_access_the_call_history">Omnio One can\'t see your calls yet</string>
+    <string name="request_access">Allow access</string>
+    <string name="clear_history_confirmation">Remove every call from Recents?</string>
+    <string name="clear_call_history">Clear Recents</string>
+    <string name="dialpad">Keypad</string>
+    <string name="dialer">Omnio One calls</string>
+    <string name="ongoing_call">Call in progress</string>
+    <string name="select_sim">Which SIM?</string>
+    <string name="always_use_this_sim">Always use this SIM for this number</string>
+    <string name="calling_blocked_number">You\'ve blocked this number</string>
     <!-- Omnio One strings -->
     <string name="omnio_text">Text</string>
     <string name="omnio_birthday">Birthday</string>
@@ -655,7 +671,6 @@
     <string name="omnio_signature_tagline">All your people. One app.</string>
     <string name="omnio_signature_people">🎬 g1gGLe · 🛠️ Claude</string>
     <string name="omnio_signature_made">🇬🇧 Made with ♥️ in the UK</string>
-    <string name="omnio_about_licence_notice">Includes code from Fossify Phone and Messages, used under the GNU GPL v3.0.</string>
     <string name="omnio_overlay_title">Show calls over other apps</string>
     <string name="omnio_overlay_allow">Allow</string>
     <string name="omnio_clear">Clear</string>
