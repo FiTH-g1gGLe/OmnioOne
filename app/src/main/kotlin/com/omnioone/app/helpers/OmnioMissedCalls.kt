@@ -119,9 +119,9 @@ class OmnioMissedCallReceiver : BroadcastReceiver() {
         val count = intent.getIntExtra(TelecomManager.EXTRA_NOTIFICATION_COUNT, 0)
         val number = intent.getStringExtra(TelecomManager.EXTRA_NOTIFICATION_PHONE_NUMBER).orEmpty()
         @Suppress("DEPRECATION")
-        val callBack = intent.getParcelableExtra<PendingIntent>(TelecomManager.EXTRA_CALL_BACK_INTENT)
+        val callBack = intent.getParcelableExtra<PendingIntent>("android.telecom.extra.CALL_BACK_INTENT")
         @Suppress("DEPRECATION")
-        val clear = intent.getParcelableExtra<PendingIntent>(TelecomManager.EXTRA_CLEAR_MISSED_CALLS_INTENT)
+        val clear = intent.getParcelableExtra<PendingIntent>("android.telecom.extra.CLEAR_MISSED_CALLS_INTENT")
         val pending = goAsync()
         Thread {
             try {
