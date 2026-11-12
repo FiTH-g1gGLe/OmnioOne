@@ -721,10 +721,9 @@
     <string name="omnio_setup_tabs_shown">Tabs shown</string>
     <string name="omnio_setup_tabs_messages_note">Messages always stays, it\'s where your texts live.</string>
     <string name="omnio_setup_keypad_title">The keypad</string>
-    <string name="omnio_setup_keypad_text">Flip the switches, then tap the keys below to hear and feel the difference.</string>
+    <string name="omnio_setup_keypad_text_plain">How the keypad feels when you dial.</string>
     <string name="omnio_setup_keypad_tones_desc">A beep for each key you press</string>
     <string name="omnio_setup_keypad_vibration_desc">A light buzz for each key you press</string>
-    <string name="omnio_setup_keypad_try">Tap the keys</string>
     <string name="omnio_setup_texting_title">Sending texts</string>
     <string name="omnio_setup_texting_text">Choose whether you get a moment to take a message back. Try it in the preview.</string>
     <string name="omnio_setup_undo_desc">Off sends straight away. With a few seconds, an Undo button shows before it goes.</string>

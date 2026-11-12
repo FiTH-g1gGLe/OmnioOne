@@ -449,7 +449,7 @@ class OmnioSetupActivity : OmnioActivity() {
             .mapIndexed { i, name ->
                 com.omnioone.app.helpers.OmnioPeople.Person(
                     contactId = -100 - i, rawId = -100 - i, lookupKey = "", name = name, surnameFirst = name.substringAfter(" ") + ", " + name.substringBefore(" "),
-                    photo = "", starred = i < 3,
+                    photo = samplePhoto(i), starred = i < 3,
                     numbers = listOf(com.omnioone.app.helpers.OmnioPeople.Number("07700 9001${10 + i}", "Mobile", true)),
                     emails = if (i % 3 == 0) listOf("hello@example.com") else emptyList(), nickname = "", company = "", jobTitle = "",
                 )
@@ -457,12 +457,60 @@ class OmnioSetupActivity : OmnioActivity() {
     }
 
     private val sampleBadges by lazy {
-        val whatsapp = com.omnioone.app.helpers.OmnioAppTags.Badge("WhatsApp", "com.whatsapp", 0xFF25D366.toInt())
-        val instagram = com.omnioone.app.helpers.OmnioAppTags.Badge("Instagram", "com.instagram.android", 0xFFE1306C.toInt())
-        val facebook = com.omnioone.app.helpers.OmnioAppTags.Badge("Facebook", "com.facebook.katana", 0xFF1877F2.toInt())
-        samplePeople.mapIndexed { i, person ->
-            person.contactId to listOfNotNull(whatsapp, instagram.takeIf { i % 2 == 0 }, facebook.takeIf { i % 3 == 1 }, com.omnioone.app.helpers.OmnioAppTags.EMAIL.takeIf { person.emails.isNotEmpty() })
-        }.toMap()
+        fun tag(name: String, pkg: String, colour: Long) = com.omnioone.app.helpers.OmnioAppTags.Badge(name, pkg, colour.toInt())
+        val whatsapp = tag("WhatsApp", "com.whatsapp", 0xFF25D366)
+        val instagram = tag("Instagram", "com.instagram.android", 0xFFE1306C)
+        val facebook = tag("Facebook", "com.facebook.katana", 0xFF1877F2)
+        val messenger = tag("Messenger", "com.facebook.orca", 0xFF0084FF)
+        val snapchat = tag("Snapchat", "com.snapchat.android", 0xFFFFFC00)
+        val tiktok = tag("TikTok", "com.zhiliaoapp.musically", 0xFF111111)
+        val telegram = tag("Telegram", "org.telegram.messenger", 0xFF229ED9)
+        val x = tag("X", "com.twitter.android", 0xFF111111)
+        val email = com.omnioone.app.helpers.OmnioAppTags.EMAIL
+        // a different mix for each pretend person, like real contacts
+        val mixes = listOf(
+            listOf(whatsapp, instagram, facebook, messenger),
+            listOf(whatsapp, snapchat, tiktok),
+            listOf(whatsapp, instagram, email),
+            listOf(whatsapp, facebook, messenger, x),
+            listOf(telegram, instagram, snapchat),
+            listOf(whatsapp, tiktok, instagram, email),
+            listOf(whatsapp, facebook),
+            listOf(whatsapp, snapchat, instagram, x),
+            listOf(telegram, whatsapp, email),
+        )
+        samplePeople.mapIndexed { i, person -> person.contactId to mixes[i % mixes.size] }.toMap()
+    }
+
+    /** A pretend profile photo: a cartoon face on a bright gradient, drawn on the phone (no real people). */
+    private fun samplePhoto(index: Int): String {
+        val file = java.io.File(cacheDir, "omnio_setup_face_$index.png")
+        if (file.exists()) return file.absolutePath
+        val faces = listOf("👩🏻‍🦰", "👨🏾", "👩🏽", "🧔🏻", "👱🏼‍♀️", "👨🏻‍🦱", "👩🏻", "🧑🏼‍🦲", "👩🏾‍🦱")
+        val gradients = listOf(
+            0xFFFF8A3D to 0xFFEC4899, 0xFF4F7CFF to 0xFF22C55E, 0xFF8B5CF6 to 0xFFEC4899,
+            0xFF14B8A6 to 0xFF4F7CFF, 0xFFFFC85A to 0xFFFF8A3D, 0xFF22C55E to 0xFF14B8A6,
+            0xFFEC4899 to 0xFF8B5CF6, 0xFF4F7CFF to 0xFF8B5CF6, 0xFFFF6B6B to 0xFFFFC85A,
+        )
+        return try {
+            val size = 256
+            val bitmap = android.graphics.Bitmap.createBitmap(size, size, android.graphics.Bitmap.Config.ARGB_8888)
+            val canvas = android.graphics.Canvas(bitmap)
+            val (from, to) = gradients[index % gradients.size]
+            canvas.drawRect(0f, 0f, size.toFloat(), size.toFloat(), android.graphics.Paint().apply {
+                shader = android.graphics.LinearGradient(0f, 0f, size.toFloat(), size.toFloat(), from.toInt(), to.toInt(), android.graphics.Shader.TileMode.CLAMP)
+            })
+            val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+                textSize = size * 0.62f
+                textAlign = android.graphics.Paint.Align.CENTER
+            }
+            val y = size / 2f - (paint.descent() + paint.ascent()) / 2f + size * 0.06f
+            canvas.drawText(faces[index % faces.size], size / 2f, y, paint)
+            file.outputStream().use { bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }
+            file.absolutePath
+        } catch (e: Exception) {
+            ""
+        }
     }
 
     private fun lookPage() = page {
@@ -586,71 +634,10 @@ class OmnioSetupActivity : OmnioActivity() {
 
     // keypad
 
-    private var tones: android.media.ToneGenerator? = null
-
-    override fun onDestroy() {
-        super.onDestroy()
-        tones?.release()
-        tones = null
-    }
-
     private fun keypadPage() = page {
-        yoursHeader(R.string.omnio_setup_keypad_title, R.string.omnio_setup_keypad_text)
+        yoursHeader(R.string.omnio_setup_keypad_title, R.string.omnio_setup_keypad_text_plain)
         addView(toggleRow(getString(R.string.omnio_settings_dialpad_beeps), getString(R.string.omnio_setup_keypad_tones_desc), config.dialpadBeeps) { config.dialpadBeeps = it })
         addView(toggleRow(getString(R.string.omnio_settings_dialpad_vibration), getString(R.string.omnio_setup_keypad_vibration_desc), config.dialpadVibration) { config.dialpadVibration = it })
-        val typed = TextView(this@OmnioSetupActivity).apply {
-            setTextColor(OmnioColors.TEXT)
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 26f)
-            gravity = Gravity.CENTER
-            hint = getString(R.string.omnio_setup_keypad_try)
-            setHintTextColor(OmnioColors.TEXT_MUTED)
-            setPadding(0, dp(4), 0, dp(10))
-        }
-        val keys = LinearLayout(this@OmnioSetupActivity).apply { orientation = LinearLayout.VERTICAL }
-        listOf("123", "456", "789", "*0#").forEach { row ->
-            keys.addView(LinearLayout(this@OmnioSetupActivity).apply {
-                gravity = Gravity.CENTER
-                row.forEach { key ->
-                    addView(TextView(context).apply {
-                        text = key.toString()
-                        setTextColor(OmnioColors.TEXT)
-                        setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
-                        gravity = Gravity.CENTER
-                        background = GradientDrawable().apply {
-                            shape = GradientDrawable.OVAL
-                            setColor(OmnioColors.CARD)
-                        }
-                        layoutParams = LinearLayout.LayoutParams(dp(58), dp(58)).apply { setMargins(dp(8), dp(5), dp(8), dp(5)) }
-                        setOnClickListener { view -> pressDemoKey(view, key, typed) }
-                    })
-                }
-            })
-        }
-        addView(previewFrame(LinearLayout(this@OmnioSetupActivity).apply {
-            orientation = LinearLayout.VERTICAL
-            addView(typed)
-            addView(keys)
-        }))
-    }
-
-    /** The preview keypad behaves just like the real one: tone and buzz follow your switches. */
-    private fun pressDemoKey(view: View, key: Char, typed: TextView) {
-        typed.text = (typed.text.toString() + key).takeLast(14)
-        view.animate().scaleX(0.88f).scaleY(0.88f).setDuration(70).withEndAction { view.animate().scaleX(1f).scaleY(1f).setDuration(120).start() }.start()
-        if (config.dialpadVibration) view.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP)
-        if (config.dialpadBeeps) {
-            try {
-                if (tones == null) tones = android.media.ToneGenerator(android.media.AudioManager.STREAM_DTMF, 80)
-                val tone = when (key) {
-                    '0' -> android.media.ToneGenerator.TONE_DTMF_0; '1' -> android.media.ToneGenerator.TONE_DTMF_1; '2' -> android.media.ToneGenerator.TONE_DTMF_2
-                    '3' -> android.media.ToneGenerator.TONE_DTMF_3; '4' -> android.media.ToneGenerator.TONE_DTMF_4; '5' -> android.media.ToneGenerator.TONE_DTMF_5
-                    '6' -> android.media.ToneGenerator.TONE_DTMF_6; '7' -> android.media.ToneGenerator.TONE_DTMF_7; '8' -> android.media.ToneGenerator.TONE_DTMF_8
-                    '9' -> android.media.ToneGenerator.TONE_DTMF_9; '*' -> android.media.ToneGenerator.TONE_DTMF_S; else -> android.media.ToneGenerator.TONE_DTMF_P
-                }
-                tones?.startTone(tone, 120)
-            } catch (ignored: Exception) {
-            }
-        }
     }
 
     // texting
