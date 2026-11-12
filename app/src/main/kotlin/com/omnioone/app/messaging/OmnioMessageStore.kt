@@ -72,7 +72,8 @@ object OmnioMessageStore {
         return map
     }
 
-    private fun unreadByThread(context: Context): Map<Long, Int> {
+    private fun unreadByThread(context: Context, onlyThread: Long? = null): Map<Long, Int> {
+        val only = onlyThread?.let { " AND thread_id = $it" }.orEmpty()
         val counts = HashMap<Long, Int>()
         fun count(uri: Uri, column: String, selection: String) {
             try {
@@ -82,8 +83,8 @@ object OmnioMessageStore {
             } catch (ignored: Exception) {
             }
         }
-        count(Sms.CONTENT_URI, Sms.THREAD_ID, "${Sms.READ} = 0 AND ${Sms.TYPE} = ${Sms.MESSAGE_TYPE_INBOX}")
-        count(Mms.CONTENT_URI, Mms.THREAD_ID, "${Mms.READ} = 0 AND ${Mms.MESSAGE_BOX} = ${Mms.MESSAGE_BOX_INBOX}")
+        count(Sms.CONTENT_URI, Sms.THREAD_ID, "${Sms.READ} = 0 AND ${Sms.TYPE} = ${Sms.MESSAGE_TYPE_INBOX}$only")
+        count(Mms.CONTENT_URI, Mms.THREAD_ID, "${Mms.READ} = 0 AND ${Mms.MESSAGE_BOX} = ${Mms.MESSAGE_BOX_INBOX}$only")
         return counts
     }
 
@@ -98,7 +99,7 @@ object OmnioMessageStore {
     /** Every conversation, newest first (or just [onlyThread]). */
     fun conversations(context: Context, onlyThread: Long? = null, showBinned: Boolean = false): List<Conversation> {
         val addressBook = addresses(context)
-        val unread = unreadByThread(context)
+        val unread = unreadByThread(context, onlyThread)
         val pins = pinned(context)
         val archive = archived(context)
         val people = HashMap<String, Person>()
@@ -108,12 +109,19 @@ object OmnioMessageStore {
         }
 
         val list = ArrayList<Conversation>()
+        val columns = arrayOf(Threads._ID, Threads.DATE, Threads.SNIPPET, Threads.RECIPIENT_IDS, Threads.HAS_ATTACHMENT, Threads.MESSAGE_COUNT)
+        // opening one chat: ask for just that chat (some phones refuse the filter, so fall back to reading them all)
+        val cursorFor = {
+            onlyThread?.let {
+                try {
+                    context.contentResolver.query(MMS_SMS_CONVERSATIONS, columns, "${Threads._ID} = ?", arrayOf(it.toString()), null)
+                } catch (e: Exception) {
+                    null
+                }
+            } ?: context.contentResolver.query(MMS_SMS_CONVERSATIONS, columns, null, null, "${Threads.DATE} DESC")
+        }
         try {
-            context.contentResolver.query(
-                MMS_SMS_CONVERSATIONS,
-                arrayOf(Threads._ID, Threads.DATE, Threads.SNIPPET, Threads.RECIPIENT_IDS, Threads.HAS_ATTACHMENT, Threads.MESSAGE_COUNT),
-                null, null, "${Threads.DATE} DESC"
-            )?.use { cursor ->
+            cursorFor()?.use { cursor ->
                 while (cursor.moveToNext()) {
                     val threadId = cursor.getLong(0)
                     if (onlyThread != null && threadId != onlyThread) continue
@@ -148,7 +156,7 @@ object OmnioMessageStore {
     }
 
     /** The latest [limit] texts and picture messages in a conversation, oldest first. */
-    fun messages(context: Context, threadId: Long, limit: Int = 200, includeBinned: Boolean = false): List<Message> {
+    fun messages(context: Context, threadId: Long, limit: Int = 200, includeBinned: Boolean = false, knownSender: String? = null): List<Message> {
         val binned = if (includeBinned) emptySet() else OmnioRecycleBin.keys(context)
         // binned messages are skipped, so look a little further back to still fill [limit]
         val all = ArrayList<Message>()
@@ -183,19 +191,23 @@ object OmnioMessageStore {
                 arrayOf(Mms._ID, Mms.MESSAGE_BOX, Mms.DATE, Mms.READ),
                 "${Mms.THREAD_ID} = ?", arrayOf(threadId.toString()), "${Mms.DATE} DESC LIMIT $fetch"
             )?.use { cursor ->
-                while (cursor.moveToNext()) {
-                    val id = cursor.getLong(0)
-                    val box = cursor.getInt(1)
-                    val parts = mmsParts(context, id)
+                val rows = ArrayList<LongArray>()
+                while (cursor.moveToNext()) rows += longArrayOf(cursor.getLong(0), cursor.getLong(1), cursor.getLong(2), cursor.getLong(3))
+                // every picture message's photos and text in one go, instead of one lookup each
+                val partsById = mmsParts(context, rows.map { it[0] })
+                for (row in rows) {
+                    val id = row[0]
+                    val box = row[1].toInt()
+                    val parts = partsById[id].orEmpty()
                     all += Message(
                         id = id,
                         threadId = threadId,
                         isMms = true,
                         incoming = box == Mms.MESSAGE_BOX_INBOX,
-                        address = if (box == Mms.MESSAGE_BOX_INBOX) mmsSender(context, id) else "",
+                        address = if (box == Mms.MESSAGE_BOX_INBOX) knownSender ?: mmsSender(context, id) else "",
                         body = parts.filter { it.mime == "text/plain" }.joinToString("\n") { it.text.orEmpty() },
-                        date = toMillis(cursor.getLong(2)),
-                        read = cursor.getInt(3) == 1,
+                        date = toMillis(row[2]),
+                        read = row[3] == 1L,
                         failed = box == Mms.MESSAGE_BOX_FAILED,
                         pending = box == Mms.MESSAGE_BOX_OUTBOX,
                         parts = parts.filter { it.mime != "application/smil" },
@@ -207,7 +219,28 @@ object OmnioMessageStore {
         return all.filter { binned.isEmpty() || OmnioRecycleBin.keyOf(it.isMms, it.id) !in binned }.sortedBy { it.date }.takeLast(limit)
     }
 
-    private fun mmsParts(context: Context, mmsId: Long): List<Part> {
+    /** The parts (photos, text, cards) of several picture messages, read in batches. */
+    private fun mmsParts(context: Context, mmsIds: List<Long>): Map<Long, List<Part>> {
+        val parts = HashMap<Long, ArrayList<Part>>()
+        mmsIds.chunked(300).forEach { chunk ->
+            try {
+                context.contentResolver.query(
+                    Uri.parse("content://mms/part"), arrayOf("_id", "ct", "text", "mid"), "mid IN (${chunk.joinToString(",")})", null, "_id"
+                )?.use { cursor ->
+                    while (cursor.moveToNext()) {
+                        val id = cursor.getLong(0)
+                        parts.getOrPut(cursor.getLong(3)) { ArrayList() } += Part(id, cursor.getString(1).orEmpty(), cursor.getString(2), Uri.parse("content://mms/part/$id"))
+                    }
+                }
+            } catch (e: Exception) {
+                // a phone that refuses the batch: fall back to one message at a time
+                chunk.filter { it !in parts }.forEach { mmsId -> parts[mmsId] = ArrayList(mmsPartsOf(context, mmsId)) }
+            }
+        }
+        return parts
+    }
+
+    private fun mmsPartsOf(context: Context, mmsId: Long): List<Part> {
         val parts = ArrayList<Part>()
         try {
             context.contentResolver.query(

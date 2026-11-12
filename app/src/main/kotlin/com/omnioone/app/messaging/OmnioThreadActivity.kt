@@ -56,6 +56,8 @@ import java.util.Calendar
 class OmnioThreadActivity : SimpleActivity() {
 
     companion object {
+        private const val FIRST_PAGE = 60
+        private const val NEXT_PAGE = 150
         /** Who the chat is with, for a brand-new chat that has no messages yet. */
         const val EXTRA_ADDRESSES = "omnio_addresses"
         private val QUICK_EMOJIS = listOf("👍", "❤️", "😂", "😮", "😢", "🙏", "‼️", "❓", "👎")
@@ -74,6 +76,9 @@ class OmnioThreadActivity : SimpleActivity() {
     private val adapter = BubbleAdapter()
     private var offeredEmail: String? = null
     private var loading = false
+    /** How many messages to show: starts small so long chats open instantly, grows as you scroll up. */
+    private var shown = FIRST_PAGE
+    private var mayHaveOlder = true
 
     // sending (stage 4)
     private val attachments = ArrayList<OmnioSender.Attachment>()
@@ -179,12 +184,15 @@ class OmnioThreadActivity : SimpleActivity() {
 
     // ---- loading ----
 
-    private fun load() {
+    private fun load(keepPlace: Boolean = false) {
         if (loading) return
         loading = true
+        val limit = shown
         ensureBackgroundThread {
             val info = OmnioMessageStore.conversations(this, onlyThread = threadId).firstOrNull()
-            val loaded = OmnioMessageStore.messages(this, threadId, limit = 400)
+            // in a one-to-one chat every incoming picture message is from them, so skip looking up each sender
+            val sender = info?.people?.singleOrNull()?.address
+            val loaded = OmnioMessageStore.messages(this, threadId, limit = limit, knownSender = sender)
             // read any contact cards so they show as a name, not a file
             val readCards = HashMap(cards)
             loaded.flatMap { it.parts }.filter { OmnioContactCard.isCard(it.mime) && it.id !in readCards }.forEach { part ->
@@ -194,12 +202,22 @@ class OmnioThreadActivity : SimpleActivity() {
                 loading = false
                 if (isFinishing) return@runOnUiThread
                 val atBottom = !list.canScrollVertically(1)
+                val manager = list.layoutManager as LinearLayoutManager
+                val firstVisible = manager.findFirstVisibleItemPosition()
+                val firstTop = list.getChildAt(0)?.top ?: 0
+                val countBefore = adapter.itemCount
+                mayHaveOlder = loaded.size >= limit
                 conversation = info
                 messages = loaded
                 showHeader()
                 cards = readCards
                 adapter.submit(loaded, info)
-                if (atBottom || adapter.itemCount <= 1) list.scrollToPosition(adapter.itemCount - 1)
+                if (keepPlace && firstVisible >= 0) {
+                    // older messages were added above: keep the one you were looking at in the same spot
+                    manager.scrollToPositionWithOffset(firstVisible + (adapter.itemCount - countBefore), firstTop)
+                } else if (atBottom || adapter.itemCount <= 1) {
+                    list.scrollToPosition(adapter.itemCount - 1)
+                }
                 offerEmailIfAsked(loaded)
             }
         }
@@ -656,6 +674,15 @@ class OmnioThreadActivity : SimpleActivity() {
             itemAnimator = null
             clipToPadding = false
             setPadding(0, dp(4), 0, dp(8))
+            addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    // near the top of what's loaded: fetch the next batch of older messages
+                    if (dy < 0 && mayHaveOlder && !loading && (layoutManager as LinearLayoutManager).findFirstVisibleItemPosition() <= 5) {
+                        shown += NEXT_PAGE
+                        load(keepPlace = true)
+                    }
+                }
+            })
             layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f)
         }
         root.addView(list)
