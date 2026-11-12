@@ -17,8 +17,9 @@ object OmnioFacebookFriends {
 
     data class Friend(val name: String, val since: Long)
 
-    data class Match(val friend: Friend, val person: OmnioPeople.Person, val score: Int) {
-        val isSure get() = score >= SURE
+    data class Match(val friend: Friend, val person: OmnioPeople.Person, val score: Int, val sameName: Boolean = false) {
+        /** Never "sure" when the name is shared: two contacts or two friends with it means you pick. */
+        val isSure get() = score >= SURE && !sameName
     }
 
     data class Result(val sure: List<Match>, val possible: List<Match>, val notInContacts: Int, val alreadyLinked: Int)
@@ -58,7 +59,8 @@ object OmnioFacebookFriends {
         } else {
             resolver.openInputStream(uri)?.use { friends += parse(it.readBytes().toString(Charsets.UTF_8)) }
         }
-        val unique = friends.filter { it.name.isNotBlank() }.distinctBy { it.name }
+        // two friends can share a name: keep both (they became friends at different times)
+        val unique = friends.filter { it.name.isNotBlank() }.distinctBy { it.name to it.since }
         if (unique.isEmpty()) return 0
         val array = JSONArray()
         unique.forEach { array.put(JSONObject().put("name", it.name).put("since", it.since)) }
@@ -116,7 +118,8 @@ object OmnioFacebookFriends {
 
     // ---- decisions ----
 
-    private fun decisionKey(friend: Friend, person: OmnioPeople.Person) = "${friend.name}|${person.contactId}"
+    private fun decisionKey(friend: Friend, person: OmnioPeople.Person) =
+        if (friend.since > 0) "${friend.name}#${friend.since}|${person.contactId}" else "${friend.name}|${person.contactId}"
 
     fun markNotThem(context: Context, match: Match) {
         val current = prefs(context).getStringSet("fb_not_them", emptySet()).orEmpty()
@@ -202,17 +205,22 @@ object OmnioFacebookFriends {
                 val single = tokens(person.name).singleOrNull()
                 val unique = single != null && (firstNameCount[first] ?: 0) == 1 && (singleNameCount[single] ?: 0) == 1
                 val score = score(friend.name, person.name, unique)
-                if (score >= POSSIBLE && decisionKey(friend, person) !in notThem) candidates += Match(friend, person, score)
+                val said = decisionKey(friend, person) in notThem || "${friend.name}|${person.contactId}" in notThem
+                if (score >= POSSIBLE && !said) candidates += Match(friend, person, score)
             }
         }
-        val usedFriends = HashSet<String>()
+        // the same name on two contacts (or two friends) can't be told apart by name alone
+        val strongContactsPerName = candidates.filter { it.score >= SURE }.groupBy { it.friend.name }.mapValues { (_, list) -> list.map { it.person.contactId }.toSet().size }
+        val friendsPerName = friends.groupingBy { it.name }.eachCount()
+        val usedFriends = HashSet<Friend>()
         val usedContacts = HashSet<Int>()
         val chosen = ArrayList<Match>()
         candidates.sortedByDescending { it.score }.forEach { match ->
-            if (match.friend.name !in usedFriends && match.person.contactId !in usedContacts) {
-                usedFriends += match.friend.name
+            if (match.friend !in usedFriends && match.person.contactId !in usedContacts) {
+                usedFriends += match.friend
                 usedContacts += match.person.contactId
-                chosen += match
+                val shared = (strongContactsPerName[match.friend.name] ?: 0) > 1 || (friendsPerName[match.friend.name] ?: 0) > 1
+                chosen += match.copy(sameName = shared)
             }
         }
         val linkedNames = people.filter { it.contactId in linkedToFacebook }.map { tokens(it.name) }.toSet()

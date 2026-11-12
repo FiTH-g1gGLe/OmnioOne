@@ -674,4 +674,5 @@
     <string name="omnio_overlay_title">Show calls over other apps</string>
     <string name="omnio_overlay_allow">Allow</string>
     <string name="omnio_clear">Clear</string>
+    <string name="omnio_fb_same_name">⚠️ Same name as someone else, check it\'s the right one</string>
 </resources>

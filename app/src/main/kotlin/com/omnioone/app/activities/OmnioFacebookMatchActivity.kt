@@ -228,7 +228,12 @@ class OmnioFacebookMatchActivity : OmnioActivity() {
         val avatar = ImageView(this).apply { layoutParams = LinearLayout.LayoutParams(screen.dp(44), screen.dp(44)) }
         OmnioDisplay.loadAvatar(avatar, match.person.photo, match.person.name, screen.dp(22))
         val since = if (match.friend.since > 0) " · " + getString(R.string.omnio_fb_since, java.util.Calendar.getInstance().apply { timeInMillis = match.friend.since * 1000 }.get(java.util.Calendar.YEAR)) else ""
-        val subtitle = getString(R.string.omnio_fb_on_facebook_as, match.friend.name) + since
+        var subtitle = getString(R.string.omnio_fb_on_facebook_as, match.friend.name) + since
+        if (match.sameName) {
+            // two people share this name: show the number so you can tell them apart
+            val number = match.person.numbers.firstOrNull()?.value.orEmpty()
+            subtitle += "\n" + getString(R.string.omnio_fb_same_name) + if (number.isNotEmpty()) " · $number" else ""
+        }
         val buttons = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
