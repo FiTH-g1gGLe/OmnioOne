@@ -103,8 +103,14 @@ class OmnioNewMessageActivity : SimpleActivity() {
 
     private fun numbersFromLink(uri: Uri?): List<String> {
         if (uri == null || uri.scheme?.lowercase() !in setOf("sms", "smsto", "mms", "mmsto")) return emptyList()
-        uri.getQueryParameter("body")?.let { if (sharedText.isNullOrEmpty()) sharedText = it }
-        return Uri.decode(uri.schemeSpecificPart.substringBefore("?"))
+        // "sms:07…?body=hi" links are opaque, so read the body by hand (getQueryParameter would throw)
+        val part = uri.schemeSpecificPart.orEmpty()
+        part.substringAfter("?", "").split('&')
+            .firstOrNull { it.startsWith("body=") }
+            ?.removePrefix("body=")
+            ?.takeIf { it.isNotEmpty() && sharedText.isNullOrEmpty() }
+            ?.let { sharedText = it }
+        return part.substringBefore("?")
             .split(',', ';')
             .map { it.trim() }
             .filter { it.isNotEmpty() }
