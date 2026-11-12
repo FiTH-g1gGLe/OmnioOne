@@ -7,7 +7,7 @@ import android.provider.ContactsContract.CommonDataKinds.Nickname
 import android.provider.ContactsContract.CommonDataKinds.Organization
 import android.provider.ContactsContract.CommonDataKinds.Phone
 import android.provider.ContactsContract.Data
-import com.omnioone.app.extensions.config
+import com.omnioone.app.phone.config
 import com.omnioone.app.core.SORT_BY_DATE_CREATED
 import com.omnioone.app.core.SORT_BY_SURNAME
 import com.omnioone.app.core.SORT_DESCENDING

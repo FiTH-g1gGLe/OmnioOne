@@ -32,7 +32,7 @@ import com.omnioone.app.helpers.OmnioSheet
  * Omnio One call screen designer: change any part of the incoming-call screen and watch a
  * live mini preview; save it as your own style.
  */
-class OmnioCallDesignerActivity : SimpleActivity() {
+class OmnioCallDesignerActivity : OmnioActivity() {
 
     companion object {
         /** Key of a saved custom design to edit; leave out to start a new one. */

@@ -23,7 +23,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.omnioone.app.R
-import com.omnioone.app.activities.SimpleActivity
+import com.omnioone.app.core.OmnioActivity
 import com.omnioone.app.helpers.OmnioDisplay
 import com.omnioone.app.helpers.OmnioSheet
 import com.omnioone.app.core.toast
@@ -31,7 +31,7 @@ import com.omnioone.app.core.OmnioColors
 import com.omnioone.app.core.ensureBackgroundThread
 
 /** Omnio One: the Archived chats and Recycle bin screens. */
-class OmnioChatListActivity : SimpleActivity() {
+class OmnioChatListActivity : OmnioActivity() {
 
     companion object {
         const val EXTRA_MODE = "omnio_mode"

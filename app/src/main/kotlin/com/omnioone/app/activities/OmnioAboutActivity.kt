@@ -21,7 +21,7 @@ import com.omnioone.app.BuildConfig
 import com.omnioone.app.R
 
 /** Omnio One: About page: what the app is, privacy in plain words, credits and links. */
-class OmnioAboutActivity : SimpleActivity() {
+class OmnioAboutActivity : OmnioActivity() {
 
     private lateinit var form: LinearLayout
 
@@ -152,7 +152,6 @@ class OmnioAboutActivity : SimpleActivity() {
             // the open-source libraries Omnio One uses, each opening its own page
             val libraries = listOf(
                 "Glide (images)" to "https://github.com/bumptech/glide",
-                "EventBus" to "https://github.com/greenrobot/EventBus",
                 "android-smsmms (picture messages)" to "https://github.com/klinker41/android-smsmms",
                 "libphonenumber" to "https://github.com/google/libphonenumber",
                 "AutoFitTextView" to "https://github.com/grantland/android-autofittextview",

@@ -16,7 +16,7 @@ import com.omnioone.app.core.OmnioColors
 import com.omnioone.app.core.ensureBackgroundThread
 
 /** Omnio One blocked numbers: block unknown or hidden callers, and manage your block list. */
-class OmnioBlockedActivity : SimpleActivity() {
+class OmnioBlockedActivity : OmnioActivity() {
 
     private lateinit var screen: OmnioScreen
     private var blocked = listOf<Pair<Long, String>>()

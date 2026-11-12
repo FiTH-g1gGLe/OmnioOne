@@ -69,7 +69,7 @@ fun OmnioActivity.launchCallIntent(recipient: String, handle: PhoneAccountHandle
     handlePermission(PERMISSION_CALL_PHONE) { granted ->
         val intent = Intent(if (granted) Intent.ACTION_CALL else Intent.ACTION_DIAL, Uri.fromParts("tel", recipient, null))
         if (handle != null) intent.putExtra(TelecomManager.EXTRA_PHONE_ACCOUNT_HANDLE, handle)
-        if (isDefaultDialer()) intent.setClassName(packageName, "com.omnioone.app.activities.DialerActivity")
+        if (isDefaultDialer()) intent.setClassName(packageName, "com.omnioone.app.activities.OmnioOutgoingCallActivity")
         launchActivityIntent(intent)
     }
 }

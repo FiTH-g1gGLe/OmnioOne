@@ -146,9 +146,11 @@ object OmnioSheet {
         items: List<Item>,
         top: ((dismiss: () -> Unit) -> View)? = null,
         searchHint: String? = null,
+        onCancel: (() -> Unit)? = null,
         onPick: (Int) -> Unit
     ) {
         val frame = Frame(activity, title, subtitle)
+        onCancel?.let { cancel -> frame.sheet.setOnCancelListener { cancel() } }
         top?.let { frame.body.addView(it { frame.sheet.dismiss() }) }
         // each row with the divider above it, so search can hide both
         val rows = ArrayList<Triple<View, View?, Item>>()

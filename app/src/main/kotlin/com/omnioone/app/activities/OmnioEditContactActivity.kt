@@ -48,7 +48,7 @@ import java.util.Calendar
  * Saving goes through the shared ContactsHelper, so links, groups and chat-app entries on the
  * contact are kept as they are.
  */
-class OmnioEditContactActivity : SimpleActivity() {
+class OmnioEditContactActivity : OmnioActivity() {
 
     companion object {
         /** Raw contact id to edit; leave out (or 0) for a new contact. */

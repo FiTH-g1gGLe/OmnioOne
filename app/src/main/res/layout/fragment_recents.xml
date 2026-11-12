@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Omnio One Recents -->
-<com.omnioone.app.fragments.RecentsFragment xmlns:android="http://schemas.android.com/apk/res/android"
+<com.omnioone.app.fragments.OmnioRecentsTab xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/recents_fragment"
     android:layout_width="match_parent"
@@ -98,4 +98,4 @@
         android:layout_centerInParent="true"
         android:indeterminate="true"
         app:trackCornerRadius="@dimen/small_margin" />
-</com.omnioone.app.fragments.RecentsFragment>
+</com.omnioone.app.fragments.OmnioRecentsTab>

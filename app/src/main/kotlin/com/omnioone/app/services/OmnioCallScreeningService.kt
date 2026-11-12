@@ -8,7 +8,7 @@ import android.telecom.CallScreeningService
 import com.omnioone.app.core.baseConfig
 
 /** Omnio One: turns away blocked numbers, and unknown or hidden callers if you've chosen that. */
-class SimpleCallScreeningService : CallScreeningService() {
+class OmnioCallScreeningService : CallScreeningService() {
 
     override fun onScreenCall(callDetails: Call.Details) {
         val number = callDetails.handle?.schemeSpecificPart.orEmpty()

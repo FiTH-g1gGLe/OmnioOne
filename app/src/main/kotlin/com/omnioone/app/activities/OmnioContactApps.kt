@@ -32,10 +32,10 @@ import com.omnioone.app.core.ensureBackgroundThread
 import com.omnioone.app.core.Contact
 import com.omnioone.app.R
 import com.omnioone.app.databinding.ActivityOmnioContactBinding
-import com.omnioone.app.extensions.config
-import com.omnioone.app.extensions.getAvailableSIMCardLabels
-import com.omnioone.app.extensions.openContactInSystemApp
-import com.omnioone.app.extensions.startCallWithConfirmationCheck
+import com.omnioone.app.phone.config
+import com.omnioone.app.phone.callSims
+import com.omnioone.app.phone.openInPhoneContacts
+import com.omnioone.app.phone.startCallWithConfirmationCheck
 import com.omnioone.app.core.beVisibleIf
 import com.omnioone.app.core.setupDialogStuff
 import com.omnioone.app.core.getAlertDialogBuilder

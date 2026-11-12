@@ -14,10 +14,10 @@ import com.bumptech.glide.Glide
 import com.omnioone.app.R
 import com.omnioone.app.activities.OmnioContactActivity
 import com.omnioone.app.activities.OmnioEditContactActivity
-import com.omnioone.app.activities.SimpleActivity
-import com.omnioone.app.extensions.areMultipleSIMsAvailable
-import com.omnioone.app.extensions.callContactWithSimWithConfirmationCheck
-import com.omnioone.app.extensions.startCallWithConfirmationCheck
+import com.omnioone.app.core.OmnioActivity
+import com.omnioone.app.phone.hasSeveralSims
+import com.omnioone.app.phone.callContactWithSimWithConfirmationCheck
+import com.omnioone.app.phone.startCallWithConfirmationCheck
 import com.omnioone.app.core.launchSendSMSIntent
 import com.omnioone.app.core.toast
 import com.omnioone.app.core.OmnioColors
@@ -27,20 +27,20 @@ import com.omnioone.app.core.ensureBackgroundThread
 /** Omnio One: what you can do with a contact from a list (long-press menu, calling, opening). */
 object OmnioContactActions {
 
-    fun open(activity: SimpleActivity, person: OmnioPeople.Person) {
+    fun open(activity: OmnioActivity, person: OmnioPeople.Person) {
         activity.startActivity(Intent(activity, OmnioContactActivity::class.java).putExtra(OmnioContactActivity.EXTRA_CONTACT_ID, person.rawId))
     }
 
     /** Calls their number, asking which one first if they have several. */
-    fun call(activity: SimpleActivity, person: OmnioPeople.Person) {
+    fun call(activity: OmnioActivity, person: OmnioPeople.Person) {
         pickNumber(activity, person, R.string.omnio_call) { number -> activity.startCallWithConfirmationCheck(number, person.name) }
     }
 
-    fun text(activity: SimpleActivity, person: OmnioPeople.Person) {
+    fun text(activity: OmnioActivity, person: OmnioPeople.Person) {
         pickNumber(activity, person, R.string.omnio_text) { number -> activity.launchSendSMSIntent(number) }
     }
 
-    private fun pickNumber(activity: SimpleActivity, person: OmnioPeople.Person, titleRes: Int, use: (String) -> Unit) {
+    private fun pickNumber(activity: OmnioActivity, person: OmnioPeople.Person, titleRes: Int, use: (String) -> Unit) {
         when (person.numbers.size) {
             0 -> return
             1 -> use(person.numbers.first().value)
@@ -53,7 +53,7 @@ object OmnioContactActions {
         }
     }
 
-    fun showMenu(activity: SimpleActivity, person: OmnioPeople.Person) {
+    fun showMenu(activity: OmnioActivity, person: OmnioPeople.Person) {
         val actions = ArrayList<Pair<OmnioSheet.Item, () -> Unit>>()
         fun add(label: String, icon: Int, colour: Int, labelColour: Int = OmnioSheet.TEXT, action: () -> Unit) {
             val drawable = ContextCompat.getDrawable(activity, icon)?.mutate()?.apply { setTint(colour) }
@@ -62,7 +62,7 @@ object OmnioContactActions {
         val favourite = if (OmnioFavourites.isLoaded) OmnioFavourites.isFavourite(person.contactId) else person.starred
 
         add(activity.getString(R.string.omnio_call), com.omnioone.app.R.drawable.ic_phone_vector, OmnioColors.CALLS) { call(activity, person) }
-        if (activity.areMultipleSIMsAvailable()) {
+        if (activity.hasSeveralSims()) {
             add(activity.getString(R.string.omnio_call_sim_1), com.omnioone.app.R.drawable.ic_phone_vector, OmnioColors.CALLS) {
                 pickNumber(activity, person, R.string.omnio_call) { activity.callContactWithSimWithConfirmationCheck(it, person.name, useMainSIM = true) }
             }
@@ -89,7 +89,7 @@ object OmnioContactActions {
         OmnioSheet.list(activity, person.name, subtitle, actions.map { it.first }) { picked -> actions[picked].second() }
     }
 
-    private fun share(activity: SimpleActivity, person: OmnioPeople.Person) {
+    private fun share(activity: OmnioActivity, person: OmnioPeople.Person) {
         try {
             val uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_VCARD_URI, person.lookupKey)
             activity.startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).apply {
@@ -103,7 +103,7 @@ object OmnioContactActions {
     }
 
     /** A home-screen icon that calls them in one tap. */
-    private fun addShortcut(activity: SimpleActivity, person: OmnioPeople.Person) {
+    private fun addShortcut(activity: OmnioActivity, person: OmnioPeople.Person) {
         val manager = activity.getSystemService(ShortcutManager::class.java)
         if (manager == null || !manager.isRequestPinShortcutSupported) {
             activity.toast(R.string.omnio_shortcut_unsupported)
@@ -134,7 +134,7 @@ object OmnioContactActions {
         }
     }
 
-    private fun confirmBlock(activity: SimpleActivity, person: OmnioPeople.Person) {
+    private fun confirmBlock(activity: OmnioActivity, person: OmnioPeople.Person) {
         OmnioSheet.confirm(
             activity,
             title = activity.getString(R.string.omnio_block_question, person.name),
@@ -158,7 +158,7 @@ object OmnioContactActions {
         }
     }
 
-    private fun confirmDelete(activity: SimpleActivity, person: OmnioPeople.Person) {
+    private fun confirmDelete(activity: OmnioActivity, person: OmnioPeople.Person) {
         OmnioSheet.confirm(
             activity,
             title = activity.getString(R.string.omnio_delete_contact_question, person.name),

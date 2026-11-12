@@ -10,7 +10,7 @@ import android.telecom.Call
 import android.telecom.CallAudioState
 import android.telecom.InCallService
 import com.omnioone.app.activities.OmnioCallActivity
-import com.omnioone.app.extensions.config
+import com.omnioone.app.phone.config
 import com.omnioone.app.helpers.OmnioCallNotification
 import com.omnioone.app.helpers.OmnioCalls
 
@@ -19,7 +19,7 @@ import com.omnioone.app.helpers.OmnioCalls
  * it passes them to [OmnioCalls], keeps the call notification up to date and opens the
  * call screen when needed.
  */
-class CallService : InCallService() {
+class OmnioInCallService : InCallService() {
 
     private val changed: () -> Unit = { OmnioCallNotification.update(this) }
 

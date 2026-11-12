@@ -15,12 +15,11 @@ import com.omnioone.app.R
 import com.omnioone.app.adapters.OmnioContactsAdapter
 import com.omnioone.app.databinding.FragmentFavoritesBinding
 import com.omnioone.app.databinding.OmnioContactsListBinding
-import com.omnioone.app.extensions.config
+import com.omnioone.app.phone.config
 import com.omnioone.app.helpers.OmnioContactActions
 import com.omnioone.app.helpers.OmnioDisplay
 import com.omnioone.app.helpers.OmnioFavourites
 import com.omnioone.app.helpers.OmnioPeople
-import com.omnioone.app.interfaces.RefreshItemsListener
 import com.omnioone.app.core.baseConfig
 import com.omnioone.app.core.hasPermission
 import com.omnioone.app.core.ON_CLICK_CALL_CONTACT
@@ -33,8 +32,8 @@ import com.omnioone.app.core.ensureBackgroundThread
  * Omnio One Favourites tab: your favourites as a grid or a list. Hold and drag to put them in
  * your own order; hold without moving for the contact menu. Updates the moment favourites change.
  */
-class FavoritesFragment(context: Context, attributeSet: AttributeSet) :
-    MyViewPagerFragment<MyViewPagerFragment.ListInnerBinding>(context, attributeSet), RefreshItemsListener {
+class OmnioFavouritesTab(context: Context, attributeSet: AttributeSet) :
+    OmnioTab(context, attributeSet) {
 
     private lateinit var binding: OmnioContactsListBinding
     private var adapter: OmnioContactsAdapter? = null
@@ -48,7 +47,6 @@ class FavoritesFragment(context: Context, attributeSet: AttributeSet) :
     override fun onFinishInflate() {
         super.onFinishInflate()
         binding = FragmentFavoritesBinding.bind(this).favouritesList
-        innerBinding = ListInnerBinding(binding.fragmentList)
         binding.letterBar.visibility = View.GONE
     }
 
@@ -126,7 +124,7 @@ class FavoritesFragment(context: Context, attributeSet: AttributeSet) :
             onPhoto = { OmnioContactActions.open(host, it) },
             onLongClick = { _, _ -> },
         ).apply {
-            textColor = this@FavoritesFragment.textColor
+            textColor = this@OmnioFavouritesTab.textColor
             surnameFirst = context.baseConfig.startNameWithSurname
         }
         val list = binding.fragmentList

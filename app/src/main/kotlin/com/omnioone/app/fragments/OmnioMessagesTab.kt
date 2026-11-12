@@ -24,9 +24,8 @@ import com.omnioone.app.R
 import com.omnioone.app.activities.OmnioContactActivity
 import com.omnioone.app.activities.OmnioEditContactActivity
 import com.omnioone.app.databinding.FragmentOmnioMessagesBinding
-import com.omnioone.app.extensions.startCallWithConfirmationCheck
+import com.omnioone.app.phone.startCallWithConfirmationCheck
 import com.omnioone.app.helpers.OmnioSheet
-import com.omnioone.app.interfaces.RefreshItemsListener
 import com.omnioone.app.messaging.OmnioConversationsAdapter
 import com.omnioone.app.messaging.OmnioConversationsAdapter.Item
 import com.omnioone.app.messaging.OmnioMessageStore
@@ -44,8 +43,8 @@ import com.omnioone.app.messaging.THREAD_TITLE
  * with the same search bar and tab bar as Contacts and Recents. Opening a chat still uses the
  * current conversation screen until stage 3.
  */
-class MessagesFragment(context: Context, attributeSet: AttributeSet) :
-    MyViewPagerFragment<MyViewPagerFragment.ListInnerBinding>(context, attributeSet), RefreshItemsListener {
+class OmnioMessagesTab(context: Context, attributeSet: AttributeSet) :
+    OmnioTab(context, attributeSet) {
 
     private enum class Filter { ALL, UNREAD, UNKNOWN, GROUPS }
 
@@ -72,7 +71,6 @@ class MessagesFragment(context: Context, attributeSet: AttributeSet) :
     override fun onFinishInflate() {
         super.onFinishInflate()
         binding = FragmentOmnioMessagesBinding.bind(this)
-        innerBinding = ListInnerBinding(binding.messagesList.fragmentList)
         binding.messagesList.letterBar.visibility = View.GONE
         chips().forEach { (chip, chipFilter) -> chip.setOnClickListener { select(chipFilter) } }
         styleChips()
@@ -102,7 +100,7 @@ class MessagesFragment(context: Context, attributeSet: AttributeSet) :
         }
     }
 
-    // ---- MyViewPagerFragment ----
+    // ---- page ----
 
     // archive, recycle bin and other changes made elsewhere refresh this list
     private val changeListener: () -> Unit = { refreshItems() }

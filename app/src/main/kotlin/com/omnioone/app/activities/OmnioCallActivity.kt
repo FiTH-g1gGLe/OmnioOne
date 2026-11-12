@@ -28,7 +28,7 @@ import com.omnioone.app.core.toast
 import com.omnioone.app.core.OmnioColors
 import com.omnioone.app.core.ensureBackgroundThread
 import com.omnioone.app.R
-import com.omnioone.app.extensions.config
+import com.omnioone.app.phone.config
 import com.omnioone.app.helpers.OmnioAppTags
 import com.omnioone.app.helpers.OmnioCallInfo
 import com.omnioone.app.helpers.OmnioCallStyle
@@ -42,7 +42,7 @@ import com.omnioone.app.helpers.OmnioSheet
  * connected, every style shares the same in-call screen (mute, keypad, speaker, hold, add call).
  * Open with EXTRA_PREVIEW to try a style with a pretend caller ("Test call").
  */
-class OmnioCallActivity : SimpleActivity() {
+class OmnioCallActivity : OmnioActivity() {
 
     companion object {
         const val EXTRA_PREVIEW = "omnio_call_preview"
@@ -466,7 +466,7 @@ class OmnioCallActivity : SimpleActivity() {
     private fun addCall() {
         if (preview) return
         try {
-            startActivity(Intent(this, DialpadActivity::class.java))
+            startActivity(Intent(this, OmnioKeypadActivity::class.java))
         } catch (ignored: Exception) {
         }
     }

@@ -26,12 +26,12 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.omnioone.app.R
-import com.omnioone.app.activities.SimpleActivity
+import com.omnioone.app.core.OmnioActivity
 import com.omnioone.app.helpers.OmnioDisplay
 import com.omnioone.app.helpers.OmnioPeople
 import com.omnioone.app.helpers.OmnioSheet
 import com.omnioone.app.core.baseConfig
-import com.omnioone.app.extensions.config
+import com.omnioone.app.phone.config
 import com.omnioone.app.core.toast
 import com.omnioone.app.core.OmnioColors
 import com.omnioone.app.core.ensureBackgroundThread
@@ -41,7 +41,7 @@ import com.omnioone.app.core.ensureBackgroundThread
  * or switch to group mode to pick several. Also opens when another app shares something
  * or taps an "sms:" link.
  */
-class OmnioNewMessageActivity : SimpleActivity() {
+class OmnioNewMessageActivity : OmnioActivity() {
 
     private data class Pick(val name: String, val number: String, val photo: String)
 

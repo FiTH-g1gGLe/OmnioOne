@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Omnio One Messages tab (Messages rewrite, stage 2) -->
-<com.omnioone.app.fragments.MessagesFragment xmlns:android="http://schemas.android.com/apk/res/android"
+<com.omnioone.app.fragments.OmnioMessagesTab xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/messages_fragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -49,4 +49,4 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/messages_filters" />
-</com.omnioone.app.fragments.MessagesFragment>
+</com.omnioone.app.fragments.OmnioMessagesTab>

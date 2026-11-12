@@ -25,7 +25,7 @@ import com.omnioone.app.messaging.LOCK_SCREEN_SENDER
 import com.omnioone.app.messaging.LOCK_SCREEN_SENDER_MESSAGE
 import com.omnioone.app.R
 import com.omnioone.app.dialogs.OmnioDisplayDialog
-import com.omnioone.app.extensions.config
+import com.omnioone.app.phone.config
 import com.omnioone.app.helpers.OmnioSheet
 import com.omnioone.app.services.OmnioLinkHelperService
 import com.omnioone.app.messaging.messagesConfig
@@ -35,7 +35,7 @@ import com.omnioone.app.messaging.messagesConfig
  * Everyday switches live here; the full call and message settings stay one tap away
  * under Advanced, so no option is lost.
  */
-class OmnioSettingsActivity : SimpleActivity() {
+class OmnioSettingsActivity : OmnioActivity() {
 
     private lateinit var form: LinearLayout
 

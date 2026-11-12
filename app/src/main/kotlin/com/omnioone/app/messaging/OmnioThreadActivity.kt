@@ -38,8 +38,8 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.omnioone.app.R
 import com.omnioone.app.activities.OmnioContactActivity
 import com.omnioone.app.activities.OmnioEditContactActivity
-import com.omnioone.app.activities.SimpleActivity
-import com.omnioone.app.extensions.startCallWithConfirmationCheck
+import com.omnioone.app.core.OmnioActivity
+import com.omnioone.app.phone.startCallWithConfirmationCheck
 import com.omnioone.app.helpers.OmnioDisplay
 import com.omnioone.app.helpers.OmnioSheet
 import com.omnioone.app.core.toast
@@ -53,7 +53,7 @@ import java.util.Calendar
  * reactions shown on the message they're for, email chips, photos, and a reply box.
  * Sending still goes through the current sending code until stage 4.
  */
-class OmnioThreadActivity : SimpleActivity() {
+class OmnioThreadActivity : OmnioActivity() {
 
     companion object {
         private const val FIRST_PAGE = 60

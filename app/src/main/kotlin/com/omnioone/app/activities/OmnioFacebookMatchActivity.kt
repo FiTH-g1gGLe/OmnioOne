@@ -37,7 +37,7 @@ import java.text.DateFormat
  * your contacts, and link them one after another. Tap Link, tap the right person in Facebook, and
  * the Link helper brings you straight back to the next one.
  */
-class OmnioFacebookMatchActivity : SimpleActivity() {
+class OmnioFacebookMatchActivity : OmnioActivity() {
 
     companion object {
         /** A profile link caught by the Link helper (or shared) while linking. */

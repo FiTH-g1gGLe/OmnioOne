@@ -8,7 +8,7 @@ import com.omnioone.app.helpers.OmnioCallNotification
 import com.omnioone.app.helpers.OmnioCalls
 
 /** Omnio One: the Answer / Decline / Hang up buttons on the call notification. */
-class CallActionReceiver : BroadcastReceiver() {
+class OmnioCallActionReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         when (intent.action) {
             OmnioCallNotification.ACTION_ANSWER -> {

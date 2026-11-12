@@ -8,26 +8,26 @@ import android.view.Gravity
 import android.widget.TextView
 import com.google.gson.Gson
 import com.omnioone.app.R
-import com.omnioone.app.extensions.config
+import com.omnioone.app.phone.config
 import com.omnioone.app.helpers.OmnioPeople
 import com.omnioone.app.helpers.OmnioSheet
-import com.omnioone.app.models.SpeedDial
+import com.omnioone.app.phone.OmnioSpeedDial
 import com.omnioone.app.core.baseConfig
 import com.omnioone.app.core.OmnioColors
 import com.omnioone.app.core.ensureBackgroundThread
 
 /** Omnio One speed dial: put someone on keys 1–9, then hold that key on the keypad to call them. */
-class OmnioSpeedDialActivity : SimpleActivity() {
+class OmnioSpeedDialActivity : OmnioActivity() {
 
     private lateinit var screen: OmnioScreen
     private var people = listOf<OmnioPeople.Person>()
-    private var dials = ArrayList<SpeedDial>()
+    private var dials = ArrayList<OmnioSpeedDial>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         screen = OmnioScreen(this, getString(R.string.omnio_speed_dial))
         setContentView(screen.root)
-        dials = config.getSpeedDialValues()
+        dials = config.speedDials()
         build()
         val ignored = baseConfig.ignoredContactSources.toSet()
         ensureBackgroundThread {
@@ -37,7 +37,7 @@ class OmnioSpeedDialActivity : SimpleActivity() {
     }
 
     private fun save() {
-        config.speedDial = Gson().toJson(dials)
+        config.saveSpeedDials(dials)
     }
 
     private fun build() {
@@ -94,7 +94,7 @@ class OmnioSpeedDialActivity : SimpleActivity() {
     }
 
     private fun set(key: Int, person: OmnioPeople.Person, number: OmnioPeople.Number) {
-        val dial = dials.firstOrNull { it.id == key } ?: SpeedDial(key, "", "").also { dials.add(it) }
+        val dial = dials.firstOrNull { it.id == key } ?: OmnioSpeedDial(key, "", "").also { dials.add(it) }
         dial.number = number.value
         dial.displayName = person.name
         dial.type = null

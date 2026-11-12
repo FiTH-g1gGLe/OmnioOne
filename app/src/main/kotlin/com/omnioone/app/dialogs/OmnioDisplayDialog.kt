@@ -14,15 +14,15 @@ import com.omnioone.app.core.getAlertDialogBuilder
 import com.omnioone.app.core.getProperTextColor
 import com.omnioone.app.core.setupDialogStuff
 import com.omnioone.app.R
-import com.omnioone.app.activities.SimpleActivity
-import com.omnioone.app.extensions.config
+import com.omnioone.app.core.OmnioActivity
+import com.omnioone.app.phone.config
 import com.omnioone.app.helpers.OmnioDisplay
 
 /**
  * Omnio One: pick how the Contacts tab looks - style, columns, spacing and name format.
  * [callback] gets true when the surname-first setting changed (needs a full re-sort).
  */
-class OmnioDisplayDialog(private val activity: SimpleActivity, private val callback: (surnameChanged: Boolean) -> Unit) {
+class OmnioDisplayDialog(private val activity: OmnioActivity, private val callback: (surnameChanged: Boolean) -> Unit) {
 
     private val orange = OmnioColors.CONTACTS
     private val textColor = activity.getProperTextColor()

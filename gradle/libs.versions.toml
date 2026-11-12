@@ -1,7 +1,6 @@
 [versions]
 mmslib = "1.0.1"
 kotlin = "2.4.20"
-eventbus = "3.3.1"
 gradlePlugins-agp = "9.4.1"
 autofitTextView = "0.2.1"
 libphonenumberVersion = "9.0.40"
@@ -19,7 +18,6 @@ gson = "2.14.0"
 
 [libraries]
 mmslib = { module = "org.fossify:mmslib", version.ref = "mmslib" }
-eventbus = { module = "org.greenrobot:eventbus", version.ref = "eventbus" }
 autofit-text-view = { module = "me.grantland:autofittextview", version.ref = "autofitTextView" }
 libphonenumber = { module = "com.googlecode.libphonenumber:libphonenumber", version.ref = "libphonenumberVersion" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }

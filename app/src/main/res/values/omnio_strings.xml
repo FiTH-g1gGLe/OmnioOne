@@ -656,4 +656,7 @@
     <string name="omnio_signature_people">🎬 g1gGLe · 🛠️ Claude</string>
     <string name="omnio_signature_made">🇬🇧 Made with ♥️ in the UK</string>
     <string name="omnio_about_licence_notice">Includes code from Fossify Phone and Messages, used under the GNU GPL v3.0.</string>
+    <string name="omnio_overlay_title">Show calls over other apps</string>
+    <string name="omnio_overlay_allow">Allow</string>
+    <string name="omnio_clear">Clear</string>
 </resources>

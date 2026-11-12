@@ -11,7 +11,7 @@ import android.graphics.drawable.Icon
 import com.bumptech.glide.Glide
 import com.omnioone.app.R
 import com.omnioone.app.activities.OmnioCallActivity
-import com.omnioone.app.receivers.CallActionReceiver
+import com.omnioone.app.receivers.OmnioCallActionReceiver
 import com.omnioone.app.core.OmnioColors
 import java.util.concurrent.Executors
 
@@ -54,7 +54,7 @@ object OmnioCallNotification {
     }
 
     private fun broadcast(context: Context, action: String, code: Int) = PendingIntent.getBroadcast(
-        context, code, Intent(context, CallActionReceiver::class.java).setAction(action),
+        context, code, Intent(context, OmnioCallActionReceiver::class.java).setAction(action),
         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
     )
 

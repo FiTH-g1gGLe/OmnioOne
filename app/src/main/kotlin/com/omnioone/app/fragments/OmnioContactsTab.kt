@@ -18,18 +18,17 @@ import android.widget.TextView
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.omnioone.app.R
-import com.omnioone.app.activities.SimpleActivity
+import com.omnioone.app.core.OmnioActivity
 import com.omnioone.app.adapters.OmnioContactsAdapter
 import com.omnioone.app.databinding.FragmentContactsBinding
 import com.omnioone.app.databinding.OmnioContactsListBinding
-import com.omnioone.app.extensions.config
-import com.omnioone.app.extensions.launchCreateNewContactIntent
+import com.omnioone.app.phone.config
+import com.omnioone.app.phone.openNewContact
 import com.omnioone.app.helpers.OmnioAppTags
 import com.omnioone.app.helpers.OmnioContactActions
 import com.omnioone.app.helpers.OmnioDisplay
 import com.omnioone.app.helpers.OmnioFavourites
 import com.omnioone.app.helpers.OmnioPeople
-import com.omnioone.app.interfaces.RefreshItemsListener
 import com.omnioone.app.core.baseConfig
 import com.omnioone.app.core.hasPermission
 import com.omnioone.app.core.OmnioColors
@@ -40,8 +39,8 @@ import com.omnioone.app.core.ensureBackgroundThread
  * Omnio One Contacts tab: favourites row on top, then everyone in your chosen display style,
  * with search, an A–Z strip and live updates when contacts change anywhere.
  */
-class ContactsFragment(context: Context, attributeSet: AttributeSet) :
-    MyViewPagerFragment<MyViewPagerFragment.ListInnerBinding>(context, attributeSet), RefreshItemsListener {
+class OmnioContactsTab(context: Context, attributeSet: AttributeSet) :
+    OmnioTab(context, attributeSet) {
 
     private lateinit var outerBinding: FragmentContactsBinding
     private lateinit var binding: OmnioContactsListBinding
@@ -73,7 +72,6 @@ class ContactsFragment(context: Context, attributeSet: AttributeSet) :
         super.onFinishInflate()
         outerBinding = FragmentContactsBinding.bind(this)
         binding = outerBinding.contactsList
-        innerBinding = ListInnerBinding(binding.fragmentList)
         binding.letterBar.bubble = binding.letterBubble
         binding.letterBubble.backgroundTintList = ColorStateList.valueOf(OmnioColors.CONTACTS)
     }
@@ -98,12 +96,12 @@ class ContactsFragment(context: Context, attributeSet: AttributeSet) :
         super.onDetachedFromWindow()
     }
 
-    // ---- MyViewPagerFragment ----
+    // ---- page ----
 
     override fun setupFragment() {
         binding.fragmentPlaceholder2.setOnClickListener {
             if (context.hasPermission(PERMISSION_READ_CONTACTS)) {
-                activity?.launchCreateNewContactIntent()
+                activity?.openNewContact()
             } else {
                 activity?.handlePermission(PERMISSION_READ_CONTACTS) { granted -> if (granted) refreshItems() }
             }
@@ -191,8 +189,8 @@ class ContactsFragment(context: Context, attributeSet: AttributeSet) :
             onCall = { OmnioContactActions.call(host, it) },
             onText = { OmnioContactActions.text(host, it) },
         ).apply {
-            textColor = this@ContactsFragment.textColor
-            appTags = this@ContactsFragment.appTags
+            textColor = this@OmnioContactsTab.textColor
+            appTags = this@OmnioContactsTab.appTags
             density = OmnioDisplay.getDensity(context)
             firstNameOnly = OmnioDisplay.isFirstNameOnly(context)
             surnameFirst = context.baseConfig.startNameWithSurname
@@ -247,12 +245,12 @@ class ContactsFragment(context: Context, attributeSet: AttributeSet) :
 
     /** "New" button plus a scrolling row of favourites; redraws the moment favourites change. */
     private fun showFavouritesStrip() {
-        val host = activity as? SimpleActivity ?: return
+        val host = activity as? OmnioActivity ?: return
         val holder = outerBinding.omnioFavouritesHolder
         holder.removeAllViews()
         val favourites = OmnioPeople.favourites(context, everyone)
         outerBinding.omnioFavouritesLabel.visibility = if (favourites.isEmpty()) View.GONE else View.VISIBLE
-        holder.addView(tile(context.getString(R.string.omnio_new), null) { host.launchCreateNewContactIntent() })
+        holder.addView(tile(context.getString(R.string.omnio_new), null) { host.openNewContact() })
         favourites.forEach { person -> holder.addView(tile(person.firstName, person) { OmnioContactActions.open(host, person) }) }
         holder.setOnDragListener { _, event ->
             if (event.action == android.view.DragEvent.ACTION_DRAG_ENDED) finishDrag()
@@ -303,7 +301,7 @@ class ContactsFragment(context: Context, attributeSet: AttributeSet) :
         val person = held.tag as? OmnioPeople.Person ?: return
         if (!dragMoved) {
             // held without moving: the usual menu
-            (activity as? SimpleActivity)?.let { OmnioContactActions.showMenu(it, person) }
+            (activity as? OmnioActivity)?.let { OmnioContactActions.showMenu(it, person) }
             return
         }
         val holder = outerBinding.omnioFavouritesHolder

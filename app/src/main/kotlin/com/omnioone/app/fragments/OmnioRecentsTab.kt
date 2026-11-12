@@ -24,16 +24,15 @@ import androidx.recyclerview.widget.RecyclerView
 import com.omnioone.app.R
 import com.omnioone.app.activities.OmnioContactActivity
 import com.omnioone.app.activities.OmnioEditContactActivity
-import com.omnioone.app.activities.SimpleActivity
+import com.omnioone.app.core.OmnioActivity
 import com.omnioone.app.adapters.OmnioRecentsAdapter
 import com.omnioone.app.databinding.FragmentRecentsBinding
-import com.omnioone.app.extensions.areMultipleSIMsAvailable
-import com.omnioone.app.extensions.callContactWithSimWithConfirmationCheck
-import com.omnioone.app.extensions.config
-import com.omnioone.app.extensions.startCallWithConfirmationCheck
+import com.omnioone.app.phone.hasSeveralSims
+import com.omnioone.app.phone.callContactWithSimWithConfirmationCheck
+import com.omnioone.app.phone.config
+import com.omnioone.app.phone.startCallWithConfirmationCheck
 import com.omnioone.app.helpers.OmnioCallLog
 import com.omnioone.app.helpers.OmnioSheet
-import com.omnioone.app.interfaces.RefreshItemsListener
 import com.omnioone.app.core.hasPermission
 import com.omnioone.app.core.launchSendSMSIntent
 import com.omnioone.app.core.toast
@@ -49,9 +48,9 @@ import java.util.Locale
  * Omnio One Recents: your call history grouped by day, with filters, search, swipe to call or
  * text, and a menu for everything else. Updates by itself whenever a call is logged.
  */
-class RecentsFragment(
+class OmnioRecentsTab(
     context: Context, attributeSet: AttributeSet,
-) : MyViewPagerFragment<MyViewPagerFragment.RecentsInnerBinding>(context, attributeSet), RefreshItemsListener {
+) : OmnioTab(context, attributeSet) {
 
     private enum class Filter { ALL, MISSED, INCOMING, OUTGOING, UNKNOWN }
 
@@ -77,7 +76,6 @@ class RecentsFragment(
     override fun onFinishInflate() {
         super.onFinishInflate()
         binding = FragmentRecentsBinding.bind(this)
-        innerBinding = RecentsInnerBinding(binding)
         chips().forEach { (chip, chipFilter) -> chip.setOnClickListener { selectFilter(chipFilter) } }
         styleChips()
     }
@@ -106,7 +104,7 @@ class RecentsFragment(
         }
     }
 
-    // ---- MyViewPagerFragment ----
+    // ---- page ----
 
     override fun setupFragment() {
         val allowed = context.hasPermission(PERMISSION_READ_CALL_LOG)
@@ -306,7 +304,7 @@ class RecentsFragment(
         }
         if (!entry.isPrivate) {
             add(R.string.omnio_call, com.omnioone.app.R.drawable.ic_phone_vector, OmnioColors.CALLS) { call(entry) }
-            if (host.areMultipleSIMsAvailable()) {
+            if (host.hasSeveralSims()) {
                 add(R.string.omnio_call_sim_1, com.omnioone.app.R.drawable.ic_phone_vector, OmnioColors.CALLS) {
                     host.callContactWithSimWithConfirmationCheck(entry.number, entry.name, useMainSIM = true)
                 }

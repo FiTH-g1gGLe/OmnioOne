@@ -36,9 +36,9 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.omnioone.app.R
-import com.omnioone.app.extensions.areMultipleSIMsAvailable
-import com.omnioone.app.extensions.config
-import com.omnioone.app.extensions.startCallWithConfirmationCheck
+import com.omnioone.app.phone.hasSeveralSims
+import com.omnioone.app.phone.config
+import com.omnioone.app.phone.startCallWithConfirmationCheck
 import com.omnioone.app.helpers.OmnioCallLog
 import com.omnioone.app.helpers.OmnioDisplay
 import com.omnioone.app.core.isDefaultDialer
@@ -55,7 +55,7 @@ import java.util.Locale
  * numbers as you go, tap to call. Long-press 0 for +, long-press 1–9 for speed dial,
  * press call with nothing typed to bring back the last number.
  */
-class DialpadActivity : SimpleActivity() {
+class OmnioKeypadActivity : OmnioActivity() {
 
     private data class Person(
         val contactId: Long,
@@ -363,7 +363,7 @@ class DialpadActivity : SimpleActivity() {
                 press('+', view)
             }
             char in '1'..'9' && input.length == 1 -> {
-                val speed = config.getSpeedDialValues().firstOrNull { it.id == char.digitToInt() }
+                val speed = config.speedDials().firstOrNull { it.id == char.digitToInt() }
                 if (speed?.isValid() == true) {
                     input.clear()
                     render()
@@ -412,8 +412,8 @@ class DialpadActivity : SimpleActivity() {
 
     private fun callWithSimChoice(): Boolean {
         val typed = input.toString()
-        if (typed.isEmpty() || !areMultipleSIMsAvailable()) return false
-        startCallWithConfirmationCheck(recipient = typed, name = typed, forceSimSelector = true)
+        if (typed.isEmpty() || !hasSeveralSims()) return false
+        startCallWithConfirmationCheck(number = typed, name = typed, askForSim = true)
         return true
     }
 
@@ -443,7 +443,7 @@ class DialpadActivity : SimpleActivity() {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
             setPadding(dp(6), dp(6), dp(16), 0)
-            addView(ImageView(this@DialpadActivity).apply {
+            addView(ImageView(this@OmnioKeypadActivity).apply {
                 setImageResource(com.omnioone.app.R.drawable.ic_arrow_left_vector)
                 imageTintList = ColorStateList.valueOf(OmnioColors.TEXT)
                 setPadding(dp(12), dp(12), dp(12), dp(12))
@@ -452,7 +452,7 @@ class DialpadActivity : SimpleActivity() {
                 contentDescription = getString(com.omnioone.app.R.string.back)
                 setOnClickListener { finish() }
             })
-            suggestionsHeader = TextView(this@DialpadActivity).apply {
+            suggestionsHeader = TextView(this@OmnioKeypadActivity).apply {
                 setTextColor(OmnioColors.TEXT_MUTED)
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
                 setTypeface(typeface, Typeface.BOLD)
@@ -463,7 +463,7 @@ class DialpadActivity : SimpleActivity() {
         })
 
         root.addView(RecyclerView(this).apply {
-            layoutManager = LinearLayoutManager(this@DialpadActivity)
+            layoutManager = LinearLayoutManager(this@OmnioKeypadActivity)
             adapter = suggestions
             itemAnimator = null
             layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f)
@@ -472,7 +472,7 @@ class DialpadActivity : SimpleActivity() {
         // number + delete
         root.addView(FrameLayout(this).apply {
             setPadding(dp(56), dp(6), dp(8), 0)
-            numberView = TextView(this@DialpadActivity).apply {
+            numberView = TextView(this@OmnioKeypadActivity).apply {
                 setTextColor(OmnioColors.TEXT)
                 gravity = Gravity.CENTER
                 maxLines = 1
@@ -484,7 +484,7 @@ class DialpadActivity : SimpleActivity() {
                 }
             }
             addView(numberView)
-            deleteButton = ImageView(this@DialpadActivity).apply {
+            deleteButton = ImageView(this@OmnioKeypadActivity).apply {
                 setImageResource(R.drawable.omnio_ic_backspace)
                 imageTintList = ColorStateList.valueOf(OmnioColors.TEXT_MUTED)
                 setPadding(dp(12), dp(14), dp(12), dp(14))
@@ -520,10 +520,10 @@ class DialpadActivity : SimpleActivity() {
             pad.addView(LinearLayout(this).apply {
                 orientation = LinearLayout.HORIZONTAL
                 rowKeys.forEach { (char, letters) ->
-                    addView(FrameLayout(this@DialpadActivity).apply {
+                    addView(FrameLayout(this@OmnioKeypadActivity).apply {
                         layoutParams = LinearLayout.LayoutParams(0, dp(78), 1f)
                         clipChildren = false
-                        val ring = com.omnioone.app.helpers.OrbitRing(this@DialpadActivity, dp(3).toFloat()).apply {
+                        val ring = com.omnioone.app.helpers.OrbitRing(this@OmnioKeypadActivity, dp(3).toFloat()).apply {
                             layoutParams = FrameLayout.LayoutParams(dp(78), dp(78), Gravity.CENTER)
                             alpha = 0f
                         }
@@ -538,7 +538,7 @@ class DialpadActivity : SimpleActivity() {
         // call button
         root.addView(FrameLayout(this).apply {
             setPadding(0, dp(8), 0, dp(14))
-            addView(ImageView(this@DialpadActivity).apply {
+            addView(ImageView(this@OmnioKeypadActivity).apply {
                 setImageResource(com.omnioone.app.R.drawable.ic_phone_vector)
                 imageTintList = ColorStateList.valueOf(0xFFFFFFFF.toInt())
                 setPadding(dp(20), dp(20), dp(20), dp(20))
@@ -572,19 +572,19 @@ class DialpadActivity : SimpleActivity() {
             cornerRadius = dp(35).toFloat()
             setColor(OmnioColors.CARD)
         }
-        addView(TextView(this@DialpadActivity).apply {
+        addView(TextView(this@OmnioKeypadActivity).apply {
             text = char.toString()
             setTextColor(OmnioColors.TEXT)
             setTextSize(TypedValue.COMPLEX_UNIT_SP, if (char == '*') 34f else 28f)
             gravity = Gravity.CENTER
             includeFontPadding = false
         })
-        if (char == '1') addView(ImageView(this@DialpadActivity).apply {
+        if (char == '1') addView(ImageView(this@OmnioKeypadActivity).apply {
             setImageResource(R.drawable.omnio_ic_voicemail)
             imageTintList = ColorStateList.valueOf(OmnioColors.TEXT_MUTED)
             layoutParams = LinearLayout.LayoutParams(dp(16), dp(16))
         })
-        if (letters.isNotEmpty()) addView(TextView(this@DialpadActivity).apply {
+        if (letters.isNotEmpty()) addView(TextView(this@OmnioKeypadActivity).apply {
             text = letters
             setTextColor(OmnioColors.TEXT_MUTED)
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 10.5f)

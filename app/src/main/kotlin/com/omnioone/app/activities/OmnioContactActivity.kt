@@ -32,10 +32,10 @@ import com.omnioone.app.core.ensureBackgroundThread
 import com.omnioone.app.core.Contact
 import com.omnioone.app.R
 import com.omnioone.app.databinding.ActivityOmnioContactBinding
-import com.omnioone.app.extensions.config
-import com.omnioone.app.extensions.getAvailableSIMCardLabels
-import com.omnioone.app.extensions.openContactInSystemApp
-import com.omnioone.app.extensions.startCallWithConfirmationCheck
+import com.omnioone.app.phone.config
+import com.omnioone.app.phone.callSims
+import com.omnioone.app.phone.openInPhoneContacts
+import com.omnioone.app.phone.startCallWithConfirmationCheck
 import com.omnioone.app.core.beVisibleIf
 import com.omnioone.app.core.setupDialogStuff
 import com.omnioone.app.core.getAlertDialogBuilder
@@ -49,7 +49,7 @@ import com.omnioone.app.core.getFormattedDuration
  * Photo, name, favourite star, Call / Text / Edit, chat-app buttons, numbers (with SIM),
  * recent calls, emails, birthday and notes.
  */
-class OmnioContactActivity : SimpleActivity() {
+class OmnioContactActivity : OmnioActivity() {
 
     companion object {
         const val EXTRA_CONTACT_ID = "omnio_contact_id"
@@ -127,7 +127,7 @@ class OmnioContactActivity : SimpleActivity() {
         binding.contactText.setOnClickListener { primary?.let { launchSendSMSIntent(it.value) } }
         binding.contactEdit.setOnClickListener {
             if (contact.isPrivate()) {
-                openContactInSystemApp(contact)
+                openInPhoneContacts(contact)
             } else {
                 startActivity(Intent(this, OmnioEditContactActivity::class.java).putExtra(OmnioEditContactActivity.EXTRA_CONTACT_ID, contact.rawId))
             }
@@ -239,8 +239,8 @@ class OmnioContactActivity : SimpleActivity() {
     /** Number type, plus "Always SIM 2" when a SIM has been remembered for this number. */
     internal fun getNumberSubtitle(number: String, type: Int, label: String): String {
         val typeLabel = getPhoneTypeLabel(type, label)
-        val handle = config.getCustomSIM(number) ?: return typeLabel
-        val sim = getAvailableSIMCardLabels().firstOrNull { it.handle == handle } ?: return typeLabel
+        val handle = config.simFor(number) ?: return typeLabel
+        val sim = callSims().firstOrNull { it.handle == handle } ?: return typeLabel
         return "$typeLabel · " + getString(R.string.omnio_always_sim, sim.label)
     }
 
