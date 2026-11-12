@@ -329,6 +329,7 @@ class OmnioFacebookMatchActivity : OmnioActivity() {
             photoHelper.captured(this, match.person.contactId)?.let { photo ->
                 if (match.person.photo.isEmpty()) photoHelper.saveToContact(this, match.person.rawId, photo)
                 photoHelper.discard(this, match.person.contactId)
+                photoHelper.markDone(this, match.person.contactId)
             }
             val messenger = OmnioSocials.messengerFromFacebook(profile)
             if (ok && messenger != null && existing.none { it.network.key == "messenger" }) {

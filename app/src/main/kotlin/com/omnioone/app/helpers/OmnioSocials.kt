@@ -201,7 +201,11 @@ object OmnioSocials {
         }
     }
 
-    fun clearPendingLink(context: Context) = prefs(context).edit().remove("link_time").remove("link_contact").remove("link_expect_name").apply()
+    /** Ends a "Find on…" session: no more listening for this contact's link (or photo). */
+    fun clearPendingLink(context: Context) {
+        prefs(context).edit().remove("link_time").remove("link_contact").remove("link_expect_name").apply()
+        OmnioPhotoCapture.clearPending(context)
+    }
 
     fun expectedName(context: Context): String? = prefs(context).getString("link_expect_name", null)
 

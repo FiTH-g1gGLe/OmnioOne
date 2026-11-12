@@ -746,4 +746,5 @@
     <string name="omnio_missed_unknown">Unknown number</string>
     <string name="omnio_missed_call_back">Call back</string>
     <string name="omnio_missed_message">Message</string>
+    <string name="omnio_photo_update_from">Update photo from %s</string>
 </resources>

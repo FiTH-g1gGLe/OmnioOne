@@ -38,6 +38,23 @@ object OmnioPhotoCapture {
 
     fun clearPending(context: Context) = prefs(context).edit().remove("photo_time").remove("photo_contact").apply()
 
+    // ---- photo sessions: once a contact's photo has been offered, stop until you ask again ----
+
+    /** True once this contact's photo has been caught and offered (saved or turned down). */
+    fun isDone(context: Context, contactId: Int) = prefs(context).getBoolean("photo_done_$contactId", false)
+
+    /** Ends this contact's photo session: opening their profiles won't catch the photo again. */
+    fun markDone(context: Context, contactId: Int) {
+        prefs(context).edit().putBoolean("photo_done_$contactId", true).apply()
+        clearPending(context)
+    }
+
+    /** Starts a new photo session on purpose ("Update photo from …"). */
+    fun startAgain(context: Context, contactId: Int, rawId: Int) {
+        prefs(context).edit().remove("photo_done_$contactId").apply()
+        setPending(context, contactId, rawId)
+    }
+
     private fun file(context: Context, contactId: Int) = File(context.cacheDir, "omnio_photo_$contactId.jpg")
 
     /** Keeps a caught photo until it's used or turned down. */

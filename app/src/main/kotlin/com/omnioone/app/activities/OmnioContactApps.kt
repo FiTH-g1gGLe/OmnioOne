@@ -99,7 +99,7 @@ internal fun OmnioContactActivity.showApps(contact: Contact, chats: List<OmnioSo
             subtitle = network.displayHandle(social.url).ifEmpty { getString(R.string.omnio_profile_linked) },
             color = network.color,
             onClick = { openSocial(social) },
-            onLongClick = { confirmRemoveSocial(contact, social) },
+            onLongClick = { socialMenu(contact, social) },
             actions = if (network.key == "messenger") {
                 // like WhatsApp: message, voice call, video call
                 listOf(
@@ -224,7 +224,7 @@ internal fun OmnioContactActivity.openChat(chat: OmnioSocials.FoundChat) {
     }
 }
 
-internal fun OmnioContactActivity.openSocial(social: OmnioSocials.FoundSocial) {
+internal fun OmnioContactActivity.openSocial(social: OmnioSocials.FoundSocial, updatePhoto: Boolean = false) {
     // using a linked profile ends any "Find on…": stop listening for links
     OmnioSocials.clearPendingLink(this)
     if (social.network.key == "discord" && OmnioSocials.discordId(social.url) == null) {
@@ -233,10 +233,15 @@ internal fun OmnioContactActivity.openSocial(social: OmnioSocials.FoundSocial) {
         tryStart(packageManager.getLaunchIntentForPackage(social.network.pkg))
         return
     }
-    // with Link helper on, their profile photo is caught on the way and offered when you come back
+    // with Link helper on, their profile photo is caught on the way and offered when you come back,
+    // but only once: after it's been offered, it's only caught again when you ask ("Update photo from …")
     contact?.let { current ->
+        val photos = com.omnioone.app.helpers.OmnioPhotoCapture
         if (com.omnioone.app.services.OmnioLinkHelperService.isEnabled(this)) {
-            com.omnioone.app.helpers.OmnioPhotoCapture.setPending(this, current.contactId, current.rawId)
+            when {
+                updatePhoto -> photos.startAgain(this, current.contactId, current.rawId)
+                !photos.isDone(this, current.contactId) -> photos.setPending(this, current.contactId, current.rawId)
+            }
         }
     }
     val uri = Uri.parse(if (social.url.contains("://")) social.url else "https://${social.url}")
@@ -326,6 +331,18 @@ internal fun OmnioContactActivity.askUsername(contact: Contact, network: OmnioSo
     }
 }
 
+/** Long-press a social: get a fresh photo from it, or remove it. */
+internal fun OmnioContactActivity.socialMenu(contact: Contact, social: OmnioSocials.FoundSocial) {
+    val canPhoto = com.omnioone.app.services.OmnioLinkHelperService.isEnabled(this) && social.network.key != "discord"
+    val items = buildList {
+        if (canPhoto) add(OmnioSheet.Item("📸  " + getString(R.string.omnio_photo_update_from, social.network.name)))
+        add(OmnioSheet.Item("🗑️  " + getString(R.string.omnio_remove_social, social.network.name), labelColor = OmnioColors.MISSED_SOFT))
+    }
+    OmnioSheet.list(this, social.network.name, social.url, items) { picked ->
+        if (canPhoto && picked == 0) openSocial(social, updatePhoto = true) else confirmRemoveSocial(contact, social)
+    }
+}
+
 internal fun OmnioContactActivity.confirmRemoveSocial(contact: Contact, social: OmnioSocials.FoundSocial) {
     OmnioSheet.confirm(
         this,
@@ -347,7 +364,8 @@ internal fun OmnioContactActivity.offerCapturedPhoto() {
     val helper = com.omnioone.app.helpers.OmnioPhotoCapture
     val bitmap = helper.captured(this, current.contactId) ?: return
     helper.discard(this, current.contactId)
-    helper.clearPending(this)
+    // offered once: this photo session is over, whatever you choose
+    helper.markDone(this, current.contactId)
     com.omnioone.app.helpers.OmnioSheet.photo(
         this,
         title = getString(R.string.omnio_photo_use_title, current.getNameToDisplay()),
