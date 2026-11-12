@@ -2,7 +2,6 @@ package com.omnioone.app.messaging
 
 import android.app.Activity
 import android.content.BroadcastReceiver
-import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
@@ -10,6 +9,7 @@ import android.net.Uri
 import android.provider.ContactsContract
 import android.provider.Telephony.Mms
 import android.provider.Telephony.Sms
+import android.telephony.SmsManager
 import android.telephony.SmsMessage
 import java.io.File
 
@@ -31,7 +31,7 @@ class OmnioSendReceiver : BroadcastReceiver() {
         Thread {
             try {
                 when (intent.action) {
-                    OmnioSender.ACTION_SENT -> smsSent(context, intent, result == Activity.RESULT_OK)
+                    OmnioSender.ACTION_SENT -> smsSent(context, intent, result)
                     OmnioSender.ACTION_DELIVERED -> smsDelivered(context, intent)
                     OmnioSender.ACTION_MMS_SENT -> mmsSent(context, intent, result == Activity.RESULT_OK)
                 }
@@ -42,15 +42,27 @@ class OmnioSendReceiver : BroadcastReceiver() {
         }.start()
     }
 
-    private fun smsSent(context: Context, intent: Intent, ok: Boolean) {
+    private fun smsSent(context: Context, intent: Intent, result: Int) {
+        val ok = result == Activity.RESULT_OK
         val uri = intent.data ?: return
         val type = if (ok) Sms.MESSAGE_TYPE_SENT else Sms.MESSAGE_TYPE_FAILED
         // a long text is sent in parts: if any part fails, keep it marked failed
         val selection = if (ok) "${Sms.TYPE} != ${Sms.MESSAGE_TYPE_FAILED}" else null
         context.contentResolver.update(uri, ContentValues().apply { put(Sms.TYPE, type) }, selection, null)
-        val id = ContentUris.parseId(uri)
+        if (!ok) {
+            // one person's text failing means the group chat's copy didn't fully go either
+            intent.getStringExtra(OmnioSender.EXTRA_GROUP_COPY)?.let { OmnioSender.setSmsType(context, Uri.parse(it), Sms.MESSAGE_TYPE_FAILED) }
+            // no signal or flight mode: try again by itself once the phone is back on the network
+            if (result == SmsManager.RESULT_ERROR_NO_SERVICE || result == SmsManager.RESULT_ERROR_RADIO_OFF) {
+                OmnioSignalRetry.add(context, uri)
+            } else {
+                OmnioSignalRetry.remove(context, uri)
+            }
+        } else {
+            OmnioSignalRetry.remove(context, uri)
+        }
         OmnioMessagesBus.changed()
-        if (!ok) notifyFailed(context, uri)
+        if (!ok && !OmnioSignalRetry.isWaiting(context, uri)) notifyFailed(context, uri)
     }
 
     private fun smsDelivered(context: Context, intent: Intent) {
@@ -76,7 +88,6 @@ class OmnioSendReceiver : BroadcastReceiver() {
             put(Sms.STATUS, status)
             put(Sms.DATE_SENT, System.currentTimeMillis())
         }, null, null)
-        val id = ContentUris.parseId(uri)
         OmnioMessagesBus.changed()
     }
 

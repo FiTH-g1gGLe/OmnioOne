@@ -91,11 +91,16 @@ class OmnioThreadActivity : SimpleActivity() {
     private var sims = listOf<OmnioSender.Sim>()
     private var subId = -1
     private var queued: Queued? = null
+    /** Messages you've just sent, shown straight away until the saved copy appears. */
+    private val outgoing = ArrayList<OmnioMessageStore.Message>()
+    private var nextOutgoingId = -1_000_000_000_000L
+    /** Failed texts that will be tried again when signal comes back. */
+    private var waitingForSignal = setOf<Long>()
     private var countdown = 0
     private var cameraUri: Uri? = null
     private var cards = mapOf<Long, OmnioContactCard.Card>()
 
-    private data class Queued(val text: String, val attachments: List<OmnioSender.Attachment>, val subId: Int)
+    private data class Queued(val text: String, val attachments: List<OmnioSender.Attachment>, val subId: Int, val bubble: OmnioMessageStore.Message)
 
     private val tick = object : Runnable {
         override fun run() {
@@ -193,6 +198,7 @@ class OmnioThreadActivity : SimpleActivity() {
             // in a one-to-one chat every incoming picture message is from them, so skip looking up each sender
             val sender = info?.people?.singleOrNull()?.address
             val loaded = OmnioMessageStore.messages(this, threadId, limit = limit, knownSender = sender)
+            val waiting = OmnioSignalRetry.waitingIds(this)
             // read any contact cards so they show as a name, not a file
             val readCards = HashMap(cards)
             loaded.flatMap { it.parts }.filter { OmnioContactCard.isCard(it.mime) && it.id !in readCards }.forEach { part ->
@@ -211,7 +217,15 @@ class OmnioThreadActivity : SimpleActivity() {
                 messages = loaded
                 showHeader()
                 cards = readCards
-                adapter.submit(loaded, info)
+                waitingForSignal = waiting
+                // once a sent message is saved, its instant bubble isn't needed
+                outgoing.removeAll { bubble ->
+                    loaded.any { saved ->
+                        !saved.incoming && saved.date >= bubble.date - 5_000 &&
+                            (saved.body == bubble.body || (bubble.body.isEmpty() && saved.isMms))
+                    }
+                }
+                adapter.submit(loaded + outgoing, info)
                 if (keepPlace && firstVisible >= 0) {
                     // older messages were added above: keep the one you were looking at in the same spot
                     manager.scrollToPositionWithOffset(firstVisible + (adapter.itemCount - countBefore), firstTop)
@@ -275,18 +289,45 @@ class OmnioThreadActivity : SimpleActivity() {
     }
 
     /** Sends straight away (reactions, resends and the end of the undo wait). */
-    private fun send(text: String, files: List<OmnioSender.Attachment> = emptyList(), sim: Int = subId) {
+    private fun send(text: String, files: List<OmnioSender.Attachment> = emptyList(), sim: Int = subId, bubble: OmnioMessageStore.Message? = null) {
         val to = addresses()
-        if ((text.isBlank() && files.isEmpty()) || to.isEmpty()) return
-        ensureBackgroundThread {
+        if ((text.isBlank() && files.isEmpty()) || to.isEmpty()) {
+            bubble?.let { dropBubble(it) }
+            return
+        }
+        OmnioSender.queue {
             try {
                 OmnioSender.send(this, text, to, sim, files)
                 OmnioDrafts.delete(this, threadId)
             } catch (e: Exception) {
-                runOnUiThread { toast(getString(R.string.omnio_thread_send_failed) + (e.message?.let { ": $it" } ?: "")) }
+                val reason = (e as? OmnioSender.SendException)?.message
+                runOnUiThread { toast(getString(R.string.omnio_thread_send_failed) + (reason?.let { ": $it" } ?: "")) }
             }
-            handler.postDelayed(reloadSoon, 300)
+            runOnUiThread {
+                // the saved copy takes over from the instant bubble
+                bubble?.let { outgoing.remove(it) }
+                load()
+            }
         }
+    }
+
+    /** Shows a message in the chat the moment you tap send. */
+    private fun showBubble(text: String, files: List<OmnioSender.Attachment>): OmnioMessageStore.Message {
+        val id = nextOutgoingId--
+        val bubble = OmnioMessageStore.Message(
+            id = id, threadId = threadId, isMms = false, incoming = false, address = "", body = text,
+            date = System.currentTimeMillis(), read = true, failed = false, pending = true,
+            parts = files.mapIndexed { index, file -> OmnioMessageStore.Part(id * 100 - index, file.mime, null, file.uri) },
+        )
+        outgoing += bubble
+        adapter.submit(messages + outgoing, conversation)
+        list.scrollToPosition(adapter.itemCount - 1)
+        return bubble
+    }
+
+    private fun dropBubble(bubble: OmnioMessageStore.Message) {
+        outgoing.remove(bubble)
+        adapter.submit(messages + outgoing, conversation)
     }
 
     /** "160/1" style counter: characters left in this text, and how many texts it will take. */
@@ -308,14 +349,15 @@ class OmnioThreadActivity : SimpleActivity() {
 
     private fun retry(message: OmnioMessageStore.Message) {
         val to = addresses()
-        if (to.isEmpty()) return
-        ensureBackgroundThread {
+        if (to.isEmpty() || message.id < 0) return
+        OmnioSender.queue {
             try {
                 OmnioSender.retry(this, message, to, subId)
             } catch (e: Exception) {
-                runOnUiThread { toast(R.string.omnio_thread_send_failed) }
+                val reason = (e as? OmnioSender.SendException)?.message
+                runOnUiThread { toast(getString(R.string.omnio_thread_send_failed) + (reason?.let { ": $it" } ?: "")) }
             }
-            handler.postDelayed(reloadSoon, 300)
+            runOnUiThread { load() }
         }
     }
 
@@ -327,12 +369,13 @@ class OmnioThreadActivity : SimpleActivity() {
         input.setText("")
         attachments.clear()
         showAttachments()
+        val bubble = showBubble(text, files)
         val seconds = OmnioSender.undoSeconds(this)
         if (seconds <= 0) {
-            send(text, files)
+            send(text, files, bubble = bubble)
             return
         }
-        queued = Queued(text, files, subId)
+        queued = Queued(text, files, subId, bubble)
         countdown = seconds
         undoText.text = getString(R.string.omnio_thread_sending_in, countdown)
         undoBar.visibility = View.VISIBLE
@@ -344,7 +387,7 @@ class OmnioThreadActivity : SimpleActivity() {
         queued = null
         handler.removeCallbacks(tick)
         undoBar.visibility = View.GONE
-        send(waiting.text, waiting.attachments, waiting.subId)
+        send(waiting.text, waiting.attachments, waiting.subId, waiting.bubble)
     }
 
     private fun undo() {
@@ -352,6 +395,7 @@ class OmnioThreadActivity : SimpleActivity() {
         queued = null
         handler.removeCallbacks(tick)
         undoBar.visibility = View.GONE
+        dropBubble(waiting.bubble)
         input.setText(waiting.text)
         input.setSelection(input.text.length)
         attachments.addAll(0, waiting.attachments)
@@ -495,6 +539,7 @@ class OmnioThreadActivity : SimpleActivity() {
     }
 
     private fun showMessageMenu(message: OmnioMessageStore.Message, reactions: List<OmnioReactions.Reaction> = emptyList()) {
+        if (message.id < 0) return // still sending
         val items = ArrayList<Pair<OmnioSheet.Item, () -> Unit>>()
         fun item(label: Int, emoji: String, colour: Int, labelColour: Int = OmnioColors.TEXT) =
             OmnioSheet.Item(getString(label), icon = emojiBadge(emoji, colour), labelColor = labelColour)
@@ -982,6 +1027,7 @@ class OmnioThreadActivity : SimpleActivity() {
 
             if (row.showTime || message.failed || message.pending) {
                 val status = when {
+                    message.failed && message.id in waitingForSignal -> getString(R.string.omnio_thread_waiting_signal)
                     message.failed -> getString(R.string.omnio_thread_not_sent)
                     message.pending -> getString(R.string.omnio_thread_sending)
                     else -> android.text.format.DateFormat.getTimeFormat(outer.context).format(message.date)

@@ -480,6 +480,7 @@
     <string name="omnio_thread_sent">Sent</string>
     <string name="omnio_thread_not_sent">Not sent · tap to retry</string>
     <string name="omnio_thread_sending">Sending…</string>
+    <string name="omnio_thread_waiting_signal">No signal · will send when you\'re back online</string>
     <string name="omnio_thread_sending_in">Sending in %d…</string>
     <string name="omnio_thread_undo">Undo</string>
     <string name="omnio_thread_send_from">Send from</string>
